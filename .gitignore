@@ -1,0 +1,6 @@
+# Ignore VS Code settings
+.vscode/
+
+# Ignore system cache files
+.DS_Store
+Thumbs.db
