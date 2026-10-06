@@ -371,3 +371,13 @@
   background-color: #FCE4D6;
   color: #C65911;
 }
+
+.badge-processing { 
+  background-color: #E1F5FE; 
+  color: #0277BD; 
+}
+
+.badge-inactive { 
+  background-color: #F5F5F5; 
+  color: #616161; 
+}

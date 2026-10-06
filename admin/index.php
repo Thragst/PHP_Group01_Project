@@ -8,7 +8,7 @@ include 'includes/admin_header.php';
 
 <div class="page-header">
     <div>
-        <h2>Super Admin Dashboard</h2>
+        <h2>Admin Dashboard</h2>
         <p style="color: #666; font-size: 0.95rem; margin-top: 5px;">Platform-wide sales, site activity, users, and search insights</p>
     </div>
 </div>
