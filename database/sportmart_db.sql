@@ -11,9 +11,9 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     role ENUM(
         'Customer',
-        'Admin',
-        'Super Admin'
-    ) NOT NULL DEFAULT 'Customer',
+        'Admin', 
+        'Staff') 
+    NOT NULL DEFAULT 'Customer',
     phone VARCHAR(30),
     physical_address VARCHAR(255),
     account_status ENUM(
