@@ -1,3 +1,4 @@
+
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-column footer-brand">
@@ -22,10 +23,7 @@
         <div class="footer-column">
             <h3>Account</h3>
             <a href="index.php?page=orders">My Orders</a>
-            <a href="#"
-               onclick="showCart();return false;">
-                Shopping Cart
-            </a>
+            <a href="cart.php">Shopping Cart</a>
         </div>
     </div>
 

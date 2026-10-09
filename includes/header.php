@@ -1,3 +1,4 @@
+
 <?php
 if(session_status()===PHP_SESSION_NONE){
     session_start();
@@ -5,57 +6,30 @@ if(session_status()===PHP_SESSION_NONE){
 
 $currentPage=isset($_GET['page'])?$_GET['page']:'home';
 $isLoggedIn=isset($_SESSION['logged_in'])&&
-           $_SESSION['logged_in']===true;
+            $_SESSION['logged_in']===true;
 $userName=$_SESSION['user_name']??'';
 ?>
 
 <nav class="navbar">
-    <div class="logo">
-        <span>S</span>
-        SportMart
-    </div>
+    <a href="index.php" class="logo">
+        <span>S</span> SportMart
+    </a>
 
     <div class="nav-links">
-        <a href="index.php"
-           class="<?php echo $currentPage=='home'?'active':''; ?>">
-            Home
-        </a>
-
-        <a href="index.php?page=products"
-           class="<?php echo $currentPage=='products'?'active':''; ?>">
-            Products
-        </a>
-
-        <a href="index.php?page=orders"
-           class="<?php echo $currentPage=='orders'?'active':''; ?>">
-            My Orders
-        </a>
-
-        <a href="#"
-           class="cart-link"
-           onclick="showCart();return false;">
-            Cart
-        </a>
+        <a href="index.php" class="<?php echo $currentPage=='home'?'active':''; ?>">Home</a>
+        <a href="index.php?page=products" class="<?php echo $currentPage=='products'?'active':''; ?>">Products</a>
+        <a href="index.php?page=orders" class="<?php echo $currentPage=='orders'?'active':''; ?>">My Orders</a>
+        <a href="cart.php" class="<?php echo basename($_SERVER['PHP_SELF'])=='cart.php'?'active':''; ?>">Cart</a>
     </div>
 
     <div class="nav-right">
         <?php if($isLoggedIn): ?>
-            <button class="profile-button"
-                    onclick="showProfileMenu()">
+            <button class="profile-button" onclick="showProfileMenu()">
                 <?php echo htmlspecialchars($userName); ?>
             </button>
         <?php else: ?>
-            <a href="#"
-               class="login-link"
-               onclick="showLogin();return false;">
-                Login
-            </a>
-
-            <a href="#"
-               class="signup-link"
-               onclick="showSignup();return false;">
-                Sign Up
-            </a>
+            <a href="#" class="login-link" onclick="showLogin();return false;">Login</a>
+            <a href="#" class="signup-link" onclick="showSignup();return false;">Sign Up</a>
         <?php endif; ?>
     </div>
 </nav>
