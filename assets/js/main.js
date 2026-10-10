@@ -310,56 +310,201 @@ document.addEventListener("DOMContentLoaded", function () {
     const signupForm = document.getElementById("signupForm");
 
     if (signupForm) {
+        const fullname = document.getElementById("signupFullname");
+        const username = document.getElementById("signupUsername");
+        const email = document.getElementById("signupEmail");
+        const password = document.getElementById("signupPassword");
+        const confirm = document.getElementById("confirmPassword");
+        const message = document.getElementById("signupMessage");
+        const fullnameError = document.getElementById("fullnameError");
+        const usernameError = document.getElementById("usernameError");
+        const emailError = document.getElementById("emailError");
+        const confirmMessage = document.getElementById("confirmMessage");
+
+        const rules = [
+            {
+                element: document.getElementById("ruleLength"),
+                test: function (value) {
+                    return value.length >= 12;
+                }
+            },
+            {
+                element: document.getElementById("ruleUpper"),
+                test: function (value) {
+                    return /[A-Z]/.test(value);
+                }
+            },
+            {
+                element: document.getElementById("ruleLower"),
+                test: function (value) {
+                    return /[a-z]/.test(value);
+                }
+            },
+            {
+                element: document.getElementById("ruleNumber"),
+                test: function (value) {
+                    return /[0-9]/.test(value);
+                }
+            },
+            {
+                element: document.getElementById("ruleSpecial"),
+                test: function (value) {
+                    return /[^A-Za-z0-9]/.test(value);
+                }
+            }
+        ];
+
+        let showRuleErrors = false;
+
+        const getFullnameError = function (allowEmpty) {
+            const value = fullname.value.trim();
+
+            if (value === "") {
+                return allowEmpty ? "" : "Please enter your full name.";
+            }
+
+            if (/[0-9]/.test(value)) {
+                return "Full name cannot contain numbers.";
+            }
+
+            return "";
+        };
+
+        const getUsernameError = function (allowEmpty) {
+            const value = username.value.trim();
+
+            if (value === "") {
+                return allowEmpty ? "" : "Please enter a username.";
+            }
+
+            if (!/^[A-Za-z0-9]+$/.test(value)) {
+                return "Username can only contain letters and numbers.";
+            }
+
+            if (!/[A-Za-z]/.test(value)) {
+                return "Username cannot be numbers only. Add at least one letter.";
+            }
+
+            return "";
+        };
+
+        const getEmailError = function () {
+            const value = email.value.trim();
+
+            if (!value.includes("@") || !value.includes(".")) {
+                return "Please use valid email";
+            }
+
+            return "";
+        };
+
+        const updateRules = function () {
+            let allMet = true;
+
+            rules.forEach(function (rule) {
+                const met = rule.test(password.value);
+
+                rule.element.classList.toggle("met", met);
+                rule.element.classList.toggle("unmet", showRuleErrors && !met);
+
+                if (!met) {
+                    allMet = false;
+                }
+            });
+
+            return allMet;
+        };
+
+        const updateConfirm = function () {
+            if (confirm.value === "") {
+                confirmMessage.className = "signup-error";
+                confirmMessage.textContent = "";
+                return false;
+            }
+
+            if (password.value === confirm.value) {
+                confirmMessage.className = "signup-success";
+                confirmMessage.textContent = "Passwords match.";
+                return true;
+            }
+
+            confirmMessage.className = "signup-error";
+            confirmMessage.textContent = "Passwords do not match. Please re-enter your password.";
+            return false;
+        };
+
+        fullname.addEventListener("input", function () {
+            if (/[0-9]/.test(fullname.value)) {
+                fullname.value = fullname.value.replace(/[0-9]/g, "");
+                fullnameError.textContent = "Full name cannot contain numbers.";
+            } else {
+                fullnameError.textContent = "";
+            }
+        });
+
+        username.addEventListener("input", function () {
+            username.value = username.value.replace(/[^A-Za-z0-9]/g, "");
+            usernameError.textContent = getUsernameError(true);
+        });
+
+        email.addEventListener("input", function () {
+            emailError.textContent = "";
+        });
+
+        password.addEventListener("input", function () {
+            updateRules();
+
+            if (confirm.value !== "") {
+                updateConfirm();
+            }
+        });
+
+        confirm.addEventListener("input", updateConfirm);
+
         signupForm.addEventListener("submit", function (event) {
             event.preventDefault();
 
-            const fullname = document.getElementById("signupFullname");
-            const username = document.getElementById("signupUsername");
-            const email = document.getElementById("signupEmail");
-            const password = document.getElementById("signupPassword");
-            const confirm = document.getElementById("confirmPassword");
-            const message = document.getElementById("signupMessage");
-
             message.textContent = "";
 
-            const fullnameValue = fullname.value.trim();
-            const usernameValue = username.value.trim();
-            const emailValue = email.value.trim();
-            const passwordValue = password.value;
-            const confirmValue = confirm.value;
+            const fullnameProblem = getFullnameError(false);
+            const usernameProblem = getUsernameError(false);
+            const emailProblem = getEmailError();
 
-            if (fullnameValue === "") {
-                message.textContent = "Please enter your full name.";
+            fullnameError.textContent = fullnameProblem;
+            usernameError.textContent = usernameProblem;
+            emailError.textContent = emailProblem;
+
+            showRuleErrors = true;
+
+            const passwordValid = updateRules();
+            const confirmValid = updateConfirm();
+
+            if (confirm.value === "") {
+                confirmMessage.className = "signup-error";
+                confirmMessage.textContent = "Please confirm your password.";
+            }
+
+            if (fullnameProblem) {
                 fullname.focus();
                 return;
             }
 
-            if (usernameValue === "") {
-                message.textContent = "Please enter a username.";
+            if (usernameProblem) {
                 username.focus();
                 return;
             }
 
-            if (!emailValue.includes("@") || !emailValue.includes(".")) {
-                message.textContent = "Please use valid email";
+            if (emailProblem) {
                 email.focus();
                 return;
             }
 
-            const hasLength = passwordValue.length >= 12;
-            const hasUpper = /[A-Z]/.test(passwordValue);
-            const hasLower = /[a-z]/.test(passwordValue);
-            const hasNumber = /[0-9]/.test(passwordValue);
-            const hasSpecial = /[^A-Za-z0-9]/.test(passwordValue);
-
-            if (!hasLength || !hasUpper || !hasLower || !hasNumber || !hasSpecial) {
-                message.textContent = "Password does not meet the requirements.";
+            if (!passwordValid) {
                 password.focus();
                 return;
             }
 
-            if (passwordValue !== confirmValue) {
-                message.textContent = "Passwords do not match.";
+            if (!confirmValid) {
                 confirm.focus();
                 return;
             }

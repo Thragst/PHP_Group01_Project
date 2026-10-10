@@ -333,11 +333,6 @@ $userRole = $_SESSION['user_role'] ?? '';
                 SPORT<br>
                 <b>MART</b>
             </div>
-            <span class="ball">🏀</span>
-            <span class="shoe">👟</span>
-            <span class="bag">🎒</span>
-            <span class="bottle">🥤</span>
-        </div>
     </section>
 
     <section class="benefits">
@@ -492,34 +487,42 @@ $userRole = $_SESSION['user_role'] ?? '';
             <h2>Sign Up</h2>
             <p>Create your SportMart account.</p>
 
+            <?php
+            $signupStatus = $_GET['signup'] ?? '';
+            $signupErrors = [
+                'name' => 'Full name cannot contain numbers.',
+                'username' => 'Username can only contain letters and numbers, and cannot be numbers only.',
+                'exists' => 'Username already exists.',
+                'email' => 'Please use valid email',
+                'mismatch' => 'Passwords do not match. Please re-enter your password.',
+                'password' => 'Password does not meet the requirements.',
+                'error' => 'Unable to create account.'
+            ];
+            ?>
+
             <form action="register.php" method="POST" id="signupForm" novalidate>
                 <input type="text" name="fullname" id="signupFullname" placeholder="Full Name" required>
+                <p class="signup-error" id="fullnameError"><?php echo $signupStatus === 'name' ? $signupErrors['name'] : ''; ?></p>
 
                 <input type="text" name="username" id="signupUsername" placeholder="Username" required>
+                <p class="signup-error" id="usernameError"><?php echo in_array($signupStatus, ['username', 'exists']) ? $signupErrors[$signupStatus] : ''; ?></p>
 
                 <input type="text" name="email" id="signupEmail" placeholder="Email Address" required>
+                <p class="signup-error" id="emailError"><?php echo $signupStatus === 'email' ? $signupErrors['email'] : ''; ?></p>
 
                 <input type="password" name="password" id="signupPassword" placeholder="Password" required>
+                <ul class="password-rules" id="passwordRules">
+                    <li id="ruleLength">At least twelve (12) characters in length</li>
+                    <li id="ruleUpper">At least one (1) CAPITAL letter</li>
+                    <li id="ruleLower">At least one (1) small letter</li>
+                    <li id="ruleNumber">At least one (1) number</li>
+                    <li id="ruleSpecial">At least one (1) special character</li>
+                </ul>
 
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required>
+                <p class="signup-error" id="confirmMessage"><?php echo $signupStatus === 'mismatch' ? $signupErrors['mismatch'] : ''; ?></p>
 
-                <?php if (isset($_GET['signup'])): ?>
-                    <?php if ($_GET['signup'] === 'exists'): ?>
-                        <p class="login-message" id="signupMessage">Username already exists.</p>
-                    <?php elseif ($_GET['signup'] === 'mismatch'): ?>
-                        <p class="login-message" id="signupMessage">Passwords do not match.</p>
-                    <?php elseif ($_GET['signup'] === 'email'): ?>
-                        <p class="login-message" id="signupMessage">Please use valid email</p>
-                    <?php elseif ($_GET['signup'] === 'password'): ?>
-                        <p class="login-message" id="signupMessage">Password does not meet the requirements.</p>
-                    <?php elseif ($_GET['signup'] === 'error'): ?>
-                        <p class="login-message" id="signupMessage">Unable to create account.</p>
-                    <?php else: ?>
-                        <p class="login-message" id="signupMessage"></p>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <p class="login-message" id="signupMessage"></p>
-                <?php endif; ?>
+                <p class="login-message" id="signupMessage"><?php echo in_array($signupStatus, ['password', 'error']) ? $signupErrors[$signupStatus] : ''; ?></p>
 
                 <button type="submit" class="popup-button">Create Account</button>
             </form>
