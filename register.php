@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirm  = $_POST['confirm_password'] ?? '';
 
     if ($fullname === '' || $username === '' || $email === '' || $password === '' || $confirm === '') {
-        header('Location: index.php?signup=error');
+        header('Location: index.php?signup=empty');
         exit;
     }
 
@@ -39,11 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    foreach ($_SESSION['users'] as $user) {
-        if (strtolower($user['username']) === strtolower($username)) {
-            header('Location: index.php?signup=exists');
-            exit;
-        }
+    if (isset($_SESSION['users'][$username])) {
+        header('Location: index.php?signup=exists');
+        exit;
     }
 
     $newUser = [
@@ -52,19 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'name'       => $fullname,
         'email'      => $email,
         'user_id'    => 'SM-USER-' . (count($_SESSION['users']) + 1),
-        'role'       => 'Customer',
-        'expiry'     => '2026-12-31',
-        'registered' => true
+        'role'       => 'Customer'
     ];
 
     $_SESSION['users'][$username] = $newUser;
 
-    $_SESSION['logged_in'] = true;
-    $_SESSION['user_name'] = htmlspecialchars($fullname, ENT_QUOTES, 'UTF-8');
-    $_SESSION['username']  = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
-    $_SESSION['user_id']   = $newUser['user_id'];
-    $_SESSION['user_role'] = 'Customer';
-
+    
     header('Location: index.php?signup=success');
     exit;
 }
@@ -72,3 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 header('Location: index.php');
 exit;
 ?>
+Compose
+Write to Infor Assurance and Security Group
+
