@@ -2275,3 +2275,31 @@ select {
 .popup-disclaimer a:hover {
     text-decoration: underline;
 }
+
+.password-field {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.password-field input {
+    margin-bottom: 0 !important;
+    padding-right: 65px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0 16px;
+    border: none;
+    background: none;
+    color: #8b2e2e;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.password-toggle:hover {
+    text-decoration: underline;
+}
