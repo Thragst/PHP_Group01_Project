@@ -333,6 +333,7 @@ $userRole = $_SESSION['user_role'] ?? '';
                 SPORT<br>
                 <b>MART</b>
             </div>
+        </div>
     </section>
 
     <section class="benefits">
@@ -477,6 +478,12 @@ $userRole = $_SESSION['user_role'] ?? '';
 
                 <button type="submit" class="popup-button">Login</button>
             </form>
+
+            <p class="popup-disclaimer">
+                Disclaimer: An account is required to place and track orders.
+                Don't have an account?
+                <a href="#" onclick="closePopup('loginPopup'); showSignup(); return false;">Sign up here</a>.
+            </p>
         </div>
     </div>
 
@@ -490,6 +497,7 @@ $userRole = $_SESSION['user_role'] ?? '';
             <?php
             $signupStatus = $_GET['signup'] ?? '';
             $signupErrors = [
+                'empty' => 'Please fill in all fields.',
                 'name' => 'Full name cannot contain numbers.',
                 'username' => 'Username can only contain letters and numbers, and cannot be numbers only.',
                 'exists' => 'Username already exists.',
@@ -522,10 +530,15 @@ $userRole = $_SESSION['user_role'] ?? '';
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required>
                 <p class="signup-error" id="confirmMessage"><?php echo $signupStatus === 'mismatch' ? $signupErrors['mismatch'] : ''; ?></p>
 
-                <p class="login-message" id="signupMessage"><?php echo in_array($signupStatus, ['password', 'error']) ? $signupErrors[$signupStatus] : ''; ?></p>
+                <p class="login-message" id="signupMessage"><?php echo in_array($signupStatus, ['empty', 'password', 'error']) ? $signupErrors[$signupStatus] : ''; ?></p>
 
                 <button type="submit" class="popup-button">Create Account</button>
             </form>
+
+            <p class="popup-disclaimer">
+                Already have an account?
+                <a href="#" onclick="closePopup('signupPopup'); showLogin(); return false;">Login here</a>.
+            </p>
         </div>
     </div>
 
@@ -541,7 +554,7 @@ $userRole = $_SESSION['user_role'] ?? '';
 
         <div class="profile-user">
             <div class="profile-avatar">
-                <?php echo strtoupper(substr($userName, 0, 1)); ?>
+                <?php echo htmlspecialchars(strtoupper(substr($userName, 0, 1))); ?>
             </div>
 
             <div>

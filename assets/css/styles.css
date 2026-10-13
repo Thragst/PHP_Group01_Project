@@ -2256,3 +2256,22 @@ select {
         padding: 8px 16px;
     }
 }
+
+.popup-box .popup-disclaimer {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.5;
+    margin: 18px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.popup-disclaimer a {
+    color: #8b2e2e;
+    font-weight: bold;
+}
+
+.popup-disclaimer a:hover {
+    text-decoration: underline;
+}
