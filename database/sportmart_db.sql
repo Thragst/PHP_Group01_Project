@@ -1,9 +1,17 @@
-CREATE DATABASE IF NOT EXISTS sportmart_db
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Oct 10, 2026 at 12:59 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
-USE sportmart_db;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
+<<<<<<< HEAD
 CREATE TABLE users (
     user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(150) NOT NULL,
@@ -27,153 +35,515 @@ CREATE TABLE users (
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
+=======
+>>>>>>> de48c55f832f89edafcbe1bf439bb87544f693c6
 
-CREATE TABLE categories (
-    category_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    slug VARCHAR(120) NOT NULL UNIQUE,
-    description TEXT,
-    status ENUM(
-        'Active',
-        'Inactive'
-    ) NOT NULL DEFAULT 'Active',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
-CREATE TABLE products (
-    product_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    category_id INT UNSIGNED NOT NULL,
-    name VARCHAR(150) NOT NULL,
-    brand VARCHAR(100),
-    description TEXT,
-    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
-    stock_quantity INT UNSIGNED NOT NULL DEFAULT 0,
-    image_path VARCHAR(255),
-    status ENUM(
-        'Active',
-        'Inactive'
-    ) NOT NULL DEFAULT 'Active',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_products_category (category_id),
-    CONSTRAINT fk_products_category
-        FOREIGN KEY (category_id)
-        REFERENCES categories(category_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+--
+-- Database: `sportmart_db`
+--
 
-CREATE TABLE orders (
-    order_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    total_amount DECIMAL(10,2) NOT NULL,
-    payment_method ENUM(
-        'COD',
-        'GCash',
-        'Credit Card',
-        'Bank Transfer'
-    ) NOT NULL,
-    status ENUM(
-        'Pending',
-        'Processing',
-        'Shipped',
-        'Delivered',
-        'Cancelled'
-    ) NOT NULL DEFAULT 'Pending',
-    shipping_address VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_orders_user (user_id),
-    CONSTRAINT fk_orders_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+-- --------------------------------------------------------
 
-CREATE TABLE order_items (
-    order_item_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    order_id INT UNSIGNED NOT NULL,
-    product_id INT UNSIGNED NOT NULL,
-    quantity INT UNSIGNED NOT NULL CHECK (quantity > 0),
-    price_at_purchase DECIMAL(10,2) NOT NULL CHECK (price_at_purchase >= 0),
-    INDEX idx_order_items_order (order_id),
-    INDEX idx_order_items_product (product_id),
-    CONSTRAINT fk_order_items_order
-        FOREIGN KEY (order_id)
-        REFERENCES orders(order_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_order_items_product
-        FOREIGN KEY (product_id)
-        REFERENCES products(product_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+--
+-- Table structure for table `audit_logs`
+--
 
-CREATE TABLE cart_items (
-    cart_item_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    product_id INT UNSIGNED NOT NULL,
-    quantity INT UNSIGNED NOT NULL DEFAULT 1 CHECK (quantity > 0),
-    added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_cart_user_product (user_id, product_id),
-    INDEX idx_cart_product (product_id),
-    CONSTRAINT fk_cart_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_cart_product
-        FOREIGN KEY (product_id)
-        REFERENCES products(product_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+CREATE TABLE `audit_logs` (
+  `audit_log_id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `action_description` varchar(500) NOT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE audit_logs (
-    audit_log_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    action_description VARCHAR(500) NOT NULL,
-    ip_address VARCHAR(45),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_audit_user (user_id),
-    INDEX idx_audit_created (created_at),
-    CONSTRAINT fk_audit_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+-- --------------------------------------------------------
 
-CREATE TABLE search_analytics (
-    search_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    keyword_searched VARCHAR(255) NOT NULL,
-    results_found INT UNSIGNED NOT NULL DEFAULT 0,
-    search_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_search_keyword (keyword_searched),
-    INDEX idx_search_date (search_date)
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
+--
+-- Table structure for table `cart_items`
+--
+
+CREATE TABLE `cart_items` (
+  `cart_item_id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `product_id` int(10) UNSIGNED NOT NULL,
+  `quantity` int(10) UNSIGNED NOT NULL DEFAULT 1 CHECK (`quantity` > 0),
+  `added_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `categories`
+--
+
+CREATE TABLE `categories` (
+  `category_id` int(10) UNSIGNED NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `slug` varchar(120) NOT NULL,
+  `description` text DEFAULT NULL,
+  `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `categories`
+--
+
+INSERT INTO `categories` (`category_id`, `name`, `slug`, `description`, `status`, `created_at`) VALUES
+(1, 'Basketball', 'basketball', 'Basketball shoes, jerseys, apparel, and accessories.', 'Active', '2026-10-09 22:51:21'),
+(2, 'Football', 'football', 'Football shoes, jerseys, apparel, and accessories.', 'Active', '2026-10-09 22:51:21'),
+(3, 'Running', 'running', 'Running shoes, clothing, and accessories.', 'Active', '2026-10-09 22:51:21'),
+(4, 'Tennis', 'tennis', 'Tennis shoes, clothing, and accessories.', 'Active', '2026-10-09 22:51:21');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `orders`
+--
+
+CREATE TABLE `orders` (
+  `order_id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  `payment_method` enum('COD','GCash','Credit Card','Bank Transfer') NOT NULL,
+  `status` enum('Pending','Processing','Shipped','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
+  `shipping_address` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `order_item_id` int(10) UNSIGNED NOT NULL,
+  `order_id` int(10) UNSIGNED NOT NULL,
+  `product_id` int(10) UNSIGNED NOT NULL,
+  `quantity` int(10) UNSIGNED NOT NULL CHECK (`quantity` > 0),
+  `price_at_purchase` decimal(10,2) NOT NULL CHECK (`price_at_purchase` >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `products`
+--
+
+CREATE TABLE `products` (
+  `product_id` int(10) UNSIGNED NOT NULL,
+  `category_id` int(10) UNSIGNED NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `brand` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL CHECK (`price` >= 0),
+  `stock_quantity` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `image_path` varchar(255) DEFAULT NULL,
+  `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `products`
+--
+
+INSERT INTO `products` (`product_id`, `category_id`, `name`, `brand`, `description`, `price`, `stock_quantity`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Nike Elite All-Court — Basketball', 'Nike', 'Show off your skills with the Nike Elite All-Court eight-panel basketball, whether you\'re at the gym or hitting the blacktop. Deep channels give you precise hand alignment for control, while a tacky surface helps you keep your grip.', 2196.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a570608e-14b5-40b5-bd3e-8f45ae32e890/ELITE+ALL+COURT+8P+2.0.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(2, 1, 'Nike Elite Championship 8P — Basketball', 'Nike', 'It\'s the championship game, and you\'ve worked all season to get here. You step back and shoot the game-winning basket. Grab the eight-panel ball built with textured inlaid channels and nonslip logos to handle the pressure when you really need it to.', 4706.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0f711130-930e-48e8-85d5-6403445834fb/NIKE+ELITE+CHAMPIONSHIP+NFHS+P.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(3, 1, 'Nike G.T. Cut 4 \"Victor Wembanyama\" — Basketball Shoes', 'Nike', 'Like a panther on the prowl, Wemby hits you with moves you don’t expect. Swats you don’t see coming. And once he goes for the jugular? It\'s already too late. This special G.T. Cut 4 takes its inspiration from Wemby’s game-wrecking grace and the sudden, smooth destruction he’s capable of. From full-length springy Nike Air to a feathery ZoomX drop-in midsole to the cutting-edge upper, this mold-breaker combines our best basketball technologies for the alpha space makers who refuse to settle for anything but winning.', 7214.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80541f30-ce5a-4b1a-9f25-ffe79005205f/G.T.+CUT+4+VW.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(4, 1, 'Nike G.T. Cut 4 \"Dylan Harper\" — Basketball Shoes', 'Nike', 'Dylan Harper could hoop in any era. His downhill, relentless style is the type old heads love and the new generation rocks with. Fittingly, this G.T. Cut 4 honors Dylan’s timeless game. The head-to-toe rose gold look—a constant tie throughout his career—salutes his journey from grassroots phenom to the top of his draft class. Dylan’s signature logo on the heel stamps a player edition ready to attack the rim at will thanks to full-length ZoomX 3.0 and Air Zoom Strobel.', 5959.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8dfac349-c09b-435f-a758-cda109fbfc67/G.T.+CUT+4+DH.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(5, 1, 'Nike G.T. Cut 4 \"EYBL\" — Basketball Shoes', 'Nike', 'Basketball isn’t slowing down. The tempo, the pace, the players keep pushing the speed barrier to another dimension. Keep your game on go in the G.T. Cut 4. From full-length springy Air Zoom Strobel to a feathery ZoomX 3.0 drop-in midsole to the cutting-edge upper, this mold-breaker combines our best basketball technologies for the alpha space makers who refuse to settle for anything but winning.', 7214.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/eab8e228-c150-48c0-971b-957770a756ab/G.T.+CUT+4+EYBL.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(6, 1, 'Nike G.T. Cut 4 \"White Label LX\" — Basketball Shoes', 'Nike', 'Basketball isn’t slowing down. The tempo, the pace, the players keep pushing the speed barrier to another dimension. Keep your game on go in the G.T. Cut 4. From full-length springy Air Zoom Strobel to a feathery ZoomX drop-in midsole to the cutting-edge upper, this mold-breaker combines our best basketball technologies for the alpha space makers who refuse to settle for anything but winning.', 9724.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/71e5c445-93cf-4753-9961-b232c3d70b07/G.T.+CUT+4+LX.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(7, 1, 'Nike G.T. Cut 4 \"Rob Dillingham\" — Basketball Shoes', 'Nike', 'When Rob Dillingham has the rock, better watch your ankles. This special GT Cut 4 salutes his blinged out game, the kind defenders can only admire after getting dropped by Rob Wit Da Shifts with a wicked right-to-left cross. A ZoomX drop-in midsole sits on top of super-charged Air Zoom Strobel, so Rob can stay on the sticks. And that traction pattern? Perfect for those with a bag.', 7214.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/b6b40dea-1a24-4db2-ac1f-d3caa3cea3c6/G.T.+CUT+4+RD.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(8, 1, 'Nike G.T. Cut 4 \"WNBA 30th\" — Basketball Shoes', 'Nike', 'Basketball isn’t slowing down. The tempo, the pace, the players keep pushing the speed barrier to another dimension. Keep your game on go in the G.T. Cut 4. From full-length springy Air Zoom Strobel to a feathery ZoomX drop-in midsole to the cutting-edge upper, this mold-breaker combines our best basketball technologies for the alpha space makers who refuse to settle for anything but winning.', 7277.12, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/23d75e95-8d61-4a31-854a-35530f37c7ad/G.T.+CUT+4+WNBA+30TH.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(9, 1, 'Nike G.T. Cut 4 \"Shirley Buckets\" — Basketball Shoes', 'Nike', 'Buckets on tap. This G.T. Cut 4 PE raises a glass to Paige’s favorite drink, from the fizzy upper that’s as smooth as her midrange jumper to the mischievously sweet glow-in-the-dark outsole. And before you ask for a refill, don’t miss the cherries on top—odes to Paige’s initials and jersey number, and a fitting cheers to the game\'s star hooper.', 7214.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/92c43c46-c6ae-4c66-b3e4-64ac1cb98ac5/G.T.+CUT+4+PB.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(10, 1, 'Nike G.T. Cut 4 \"Cade Cunningham\" — Basketball Shoes', 'Nike', 'Basketball isn’t slowing down. The tempo, the pace, the players keep pushing the speed barrier to another dimension. Keep your game on go in the Cut 4. From full-length springy Nike Air to a feathery ZoomX midsole to the cutting-edge upper, this mold-breaker combines our best basketball technologies for the alpha space makers who refuse to settle for anything but winning.', 11355.87, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/45aece35-792e-4524-8bc5-312b6e6cfcfc/G.T.+CUT+4++CC.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(11, 1, 'Nike G.T. Cut 4 — Basketball Shoes', 'Nike', 'Basketball isn’t slowing down. The tempo, the pace, the players keep pushing the speed barrier to another dimension. Keep your game on go in the G.T. Cut 4. From full-length springy Air Zoom Strobel to a feathery ZoomX drop-in midsole to the cutting-edge upper, this mold-breaker combines our best basketball technologies for the alpha space makers who refuse to settle for anything but winning.', 12550.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d1dd8c83-6d24-487e-a52f-1537e44b0ff1/G.T.+CUT+4.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(12, 1, 'Giannis Immortality 5 — Basketball Shoes', 'Nike', 'Giannis is in fifth gear, no matter if it’s November, January or June. The Giannis Immortality 5 helps keep the Freak in the driver’s seat. Double stacked foam and elite traction team up in a dynamic design destined for to keep his motor running hot all game-long.', 4327.87, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0f909ab4-5814-42d9-a4a9-ddd35b4ef84f/GIANNIS+IMMORTALITY+5.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(13, 1, 'Book 2 x McDonald\'s — Basketball Shoes', 'Nike', 'Inspired by the only McDonald’s in the world with turquoise Arches, this Book 2 serves as a symbol of taking the unbeaten path — just like the Sedona icon. And like the fries at the bottom of the bag, this Book 2 is the goods, blending some of our best basketball tech with Book’s love for Arizona, so you can serve defenders when it’s your turn on the grill.', 7841.87, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/bde1ab6b-685b-46d1-bcbc-fbeb49a77779/BOOK+2+M.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(14, 2, 'Nike Mercurial Superfly 11 Elite — Firm-Ground Low-Top Soccer Cleats', 'Nike', 'The Superfly 11 Elite is unbelievably fast. It unleashes explosive speed by combining springy Air Zoom cushioning with ultra-responsive ZoomX foam. All that powerful energy return pairs with FlyWeave Ultra material, built to lock you in at top gear so you can leave defenders in the dust.', 18511.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7cd89791-58c6-4aac-a8fa-5a4cef61c3e0/ZM+SUPERFLY+11+ELITE+FG.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(15, 2, 'Nike Mercurial Superfly 11 Elite \"Sam Kerr\" — Firm-Ground Low-Top Soccer Cleats', 'Nike', 'When Sam Kerr steps on the field, she can\'t be stopped. Designed to make her uncatchable, the Superfly 11 Elite is made with springy Air Zoom cushioning and ultra-responsive ZoomX foam. That powerful energy return pairs with FlyWeave Ultra material to lock her in at top gear so she can leave defenders in the dust.', 19138.75, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1ed18296-ce7d-4be6-87e9-8b4e5a59e142/ZM+SUPERFLY+11+ELITE+FG+SK.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(16, 2, 'Nike Mercurial Superfly 11 Elite \"Kylian Mbappé\" — Firm-Ground Low-Top Soccer Cleats', 'Nike', 'How did Kylian forge his legacy? One run at a time. The unbelievably fast Superfly 11 Elite unleashes his speed with Air Zoom cushioning and ultra-responsive ZoomX foam. That powerful energy return pairs with a FlyWeave Ultra upper to help lock his foot in place as he continues to leave his mark on the game.', 13426.62, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4d61eea2-685a-4327-8a7f-3846f50cd17b/ZM+SUPERFLY+11+ELITE+FG+KM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(17, 2, 'Nike Mercurial Vapor 17 Elite — Firm-Ground Low-Top Soccer Cleats', 'Nike', 'The Vapor 17 Elite is unbelievably light. Made with Nike’s lightest tech ever, it unleashes blinding quickness with its FlyLite plate and feathery Atomknit upper. That agile pairing sets you up to win in tight spaces, while its bladed traction pattern powers every sharp pivot and cut.', 16315.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7588fc38-e631-4517-a3ea-de3f43c2428a/VAPOR+17+ELITE+FG.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(18, 2, 'Nike Mercurial Vapor 17 Elite SE — Firm-Ground Low-Top Soccer Cleats', 'Nike', 'It\'s now or never. Built to attack in a blink, the Vapor 17 Elite unleashes blinding quickness with its FlyLite plate and feathery Atomknit upper. That agile pairing sets you up to win in tight spaces, while its bladed traction pattern powers every sharp pivot and cut.', 17256.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/15c2b52f-27f5-4239-bddb-4b26a0718c24/VAPOR+17+ELITE+FG+T+SE.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(19, 2, 'Nike Phantom 6 Low Elite — Firm-Ground Soccer Cleats', 'Nike', 'Obsessed with accuracy? Us too. That’s why we designed the Phantom 6 Elite with revolutionary Gripknit to power your precision. The sticky texture brings your foot closer to the ball and helps put you in control of every opportunity—because missing isn’t an option. It gives you an unfair scoring advantage by combining with the Cyclone 360 traction plate for all those quick cuts.', 16315.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/58a7b2f6-ee9c-4911-99c7-bd24c251084d/PHANTOM+6+LOW+ELITE+FG.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(20, 2, 'Nike Phantom 6 Low Elite \"Erling Haaland\" — Firm-Ground Soccer Cleats', 'Nike', 'Erling’s latest Phantom 6 speaks to the magnetic effect he has on the field. Revolutionary Gripknit sharpens his precision when he’s locked on his target—because missing isn’t an option—while the Cyclone 360 traction plate helps him break away from defenders.', 10289.12, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/047f90f5-8a6d-4bba-8bec-40468f37e692/PHANTOM+6+LOW+ELITE+FG+EH.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(21, 2, 'Nike Phantom 6 Low Elite LV8 — Firm-Ground Soccer Cleats', 'Nike', 'Obsessed with accuracy? Us too. That’s why we designed the Phantom 6 Elite with revolutionary Gripknit to sharpen your precision. The sticky texture helps put you in control of every opportunity—because missing isn’t an option—while the Cyclone 360 plate is refined for aggressive cuts. This version\'s soothing details help clear your mind before the year\'s biggest moment.', 16942.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d427c1e3-3ed5-46df-985a-8bd9f8064e69/PHANTOM+6+LOW+ELITE+FG+LV8.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(22, 2, 'Nike Phantom 6 High Elite — Firm-Ground Soccer Cleats', 'Nike', 'Obsessed with accuracy? Us too. That’s why we designed the Phantom 6 Elite with revolutionary Gripknit to power your precision. The sticky texture brings your foot closer to the ball and helps put you in control of every opportunity—because missing isn’t an option. It gives you an unfair scoring advantage by combining with the Cyclone 360 traction plate for all those quick cuts.', 17883.75, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0a5cc2ce-a6d5-4970-a74b-7a3ca7334cad/PHANTOM+6+HIGH+ELITE+FG.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(23, 2, 'Nike Phantom 6 High Elite LV8 — Firm-Ground Soccer Cleats', 'Nike', 'Obsessed with accuracy? Us too. That’s why we designed the Phantom 6 Elite with revolutionary Gripknit to power your precision. The sticky texture brings your foot closer to the ball and helps put you in control of every opportunity—because missing isn’t an option. It gives you an unfair scoring advantage by combining with the Cyclone 360 traction plate for all those quick cuts.', 11606.87, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/46c4d9b5-f832-433b-b03d-6a9e3ad56872/PHANTOM+6+HIGH+ELITE+FG+LV8.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(24, 2, 'Nike United Phantom 6 High Elite — Firm-Ground Soccer Cleats', 'Nike', 'Push the limits on the field with the Nike United Phantom 6 Elite. Designed for wildly accurate players, like Sophia Wilson and Deyna Castellanos, it sharpens your precision with revolutionary Gripknit for pinpoint strikes and a refined Cyclone 360 plate for aggressive cuts.', 13928.62, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/547da858-f2fa-4470-9181-eb81b9914879/PHANTOM+6+HIGH+ELITE+FG+NU3.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(25, 2, 'Nike Phantom 6 High Elite — Artificial-Grass Soccer Cleats', 'Nike', 'Obsessed with accuracy? Us too. That’s why we designed the Phantom 6 Elite with revolutionary Gripknit to power your precision. The sticky texture brings your foot closer to the ball and helps put you in control of every opportunity—because missing isn’t an option. It gives you an unfair scoring advantage by combining with conical studs for all those quick cuts.', 17883.75, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/2f6056d7-e2f3-463b-9acc-e969723a2eee/PHANTOM+6+HIGH+ELITE+AG-PRO.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(26, 2, 'Nike Tiempo Maestro Elite — Artificial-Grass Low-Top Soccer Cleats', 'Nike', 'Wreaking havoc on the defense requires total command of the ball. That\'s why we designed every aspect of the Tiempo Maestro Elite to put you in complete control of every touch. Its all-new TECHLEATHER material, softer than natural leather, combines with a flexible Maestro360 plate to give you a glove-like fit no matter where the ball strikes.', 15687.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/233ce16b-1870-4a1b-b4ac-69f9a3b28d9a/TIEMPO+MAESTRO+ELITE+AG-PRO.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(27, 3, 'Nike Pegasus Plus 2 — Men\'s Road Running Shoes', 'Nike', 'Take responsive cushioning to the next level with the Pegasus Plus 2. With even higher energy return than its predecessor, it delivers a smooth, energized ride for everyday runs. Superlight ZoomX foam and an exposed forefoot Air Zoom unit team up for a propulsive sensation. Plus, it\'s updated with an accommodating fit and breathable upper for a comfortable, secure run.', 10667.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ca505664-932c-4b12-a2c3-56de2ecaa19b/NIKE+PEGASUS+PLUS+2.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(28, 3, 'Nike Pegasus Plus 2 — Women\'s Road Running Shoes', 'Nike', 'Take responsive cushioning to the next level with the Pegasus Plus 2. With even higher energy return than its predecessor, it delivers a smooth, energized ride for everyday runs. Superlight ZoomX foam and an exposed forefoot Air Zoom unit team up for a propulsive sensation. Plus, it\'s updated with an accommodating fit and breathable upper.', 10667.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/11601b22-8377-4f49-97ce-e615a074358a/W+NIKE+PEGASUS+PLUS+2.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(29, 3, 'Nike Vomero Plus — Men\'s Road Running Shoes', 'Nike', 'Take maximum cushioning to the next level with the Vomero Plus. It provides an ultra-comfortable ride for every day runs thanks to a mountainous stack of full-length ZoomX foam, the most responsive foam in the industry. Plus, the engineered mesh upper is made of soft, breathable yarn for a comfortable fit.', 11295.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5a62abdf-2e3e-49c0-8633-c7e5bc362712/NIKE+VOMERO+PLUS.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(30, 3, 'Nike Vomero Plus — Men\'s Shoes', 'Nike', 'Take maximum cushioning to the next level with the Vomero Plus. It provides an ultra-comfortable ride for everyday runs, thanks to a mountainous stack of full-length ZoomX foam—the most responsive foam in the industry. Plus, the engineered mesh upper is made of soft, breathable yarn for a comfortable fit. This elegant makeup comes in lush neutrals like Desert Camo and Ceramic that pair with bare-minimum branding so your high-performance shoes can easily complement any outfit.', 10981.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e67e2015-3f5a-466b-b898-959b58b83373/NIKE+VOMERO+PLUS+SP.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(31, 3, 'Nike Vomero Plus — Women\'s Road Running Shoes', 'Nike', 'Take maximum cushioning to the next level with the Vomero Plus. It provides an ultra-comfortable ride for every day runs thanks to a mountainous stack of full-length ZoomX foam, the most responsive foam in the industry. Plus, the engineered mesh upper is made of soft, breathable yarn for a comfortable fit.', 11295.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/cc7f4e87-d4bf-4aba-97f4-58e4008c589c/W+NIKE+VOMERO+PLUS.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(32, 3, 'Nike Vomero Plus \"Keely Hodgkinson\" — Women\'s Road Running Shoes', 'Nike', 'Handpicked and approved by the record-smashing powerhouse, the Vomero Plus Keely Hodgkinson delivers maximum cushioning with a colorway that nods to her medal-chasing drive. A mountainous stack of responsive, full-length ZoomX foam gives you an ultra-comfortable ride and a golden touch. The soft mesh upper feels lightweight and breathable, handling long, strenuous miles like a pro.', 11922.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/fe4731f4-f227-4d1c-9265-9a403512237a/W+NIKE+VOMERO+PLUS+KH.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(33, 3, 'Nike Vomero Plus SE — Women\'s Road Running Shoes', 'Nike', 'Take maximum cushioning to the next level with the Vomero Plus SE. It provides an ultra-comfortable ride for everyday road runs thanks to a mountainous stack of full-length ZoomX foam, Nike\'s most responsive cushioning. Plus, the engineered mesh upper is made of soft, breathable yarn and features special edition details.', 11922.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/cb9d09cf-9311-4983-82ba-ac5ed14c93ea/W+NIKE+VOMERO+PLUS+SE.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(34, 3, 'Nike Pegasus Premium — Men\'s Road Running Shoes', 'Nike', 'The Pegasus Premium supercharges responsive cushioning with a triple stack of our most powerful running technologies: ZoomX foam, a sculpted Air Zoom unit and ReactX foam. It’s the most responsive Pegasus ever, providing high energy return unlike any other. With a lighter-than-air upper, it decreases weight and increases breathability so you can fly faster.', 13805.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/202b8946-680e-4a9c-8ce4-0f89bf0959d7/NIKE+PEGASUS+PREMIUM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(35, 3, 'Nike Pegasus Premium — Men\'s Realtree® Road Running Shoes', 'Nike', 'The Pegasus Premium supercharges responsive cushioning with a triple stack of our most powerful running technologies: ZoomX foam, a sculpted Air Zoom unit and ReactX foam. It’s our most responsive Pegasus ever, providing high energy return unlike any other. With a lighter-than-air upper that\'s accented with a Realtree® camo graphic, it decreases weight and increases breathability so you can fly fast.', 14432.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/519e5e75-af02-4592-bd8c-fe1e7e50157b/NIKE+PEGASUS+PREMIUM+CM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(36, 3, 'Nike Miler — Men\'s Dri-FIT Short-Sleeve Running Top', 'Nike', 'Get those extra miles in with a shirt that holds up to the punishment. Our sweat-wicking Miler Top returns with a longer body and ultra-lightweight fabric, so you get more coverage without the weight. It\'s cool and breathable, with a relaxed, easy fit that won\'t slow you down.', 1755.12, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6e1a1c41-4064-40b6-a614-1895fa2d54d1/M+NK+DF+UV+MILER+SS.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(37, 3, 'Nike Miler — Men\'s Dri-FIT Long-Sleeve Running Top', 'Nike', 'This lightweight Miler top is the perfect running partner. Breathable, sweat-wicking fabric is designed for runners of all levels, helping keep you dry and comfortable at all paces.', 2131.62, 50, 'https://static.nike.com/a/images/t_default/c77e76db-804d-4a88-927f-f220f9a9a20c/M+NK+DF+UV+MILER+TOP+LS.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(38, 3, 'Nike Stride — Men\'s Dri-FIT 7\" Brief-Lined Running Shorts', 'Nike', 'Designed for running, the Nike Stride Shorts have a lightweight feel that creates the feeling of unrestricted movement. They\'re smooth to the touch, with extra breathability at the upper back. Need to take a phone along? We\'ve got a pocket at the back geared just for your device.', 2445.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6f2f4906-1b4c-48a6-bd83-b24dc0974478/M+NK+DF+STRIDE+7IN+BF+SHRT.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(39, 4, 'Nike Vapor 12 \"Qinwen Zheng\" — Women\'s Hard Court Tennis Shoes', 'Nike', 'Qinwen Zheng’s Vapor 12 is fit for a queen. Ornate details on the upper showcase her rise to tennis royalty, while supportive Air Zoom cushioning energizes every step as you defend your court.', 11922.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c039f2cf-572c-487e-b741-832cd9dd9f95/W+ZOOM+VAPOR+12+QINWEN+HC.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(40, 4, 'Nike Vapor 12 PRM — Women\'s Hard Court Tennis Shoes', 'Nike', 'Lighter and more responsive than the 11, this special Vapor 12 is made for championship athletes to wear at NYC\'s hottest tourney. Its reworked upper and traction pattern combine with the Air Zoom cushioning to help you always be on the attack—even in the city that never sleeps.', 8971.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/fcf72c47-364c-4ecf-8cc3-4a4e805e3d16/W+ZOOM+VAPOR+12+HC+PRM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(41, 4, 'Nike Vapor 12 — Women\'s Hard Court Tennis Shoes', 'Nike', 'Get to every single ball with blistering speed in the Vapor 12. With a reworked upper and traction pattern, it\'s lighter and more responsive than the 11. And we brought back Air Zoom cushioning, so you can always be on the attack.', 7402.62, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/87bf9f85-25d4-4a59-baf9-7c0b130355e2/W+ZOOM+VAPOR+12+HC.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(42, 4, 'Nike Vapor Pro 3 — Women\'s Hard Court Tennis Shoes', 'Nike', 'Women\'s tennis footwear with a mesh construction, responsive forefoot cushioning and court grip for lateral play.', 8471.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6773e683-d40d-4774-be8c-1ae5342d6797/W+ZOOM+VAPOR+PRO+3+HC.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(43, 4, 'Nike Vapor Pro 3 PRM — Women\'s Hard Court Tennis Shoes', 'Nike', 'A premium women\'s hard-court tennis shoe featuring Zoom cushioning, a mesh upper and supportive forefoot structure, with details inspired by New York.', 5959.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/37ce663d-5960-42ca-b452-866ab47d50e1/W+ZOOM+VAPOR+PRO+3+HC+PRM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(44, 4, 'Nike Vapor 12 — Men\'s Hard Court Tennis Shoes', 'Nike', 'Men\'s hard-court tennis footwear combining heel Zoom cushioning, engineered mesh and a stabilizing midfoot structure for movement around the court.', 11295.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d5dd440c-7f3d-44a1-aecd-55fd847d9997/M+ZOOM+VAPOR+12+HC.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(45, 4, 'Nike Zoom Vapor 12 PRM — Men\'s Hard Court Tennis Shoes', 'Nike', 'Special-edition men\'s hard-court footwear with a supportive midfoot structure and a color scheme celebrating tennis tradition.', 11295.00, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e10eabf4-6521-4fa5-917a-1e6d8f7b6628/M+ZOOM+VAPOR+12+HC+PRM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(46, 4, 'Nike Vapor 12 PRM — Men\'s Hard Court Tennis Shoes', 'Nike', 'A men\'s tennis shoe for hard courts, with Zoom cushioning and supportive midfoot construction. Its special-edition colors reference New York basketball culture.', 8971.37, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/07756935-e02e-405e-90a6-8faab2222a58/M+ZOOM+VAPOR+12+HC+PRM+CA.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(47, 4, 'Nike Vapor Pro 3 — Men\'s Hard Court Tennis Shoes', 'Nike', 'Men\'s tennis footwear with responsive forefoot cushioning, a ventilated mesh construction and midfoot support for lateral court movement.', 8471.25, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/57f25bce-199c-431a-8ed2-9814185758f7/M+ZOOM+VAPOR+PRO+3+HC.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(48, 4, 'Nike Vapor Pro 3 PRM — Men\'s Hard Court Tennis Shoes', 'Nike', 'Premium men\'s hard-court tennis footwear with Zoom cushioning and a mesh construction. This edition references New York and Nike Foamposite styling.', 5645.62, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/718d1b23-8f88-47d9-9ad1-4f0f19445f5c/M+ZOOM+VAPOR+PRO+3+HC+PRM.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(49, 4, 'NikeCourt Advantage — Women\'s Dri-FIT Tennis Tank Top', 'Nike', 'A women\'s tennis tank using Nike\'s moisture-managing Dri-FIT fabric and a roomy cut. Knitted mesh improves ventilation during play.', 4078.75, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6ce38374-3809-4110-aac5-a9c746e417b4/W+NKCT+DF+ADVTG+TANK+NVLTY.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(50, 4, 'NikeCourt Advantage — Women\'s Dri-FIT Pleated Tennis Skirt', 'Nike', 'Pleated tennis skirt with a light woven outer layer, integrated stretch shorts and pockets. Dri-FIT fabric helps manage moisture during play.', 5647.50, 50, 'https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/fd7ff31d-f414-4d4e-9952-a7c8a0d2aa29/W+NKCT+DF+ADVTG+ACE+SKT+HR+PLT.png', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(51, 1, 'Harden Volume 10 Ray Player Edition Shoes', 'Adidas', 'Harden Volume 10 Ray Player Edition Shoes from Adidas is a pair of shoes in the Basketball category.', 10667.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/b4689430020843849102ee25987d37e3_9366/harden-volume-10-ray-player-edition-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(52, 1, 'Anthony Edwards 3 Shoes', 'Adidas', 'Anthony Edwards 3 Shoes from Adidas is a pair of shoes in the Basketball category.', 8157.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/ff5c1020ff1a4981b4de81fd0156f7d7_9366/anthony-edwards-3-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(53, 1, 'Anthony Edwards 3 Junior Shoes', 'Adidas', 'Anthony Edwards 3 Junior Shoes from Adidas is a pair of shoes in the Basketball category.', 6275.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/12eca4c473bd4c5ba279337ee88b424d_9366/anthony-edwards-3-junior-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(54, 1, 'Anthony Edwards 3 Children Shoes', 'Adidas', 'Anthony Edwards 3 Children Shoes from Adidas is a pair of shoes in the Basketball category.', 5647.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/c300a391faf64672b4ed471a7330c4fb_9366/anthony-edwards-3-children-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(55, 1, 'BELIEVE THAT 1 Shoes', 'Adidas', 'BELIEVE THAT 1 Shoes from Adidas is a pair of shoes in the Basketball category.', 6275.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/ff9c8b820e7042378b7ac6a30d4bce2f_9366/believe-that-1-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(56, 1, 'Adizero Select 3.0 Shoes', 'Adidas', 'Adizero Select 3.0 Shoes from Adidas is a pair of shoes in the Basketball category.', 3827.75, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/3054878c88494ffbad576454a3a68401_9366/adizero-select-3.0-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(57, 1, 'HOOPS MID CLASSIC SHOES', 'Adidas', 'HOOPS MID CLASSIC SHOES from Adidas is a pair of shoes in the Basketball category.', 2196.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/3d46ce5fe1234832ad6f822e80cb5557_9366/hoops-mid-classic-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(58, 1, 'D.O.N. ISSUE 8 Shoes', 'Adidas', 'D.O.N. ISSUE 8 Shoes from Adidas is a pair of shoes in the Basketball category.', 7530.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/e01f80eeff474ee384b29d782ed58821_9366/d.o.n.-issue-8-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(59, 1, 'HOOPS CLASSIC SHOES', 'Adidas', 'HOOPS CLASSIC SHOES from Adidas is a pair of shoes in the Basketball category.', 2447.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/ad3e3804f22b4673b270bfdf4cc49df4_9366/hoops-classic-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(60, 1, 'HOOPS 4.0 W SHOES', 'Adidas', 'HOOPS 4.0 W SHOES from Adidas is a pair of shoes in the Basketball category.', 4078.75, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/faa5d5cdbb7e49e7ae685b072c724d2b_9366/hoops-4.0-w-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(61, 1, 'HARDEN VOLUME 10 Shoes', 'Adidas', 'HARDEN VOLUME 10 Shoes from Adidas is a pair of shoes in the Basketball category.', 8032.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/5f6fc340491547b880e26e8819ef591b_9366/harden-volume-10-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(62, 1, 'CRAZY ENERGY Shoes', 'Adidas', 'CRAZY ENERGY Shoes from Adidas is a pair of shoes in the Basketball category.', 6902.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/0a98b541e09f4e81b4c54aa30fa1874b_9366/crazy-energy-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(63, 1, 'JUMP HOOK SHOES', 'Adidas', 'JUMP HOOK SHOES from Adidas is a pair of shoes in the Basketball category.', 2447.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/a458958dc0724e5ab6049042ae987504_9366/jump-hook-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(64, 2, 'FIFA World Cup 26™ Trionda Finals Pro Ball', 'Adidas', 'FIFA World Cup 26™ Trionda Finals Pro Ball from Adidas is a soccer ball in the Football category.', 7467.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/545dd55e530e4ce2a71220e23a9dbb8a_9366/fifa-world-cup-26-trionda-finals-pro-ball.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(65, 2, 'FIFA World Cup 26™ Trionda Finals League Ball', 'Adidas', 'FIFA World Cup 26™ Trionda Finals League Ball from Adidas is a soccer ball in the Football category.', 2008.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/dee2b0be002f465da9e326da72ec1dc3_9366/fifa-world-cup-26-trionda-finals-league-ball.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(66, 2, 'PREDATOR ELITE Fold-Over Tongue Firm Ground Soccer Cleats', 'Adidas', 'PREDATOR ELITE Fold-Over Tongue Firm Ground Soccer Cleats from Adidas is a pair of soccer cleats in the Football category.', 17570.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/81c6150fc96547669dec9c619d7ee046_9366/predator-elite-fold-over-tongue-firm-ground-soccer-cleats.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(67, 2, 'F50 HYPERFAST EVO Firm Ground Soccer Cleats', 'Adidas', 'F50 HYPERFAST EVO Firm Ground Soccer Cleats from Adidas is a pair of soccer cleats in the Football category.', 18825.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/28586d2d64f64453ab1131b446783cb2_9366/f50-hyperfast-evo-firm-ground-soccer-cleats.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(68, 2, 'Predator Precision David Beckham Firm Ground Soccer Cleats', 'Adidas', 'Predator Precision David Beckham Firm Ground Soccer Cleats from Adidas is a pair of soccer cleats in the Football category.', 18197.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/987cedaa619f4578bb62719250a84a79_9366/predator-precision-david-beckham-firm-ground-soccer-cleats.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(69, 2, 'F50 HYPERFAST ELITE Firm Ground Soccer Cleats', 'Adidas', 'F50 HYPERFAST ELITE Firm Ground Soccer Cleats from Adidas is a pair of soccer cleats in the Football category.', 16942.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/76fab24f47614338918eaeec1a0e15a5_9366/f50-hyperfast-elite-firm-ground-soccer-cleats.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(70, 2, 'Predator League Fold-Over Tongue Firm Ground Soccer Cleats', 'Adidas', 'Predator League Fold-Over Tongue Firm Ground Soccer Cleats from Adidas is a pair of soccer cleats in the Football category.', 3137.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/420615846cd94612a9de1ee0cbac5962_9366/predator-league-fold-over-tongue-firm-ground-soccer-cleats.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(71, 2, 'F50 LEAGUE Firm Ground / Multi Ground Soccer Cleats Kids', 'Adidas', 'F50 LEAGUE Firm Ground / Multi Ground Soccer Cleats Kids from Adidas is a pair of soccer cleats in the Football category.', 3074.75, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/68361dd0db6a4cf68b682bb8aa4664d2_9366/f50-league-firm-ground---multi-ground-soccer-cleats-kids.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(72, 2, 'F50 HYPERFAST ELITE Laceless Firm Ground Cleats', 'Adidas', 'F50 HYPERFAST ELITE Laceless Firm Ground Cleats from Adidas is a pair of soccer cleats in the Football category.', 16942.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/c617bde154794afa888bdb2f79ea8759_9366/f50-hyperfast-elite-laceless-firm-ground-cleats.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(73, 2, 'Argentina Messi 26 Jersey', 'Adidas', 'Argentina Messi 26 Jersey from Adidas is a jersey in the Football category.', 6275.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/54f337fc06124dc789e19cbf50bc6888_9366/argentina-messi-26-jersey.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(74, 2, 'Argentina Messi 26 Jersey Kids', 'Adidas', 'Argentina Messi 26 Jersey Kids from Adidas is a jersey in the Football category.', 5020.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/67db8417a3bf4e4ea8b5890d2cb2f76c_9366/argentina-messi-26-jersey-kids.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(75, 2, 'Argentina Messi 26 Track Top', 'Adidas', 'Argentina Messi 26 Track Top from Adidas is a jacket in the Football category.', 6902.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/47c8ffff7201468f89c678473c2e4ec2_9366/argentina-messi-26-track-top.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(76, 2, 'Germany 26 Third Jersey', 'Adidas', 'Germany 26 Third Jersey from Adidas is a jersey in the Football category.', 6275.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/2d709c95d64448459c2d62670a91fe96_9366/germany-26-third-jersey.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(77, 3, 'ADIZERO ADIOS PRO 5 SHOES', 'Adidas', 'ADIZERO ADIOS PRO 5 SHOES from Adidas is a pair of shoes in the Running category.', 17256.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/68f4002e68e64ccbaa2cf40e8a6a8dac_9366/adizero-adios-pro-5-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(78, 3, 'HYPERBOOST EDGE Shoes', 'Adidas', 'HYPERBOOST EDGE Shoes from Adidas is a pair of shoes in the Running category.', 12550.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/33077e7ea1e74eb1a387b36208d65af4_9366/hyperboost-edge-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(79, 3, 'Runfalcon 6 CLOUDFOAM Running Shoes', 'Adidas', 'Runfalcon 6 CLOUDFOAM Running Shoes from Adidas is a pair of shoes in the Running category.', 2447.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/c08dabb9d03d4f96b46dc6136644a34d_9366/runfalcon-6-cloudfoam-running-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(80, 3, 'adizero EVO SL Shoes', 'Adidas', 'adizero EVO SL Shoes from Adidas is a pair of shoes in the Running category.', 9412.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/41d24c0185db4d1f9a5fd11998f06d2e_9366/adizero-evo-sl-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(81, 3, 'ULTRABOOST 5X', 'Adidas', 'ULTRABOOST 5X from Adidas is a sports product in the Running category.', 6212.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/c35f55bbc2e1433b82a5dd76037e7268_9366/ultraboost-5x.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(82, 3, 'Adizero EVO SL RUNNING SHOES', 'Adidas', 'Adizero EVO SL RUNNING SHOES from Adidas is a pair of shoes in the Running category.', 9412.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/55b9de0c6a2945129391ca37aa0520e7_9366/adizero-evo-sl-running-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(83, 3, 'ADIZERO ADIOS PRO 5 Running Shoes', 'Adidas', 'ADIZERO ADIOS PRO 5 Running Shoes from Adidas is a pair of shoes in the Running category.', 17256.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/d8e0f841b9a14a75807f270e64e6a0b2_9366/adizero-adios-pro-5-running-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(84, 3, 'QUESTAR 4 RUNNING SHOES', 'Adidas', 'QUESTAR 4 RUNNING SHOES from Adidas is a pair of shoes in the Running category.', 2384.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/1183b4b32781440bbdc1b544eab15a18_9366/questar-4-running-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(85, 3, 'Galaxy 7 Running Shoes', 'Adidas', 'Galaxy 7 Running Shoes from Adidas is a pair of shoes in the Running category.', 3012.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/971c9340493b49be9b3c2eb07800eaf8_9366/galaxy-7-running-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(86, 3, 'Adizero Prime X3 Strung Shoes', 'Adidas', 'Adizero Prime X3 Strung Shoes from Adidas is a pair of shoes in the Running category.', 10542.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/7a8c971af98745508715e7e43ca747a4_9366/adizero-prime-x3-strung-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(87, 3, 'Run Essentials Winterized Full Length Leggings', 'Adidas', 'Run Essentials Winterized Full Length Leggings from Adidas is a pair of leggings in the Running category.', 1882.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/9baa57c319d44673a19a09206cf7bbe8_9366/run-essentials-winterized-full-length-leggings.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(88, 3, 'adi365 Iconic/// Astro Running Pants', 'Adidas', 'adi365 Iconic/// Astro Running Pants from Adidas is a pair of pants in the Running category.', 4392.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/211ca617b4b44280aaf4481f38342732_9366/adi365-iconic----astro-running-pants.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(89, 4, 'adizero Ubersonic 5 Tennis Shoes', 'Adidas', 'adizero Ubersonic 5 Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 9412.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/875ec7e23fdb4b26bc4d71e30ee16cbe_9366/adizero-ubersonic-5-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(90, 4, 'Barricade 14 Tennis Shoes', 'Adidas', 'Barricade 14 Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 10040.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/0e2a9a64f11243d3bb90fc835b4f5976_9366/barricade-14-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(91, 4, 'Defiant Speed 2 Tennis Shoes', 'Adidas', 'Defiant Speed 2 Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 7530.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/07027ba505e745058e8cd05865fa8eaf_9366/defiant-speed-2-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(92, 4, 'GameCourt 3 All Court Tennis Shoes', 'Adidas', 'GameCourt 3 All Court Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 4706.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/84980af417dd464a82228faec5adee1b_9366/gamecourt-3-all-court-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(93, 4, 'Avacourt 3 Tennis Shoes', 'Adidas', 'Avacourt 3 Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 9412.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/ad688ec9544f41d485c5227f58ccd2ae_9366/avacourt-3-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(94, 4, 'Avaflash 2 Tennis Shoes', 'Adidas', 'Avaflash 2 Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 5647.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/5a85fe3e0de94a3bb2016175f5cee924_9366/avaflash-2-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(95, 4, 'Adidas By Stella McCartney Barricade', 'Adidas', 'Adidas By Stella McCartney Barricade from Adidas is a sports product in the Tennis category.', 12550.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/30219d62a91b4be99807b62e6e9332f7_9366/adidas-by-stella-mccartney-barricade.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(96, 4, 'Courtjam Control 3 Tennis Shoes', 'Adidas', 'Courtjam Control 3 Tennis Shoes from Adidas is a pair of shoes in the Tennis category.', 5647.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/3efb3732a3254e9ca34b5a357111995d_9366/courtjam-control-3-tennis-shoes.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(97, 4, 'TENNIS CLIMACOOL FREELIFT TEE PRO', 'Adidas', 'TENNIS CLIMACOOL FREELIFT TEE PRO from Adidas is a T-shirt in the Tennis category.', 4392.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/f4cf6e25dee6414d8a9b824a62ce3c3c_9366/tennis-climacool-freelift-tee-pro.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(98, 4, 'TENNIS CLIMACOOL Y-DRESS PRO', 'Adidas', 'TENNIS CLIMACOOL Y-DRESS PRO from Adidas is a dress in the Tennis category.', 7530.00, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/47846a2c07bc42418d86ba80b7a5b77b_9366/tennis-climacool-y-dress-pro.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(99, 4, 'TENNIS CLIMACOOL SHORTS & INNER SHORTS SET', 'Adidas', 'TENNIS CLIMACOOL SHORTS & INNER SHORTS SET from Adidas is a pair of shorts in the Tennis category.', 4706.25, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/e852d8974d8d439ba40506527c746203_9366/tennis-climacool-shorts---inner-shorts-set.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59');
+INSERT INTO `products` (`product_id`, `category_id`, `name`, `brand`, `description`, `price`, `stock_quantity`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
+(100, 4, 'CROSSIT LIGHT 2026', 'Adidas', 'CROSSIT LIGHT 2026 from Adidas is a sports product in the Tennis category.', 21962.50, 50, 'https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/9106a540aa614f0eab3815534f1c468e_9366/crossit-light-2026.jpg', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(101, 1, 'UA D. Fox 3 Team — Unisex Basketball Shoes', 'Under Armour', 'Every move feels fast, confident, and calculated when you step into the UA Fox 3—De’Aaron Fox’s new signature shoe was built for explosive speed and dead-stop control.', 7843.75, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6009227-100_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(102, 1, 'Curry Series 7 — Unisex Basketball Shoes', 'Under Armour', 'Stephen never stops moving—so it only makes sense to give him the kind of tech that changed running forever. This super shoe is forged for explosive cuts and delivers unreal grip, bounce, and durability.', 8155.62, 50, 'https://underarmour.scene7.com/is/image/Underarmour/3027983-500_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(103, 1, 'UA Tech™ Basketball — Boys\' Short Sleeve', 'Under Armour', 'The classic T-Shirt that\'s built for the court. UA Tech™ fabric is soft, light, and dries fast to keep you cool. UPF 30 sun protection and a loose fit that lets you move freely. Game on.', 1255.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/PS6017345-430_HF?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(104, 1, 'D. Fox 2 — Unisex Basketball Shoes', 'Under Armour', 'Sharp, reactive, and built to turn De\'Aaron\'s quick thinking into even quicker moves. His speed just got scarier.', 6775.12, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6000777-600_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(105, 1, 'UA D. Fox 3 — Unisex Basketball Shoes', 'Under Armour', 'Every move feels fast, confident, and calculated when you step into the UA Fox 3—De’Aaron Fox’s new signature shoe was built for explosive speed and dead-stop control.', 7843.75, 50, 'https://underarmour.scene7.com/is/image/Underarmour/FW26_Q3_Fox3_6009223-014_Disruptor_1600x2000?rp=standard-0pad|pdp&qlt=85&bgc=f0f0f0&wid=800&hei=1000&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(106, 1, 'UA Jet \'25 — Grade School Basketball Shoes', 'Under Armour', 'Locked in and ready for takeoff, the UA Jet is all about performance. A Micro G® midsole gives you the cushioning you need, while the durable upper looks great on and off the court.', 3765.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6001587-005_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(107, 1, 'UA Basketball — Girls\' Short Sleeve', 'Under Armour', 'The everyday basketball T-Shirt that\'s soft, comfy, and ready for anything. Super-soft cotton-blend fabric keeps her comfortable all day—from practice to hangouts. Classic fit with a ribbed collar.', 1255.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/PS6017348-993_HF?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(108, 1, 'UA Lockdown 8 — Unisex Basketball Shoes', 'Under Armour', 'The latest evolution of our Lockdown series. Breathable mesh upper with leather overlays for support, responsive EVA cushioning, and a herringbone outsole that grips the court. Built for control and quick cuts.', 3294.38, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6009400-400_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(109, 1, 'UA D. Fox 3 — Grade School Basketball Shoes', 'Under Armour', 'Every move feels fast, confident, and calculated when you step into the UA Fox 3—De’Aaron Fox’s new signature shoe was built for explosive speed and dead-stop control.', 5333.75, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6009233-100_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(110, 1, 'Curry 11 Team — Unisex Basketball Shoes', 'Under Armour', 'Stephen Curry makes you believe you can do anything. And the Curry 11 is specifically designed with ultimate bounce, grip, and stability to allow everyone to do their thing.', 7904.62, 50, 'https://underarmour.scene7.com/is/image/Underarmour/3027637-100_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(111, 1, 'UA Basketball Icon — Men\'s Short Sleeve', 'Under Armour', 'Everyone makes graphic Ts...but Under Armour makes them better. The fabric we use is light, soft, and quick-drying.', 1817.87, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1383946-012_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(112, 1, 'Curry 3Z 25 — Pre-School Basketball Shoes', 'Under Armour', 'These are the shoes you\'re going to go back to again and again, all season long. A durable rubber outsole, leather overlays, and lock-down webbed lacing make them tough enough to keep up with every cut, drag, and drive.', 3763.12, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6000752-101_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(113, 1, 'Women\'s UA Team Basketball Short Sleeve', 'Under Armour', 'Everyone makes graphic Ts...but Under Armour makes them better. The fabric we use is light, soft, and quick-drying.', 1692.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1383062-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(114, 2, 'UA \'96 Country Collection — Men\'s Global Football Jersey', 'Under Armour', 'This collection is streetwear inspired by \'96, the year Under Armour was founded (and the year pro soccer came back to the US). It also uses performance fabrics, because better materials means better comfort.', 3951.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6009881-101_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(115, 2, 'UA Challenger Elite — Adult Slip-In Soccer Shin Guard', 'Under Armour', 'With G-Form\'s SmartFlex® technology, these slip-in shin guards are ultra-thin and light, while providing superior impact protection. They contour to your body, are soft and flexible during play, then harden on impact for elite performance on the pitch.', 2196.25, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6020993-001_SLF_SL?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(116, 2, 'UA \'96 Country Collection — Men\'s Global Football Shorts', 'Under Armour', 'This collection is streetwear inspired by \'96, the year Under Armour was founded (and the year pro soccer came back to the US). It also uses performance fabrics, because better materials means better comfort.', 3135.62, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6009883-003_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(117, 2, 'UA Shadow Pro 4 FG — Unisex Soccer Cleats', 'Under Armour', 'When you combine speed and agility, you become unstoppable on the pitch. The UA Shadow Pro was designed to help you change directions at the drop of a pin with a locked-in feel, making your fastest cuts even faster.', 7530.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6006229-100_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(118, 2, 'UA Shadow Club 4 FG Jr. — Boys\' Soccer Cleats', 'Under Armour', 'These have a soft synthetic upper, the right amount of cushioning, and conical studs that give you optimal traction without any underfoot pressure when you step up out on the pitch.', 1882.50, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6006237-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(119, 2, 'UA Shadow Select 4 FG — Unisex Soccer Cleats', 'Under Armour', 'These have a soft synthetic upper, the right amount of cushioning, and conical studs that give you optimal traction without any underfoot pressure when you step up out on the pitch.', 4235.63, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6006230-100_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(120, 2, 'UA Magnetico Select 6 FG — Unisex Soccer Cleats', 'Under Armour', 'The cleat that fits like it was made for your foot. Super-soft synthetic leather locks you in, while 3D print and mudguard give you next-level touch and control. Conical studs deliver traction on firm ground.', 4235.63, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6010394-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(121, 2, 'UA Shadow Select 4 Turf — Unisex Soccer Shoes', 'Under Armour', 'Up top, the soft, durable upper wraps your foot for fantastic touch. On the bottom, we used a rubber traction pattern specifically built to grip artificial turf.', 4235.63, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6006231-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(122, 2, 'UA Magnetico Elite 6 RCS FG — Unisex Soccer Cleats', 'Under Armour', 'Elite-level cleats built for the aggressive player. UA Clone upper molds to your foot for a glove-like fit straight out of the box—no break-in needed. 3D print & silicone strike zone for max control.', 18197.50, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6010392-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(123, 2, 'UA Magnetico Pro 6 FG — Unisex Soccer Cleats', 'Under Armour', 'The cleat that molds to you. UA Liquid Clone auxetic upper forms around your foot for a custom fit, while asymmetrical lacing gives you extra space for control and shooting. Conical studs for quick cuts in any direction.', 7530.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6010393-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:58:59', '2026-10-09 22:58:59'),
+(124, 2, 'UA Magnetico Select 5 Indoor — Unisex Soccer Shoes', 'Under Armour', 'Up top, the soft, durable upper wraps your foot for fantastic touch. On the bottom, we used a rubber traction pattern specifically built to grip court surfaces.', 4704.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6000541-471_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(125, 2, 'UA Magnetico Select 6 Indoor — Unisex Soccer Shoes', 'Under Armour', 'Indoor soccer shoes built for control and quickness. Super-soft synthetic leather molds to your foot for a snug fit, while Charged Cushioning® converts impact into explosive speed on the court.', 4235.63, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6010396-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(126, 2, 'UA Challenger Elite — Men\'s Balaclava Hoodie', 'Under Armour', 'Full-coverage balaclava built for cold-weather football. UA Microthread fabric dries fast, won\'t cling or chafe, with 4-way stretch and laser perforations for breathability. Thumbholes keep it locked in.', 7530.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6015429-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(127, 3, 'UA Velociti Elite 3 — Unisex Running Shoes', 'Under Armour', 'The shoe that Sharon Lokedi wore to win Boston. Designed with input from the world’s fastest endurance runners, a full-length carbon plate adds propulsion. A supercritical midsole provides a light and smooth ride. It is built for one purpose—win on race day.', 15687.50, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6005377-004_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(128, 3, 'UA Surge 5 — Men\'s Running Shoes', 'Under Armour', 'Your go-to running shoe with Charged+ cushioning that feels unbelievably soft, a breathable mesh upper, and durable traction. Built to absorb impact and keep you comfortable mile after mile.', 3059.06, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6010459-011_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(129, 3, 'UA Velociti SPD 5 — Men\'s Running Shoes', 'Under Armour', 'This running shoe is a lightweight daily trainer that has the ability to pick up the pace for some tempo miles if needed.', 6118.13, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6000007-103_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(130, 3, 'UA Velociti SPD 5 — Women\'s Running Shoes', 'Under Armour', 'This running shoe is a lightweight daily trainer that has the ability to pick up the pace for some tempo miles if needed.', 6118.13, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6000017-103_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(131, 3, 'UA Velociti Distance — Men\'s Running Shoes', 'Under Armour', 'Designed for long-distance runs. UA HOVR+ superfoam delivers soft cushioning and extra bounce to reduce impact and help your body go further, faster.', 7530.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6006030-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(132, 3, 'UA Velociti Distance — Women\'s Running Shoes', 'Under Armour', 'Designed for long-distance runs. UA HOVR+ superfoam delivers soft cushioning and extra bounce to reduce impact and help your body go further, faster.', 7530.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6006031-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(133, 3, 'UA Velociti Pro 2 — Unisex Running Shoes', 'Under Armour', 'These running shoes are built for race day training. With a minimal upper, comfortable feel, and snappy midsole you can stay focused on speed.', 7530.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6005378-102_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(134, 3, 'UA Velociti Pace — Men\'s Running Shoes', 'Under Armour', 'Everyday distance training with a light, fast feel. Engineered for consistent speed and comfort, with snappy HOVR™ foam that maximizes energy return.', 6275.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6009107-279_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(135, 3, 'UA Charged+ Chase — Men\'s Running Shoes', 'Under Armour', 'These are running shoes anyone can wear to go faster—with Charged+ cushioning to help protect against impact, a breathable upper, and durability for miles.', 3765.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6014417-011_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(136, 3, 'UA HB Runner 2 — Men\'s Running Shoes', 'Under Armour', 'Your everyday road runner with responsive UA HOVR™ cushioning that reduces impact and returns energy. Lightweight, breathable mesh upper meets a logo-inspired midsole that guides your stride mile after mile.', 9412.50, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6010212-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(137, 3, 'UA SpeedForm® Gemini — Unisex Running Shoes', 'Under Armour', 'One of our most popular running shoes, for a reason. It\'s lightweight, breathable, and has incredible cushioning for any distance.', 8157.50, 50, 'https://underarmour.scene7.com/is/image/Underarmour/3026770-001_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(138, 3, 'UA HB Runner — Men\'s Running Shoes', 'Under Armour', 'Every element works in sync to compound your momentum. HOVR+ foam is soft at step-in, snappier with every stride. The balanced rocker keeps your motion fluid. And the structured arch midsole adds stability—without weighing you down.', 7904.62, 50, 'https://underarmour.scene7.com/is/image/Underarmour/6005287-003_DEFAULT?rp=standard-30pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&size=360,460&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(139, 4, 'UA Drive Pleated — Women\'s Skort', 'Under Armour', 'It\'s the golf skort that gets what golfers need on the course: Pockets to carry balls, tees, and even a yardage book. Everything you need to keep up the pace of play.', 5020.00, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6009813-100_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(140, 4, 'UA Motion — Women\'s Skort', 'Under Armour', 'This specially engineered fabric delivers a unique type of softness that can still wick sweat like a champ. It\'s lightweight, it\'s breathable, and it\'s ready to work.', 2821.87, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1387538-002_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(141, 4, 'UA Premier Woven — Men\'s 6\" Court Shorts', 'Under Armour', 'Lob and volley all day in these lightweight, flexible court shorts featuring 4-way stretch and extra deep pockets for tennis balls, your phone, and other essentials.', 4704.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1388711-100_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(142, 4, 'UA Meridian — Women\'s Dress', 'Under Armour', 'UA Meridian fabric is ultra soft, light, quick-drying, and designed to flatter your body in all the right places. With the built-in shorts and shelf bra you\'ll literally wear this dress everywhere.', 5331.87, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6000374-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(143, 4, 'UA Motion — Women\'s Dress', 'Under Armour', 'This specially engineered fabric delivers a unique type of softness that can still wick sweat like a champ. It\'s lightweight, it\'s breathable, and it\'s ready to work.', 4076.87, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6010868-100_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(144, 4, 'UA Vanish — Women\'s Skort', 'Under Armour', 'If it says UA Vanish in the name, that means it\'s one of our fastest-drying materials. This skort is ultralight, durable, breathable, and dry super-fast to keep you cool.', 2821.87, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1389877-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(145, 4, 'UA Fly By — Women\'s Skort', 'Under Armour', 'This skort is ultralight, durable, breathable, and dries super-fast to keep you cool—you can wear it anywhere.', 2194.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6007050-100_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(146, 4, 'UA Premier Pleated — Women\'s Skort', 'Under Armour', 'The mobility of shorts. The femininity of a skirt. The exclusivity and sophistication of the Premier Collection. This sports skort has it all.', 5206.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1388701-300_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(147, 4, 'UA Velociti — Women\'s Visor', 'Under Armour', 'Runners need more from their hats than just keeping the sun out of their eyes. These are also light, stretchy, and breathable, with a built-in, cool-to-the-touch sweatband. Every runner needs a couple of these.', 2070.75, 50, 'https://underarmour.scene7.com/is/image/Underarmour/1383480-100_SLF_SL?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(148, 4, 'UA Drive — Women\'s 2-in-1 Dress', 'Under Armour', 'This is the best women\'s golf gear in the game, plain and simple. Flexible, lightweight fabrics stretch with every swing to keep you comfortable and performing your best from the first hole to the last.', 5959.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6009815-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(149, 4, 'UA Drive Knit — Women\'s Pleated Skort', 'Under Armour', 'It\'s the golf skort that gets what golfers need on the course: Pockets to carry balls, tees, and even a yardage book. Everything you need to keep up the pace of play.', 4704.37, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-6001273-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(150, 4, 'UA Launch Pro — Women\'s 3\" Shorts', 'Under Armour', 'These shorts are all about speed. They\'re insanely lightweight, breathable, and have a streamlined fit so you stay comfortable and focused on race day.', 2821.87, 50, 'https://underarmour.scene7.com/is/image/Underarmour/V5-1386331-001_FC?rp=standard-0pad|grid&qlt=85&bgc=f0f0f0&wid=400&hei=500&op_usm=1.75,0.3,2,0', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(151, 1, 'Dagger 2 Mid Big Kids\' Basketball Shoes', 'Puma', 'The Dagger - the winning shot of a game that takes back the lead and steals the win from their opponent. It\'s a moment that deserves its own style. Make the winning shot of your own with these mid-cut basketball sneakers, featuring a fast, progressive design built for power, precision and control on the court.', 3701.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312751/03/sv01/fnd/PNA/fmt/png/Dagger-2-Mid-Big-Kids\'-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(152, 1, 'LaFrancé Heem Aerospace Men\'s Oversized Long Sleeve Basketball Tee', 'Puma', 'The LaFrancé Heem Aerospace Oversized Long Sleeve Tee lands heavy on hoops attitude with its court-inspired style. This tee brings LaFrancé style into your daily rotation with confidence and comfort for the off-hours.', 4392.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/637279/01/mod01/fnd/PNA/fmt/png/LaFrancé-Heem-Aerospace-Men\'s-Oversized-Long-Sleeve-Basketball-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(153, 1, 'Stewie 4 Night Vision Women\'s Basketball Shoes', 'Puma', 'The Stewie 4 Night Vision Basketball Shoes are inspired by the endless journeys light takes as it refracts through a prism, unveiling a spectrum of vibrant colors. With bold design elements and dynamic hues, these shoes bring a unique, eye-catching style to the court, embodying the brilliance of light in motion.', 4956.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/311497/01/sv01/fnd/PNA/fmt/png/Stewie-4-Night-Vision-Women\'s-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(154, 1, 'MB.06 Shooting Star Little Kids\' Basketball Shoes', 'Puma', 'The MB.06 Shooting Star Basketball Shoes help keep kids quick, supported, and ready to move. Responsive cushioning helps absorb impact and the outsole adds traction on sharp cuts and pivots.', 5647.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/314310/01/sv01/fnd/PNA/fmt/png/MB.06-Shooting-Star-Little-Kids\'-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(155, 1, 'All-Pro NITRO™ 2 Men\'s Basketball Shoes', 'Puma', 'Find explosive on-court energy with the All-Pro NITRO™. This performance shoe features NITRO™ SQD foam technology for superior support and responsiveness. An engineered mesh upper provides breathability and comfort for every chase down and fast break, while the high-abrasion outsole is perfect for quick cuts as you move past defenders. These All-Pro NITRO™ basketball shoes are ready for action – are you?', 8157.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312841/01/sv01/fnd/PNA/fmt/png/All-Pro-NITRO™-2-Men\'s-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(156, 1, 'All-Pro NITRO™ 2 Elite Men\'s Basketball Shoes', 'Puma', 'Introducing the All-Pro NITRO™ 2 Elite, the latest elite-level design in the All-Pro NITRO™ franchise. For the first time, this model features an internal NITRO™ Elite midsole to deliver explosive responsiveness and support for fast, multi-directional play. The engineered mesh upper keeps things lightweight and stable. This special colourway celebrates the excitement of competing on the global stage.', 12863.75, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312844/01/sv01/fnd/PNA/fmt/png/All-Pro-NITRO™-2-Elite-Men\'s-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(157, 1, 'Lamelo Ball World Tour-nament Men\'s Basketball Tee', 'Puma', 'The LaMelo collection by PUMA is a testament to the player\'s superstar status. Capture some of the magical Melo essence for yourself with these statement pieces that feature bold details and the LaMelo Ball touch.', 1693.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/632372/01/mod01/fnd/PNA/fmt/png/Lamelo-Ball-World-Tour-nament-Men\'s-Basketball-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(158, 1, 'PUMA HOOPS x HARRY POTTER™ Women\'s Basketball Hoodie', 'Puma', 'The all-new PUMA HOOPS x HARRY POTTER™ collection is a mysterious mashup of basketball and the beloved fantasy series. Featuring a full range of apparel, footwear, and accessories, this collection is ready for anything, whether you live in the magical world or the muggle world. Apparel designs include basketball mesh shorts and comfy pre-game sweat gear, all with Harry Potter™–inspired graphics.', 3576.12, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/633108/01/mod01/fnd/PNA/fmt/png/PUMA-HOOPS-x-HARRY-POTTER™-Women\'s-Basketball-Hoodie', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(159, 1, 'PUMA x RICK AND MORTY MB.05 Basketball Shoes', 'Puma', 'Melo’s favorite animated duo returns for a new drop of the wildest collab in the multiverse: PUMA x RICK AND MORTY. The MB.05 gets an interdimensional upgrade with a mismatched design that brings Rick and Morty chaotic genius to life – Rick in charged-up aqua and peppermint, Morty in vibrant orange and yellow. This edition of Melo’s boldest signature shoe yet is ready to turn heads across the galaxy.', 7215.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312130/01/fnd/PNA/fmt/png/PUMA-x-RICK-AND-MORTY-MB.05-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(160, 1, 'MB.05 Crowd Surf Basketball Shoes', 'Puma', 'LaMelo Ball’s latest signature drop, MB.05 Crowd Surf, is fueled by his rockstar status and the fans who ride with him. This drop is for the ones who bring the noise, whether they’re in the stands or lacing up themselves. Dressed in a bold red tie-dye upper, the Crowd Surf is unmissable with sculpted overlays, moulded barbed wire details, and Melo’s signature touches throughout – from the gold wing straps on the heel to the moulded “1” and skull on the outsole.', 6148.87, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312132/01/sv01/fnd/PNA/fmt/png/MB.05-Crowd-Surf-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(161, 1, 'MB.04 Men\'s Basketball Shoes', 'Puma', 'MB.04 Lo is inspired by Melo\'s out-of-this-world style of play, featuring an all-over alien texture on the upper and Melo\'s wings logo wrapped around the heel. Designed with breathable, supportive double-layered mesh and NITROFOAM™ cushioning for on-court power, this Team Pack\'s bold and vibrant colors are sure to stand out on the court.', 6274.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312174/02/sv01/fnd/PNA/fmt/png/MB.04-Men\'s-Basketball-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(162, 1, 'Dunked In Florals Men\'s Basketball Tee', 'Puma', 'Embrace the basketball-inspired spirit with this oversized cotton tee, featuring bold PUMA basketball branding. Perfect for those who live and breathe the game, this piece brings a dynamic edge to your everyday style.', 1756.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/630911/01/mod01/fnd/PNA/fmt/png/Dunked-In-Florals-Men\'s-Basketball-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(163, 1, 'LaFrancé Slam Men\'s Basketball Jersey', 'Puma', 'Turn heads on and off the court with the PUMA HOOPS x LAFRANCÉ Slam basketball jersey. Featuring bold graphics and a sleek fit, it combines performance-ready comfort with streetwear-inspired style. Whether you\'re shooting hoops or making a statement, this jersey delivers in every way.', 4140.87, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/631605/01/mod01/fnd/PNA/fmt/png/LaFrancé-Slam-Men\'s-Basketball-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(164, 1, 'LaFrancé Icey Big Kids\' Sneakers', 'Puma', 'Introducing the La Francé, bringing LaMelo Ball\'s \"Not From Here\" style to our new off-court silhouette. With a chunky, skate-inspired design, this shoe is made to stand out with Melo and LaFrancé details on the sole.', 4203.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312981/01/sv01/fnd/PNA/fmt/png/LaFrancé-Icey-Big-Kids\'-Sneakers', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(165, 1, 'LaFrancé Heatmap Big Kids\' Sneakers', 'Puma', 'LaMelo Ball\'s latest drop brings an elevated, street-inspired take to off-court fashion. The LaFrancé – named after Melo\'s official designer streetwear and lifestyle brand – is a chunky silhouette with exaggerated proportions that draw inspiration from extreme Y2K aesthetics. This version appears in green with an allover heatmap treatment.', 4203.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/311701/01/sv01/fnd/PNA/fmt/png/LaFrancé-Heatmap-Big-Kids\'-Sneakers', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(166, 1, 'LaFrancé Heem Aerospace Men\'s Relaxed Moto Jersey', 'Puma', 'Show up with court-inspired attitude in the LaFrancé Heem Aerospace Moto Relaxed Jersey. Performance materials help keep your moves sharp and your mindset locked in. Built for those who bring a basketball edge to their style game.', 5020.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/637274/01/mod01/fnd/PNA/fmt/png/LaFrancé-Heem-Aerospace-Men\'s-Relaxed-Moto-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(167, 1, 'LaFrancé Written in Chrome Men\'s Hoodie', 'Puma', 'Perfect for basketball fans who live the game, this oversized hoodie boasts PUMA Hoops and LaFrancé branding. The kangaroo pocket adds both style and functionality, making it ideal for everyday adventures. Embrace your passion and stand out with this must-have piece.', 4705.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/630776/01/mod01/fnd/PNA/fmt/png/LaFrancé-Written-in-Chrome-Men\'s-Hoodie', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(168, 2, 'FUTURE 8 ULTIMATE Men\'s Firm Ground Soccer Cleats', 'Puma', 'Playmakers, unleash your creativity on firm soccer ground with the FUTURE 8 ULTIMATE. These game-changing cleats feature a high-density mesh for ball control, FLEXGILITY outsole for agile movement, and the option to play with or without laces, so you can move between the lines and create beyond limits. PUMA\'s ultimate fit and performance await.', 10541.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108138/02/sv01/fnd/PNA/fmt/png/FUTURE-8-ULTIMATE-Men\'s-Firm-Ground-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(169, 2, 'FUTURE 8 ULTIMATE FOREVER Firm Ground Men\'s Soccer Cleats', 'Puma', 'Unleash your creativity with PUMA\'s latest soccer cleats. Featuring a high-density mesh for ball control, FLEXGILITY outsole for agile movement, and PWRTAPE for ultimate stability. Play with or without laces and conquer the field with unmatched freedom and precision.', 10541.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108420/01/sv01/fnd/PNA/fmt/png/FUTURE-8-ULTIMATE-FOREVER-Firm-Ground-Men\'s-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(170, 2, 'FUTURE 8 MATCH CREATIVITY Firm Ground/Artificial Ground Men\'s Soccer Cleats', 'Puma', 'Break free from the ordinary and embrace your skills with PUMA. Featuring GripControl technology, innovative studs for 360-degree agility, and a lightweight mesh upper, these cleats offer regular to wide fit and the option to play with or without laces.', 3952.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108431/01/sv01/fnd/PNA/fmt/png/FUTURE-8-MATCH-CREATIVITY-Firm-Ground/Artificial-Ground-Men\'s-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(171, 2, 'PUMA x CHRISTIAN PULISIC ULTRA 5 ULTIMATE Chasing the Dream Firm Ground Men\'s Soccer Cleats', 'Puma', 'Fasten your seatb. . .we mean laces, and unleash your speed with PUMA\'s latest football boots. The SPEEDSYSTEM outsole and FastTrax studs deliver explosive acceleration, while GripControl Pro skin ensures decisive command. With PWRTAPE SQD support and NanoGrip technology, dominate the field with unmatched agility and precision. Play at full throttle.', 10102.12, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108644/01/sv01/fnd/PNA/fmt/png/PUMA-x-CHRISTIAN-PULISIC-ULTRA-5-ULTIMATE-Chasing-the-Dream-Firm-Ground-Men\'s-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(172, 2, 'PUMA x CHRISTIAN PULISIC ULTRA 5 MATCH Chasing the Dream Firm Ground/Artificial Ground Men\'s Soccer Cleats', 'Puma', 'How fast is the ULTRA 5 MATCH? Fasten your seatbelt. Perfect for up-and-coming speed merchants, this version of ULTRA comes with PUMA\'s brand-new SPEEDSYSTEM outsole and FastTrack stud design for explosive traction. Three rounded studs on the lateral side let you switch between firm ground and artificial grass. Wherever you play, play at full throttle.', 3952.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108645/01/sv01/fnd/PNA/fmt/png/PUMA-x-CHRISTIAN-PULISIC-ULTRA-5-MATCH-Chasing-the-Dream-Firm-Ground/Artificial-Ground-Men\'s-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(173, 2, 'FUTURE 8 ULTIMATE Playmaker Firm/Artificial Ground Soccer Cleats', 'Puma', 'Playmakers, unleash your creativity with FUTURE. The FUZIONFIT³ upper wraps your foot like a second skin, providing a snug, cushioned fit without restricting movement. When it\'s time to show off your ball-handling skills, the textured high-density mesh layer with a GripControl Pro finish delivers enhanced grip and control. The all-new FLEXGILITY outsole offers 360-degree agility, allowing you to move between the lines and create without limits.', 10541.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108748/01/sv01/fnd/PNA/fmt/png/FUTURE-8-ULTIMATE-Playmaker-Firm/Artificial-Ground-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(174, 2, 'FUTURE 8 MATCH Brilliance Women\'s Firm/Artificial Ground Soccer Cleats', 'Puma', 'A cleat that\'s built differently, for women who make a difference. The soft, lightweight mesh upper enhances fit and stability, while the raised mesh lines with GripControl finish improve ball grip. The stud design and placement around the pivot point allow for 360-degree agility and freedom of movement, so you can easily outmaneuver defenders.', 3952.62, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108770/01/sv01/fnd/PNA/fmt/png/FUTURE-8-MATCH-Brilliance-Women\'s-Firm/Artificial-Ground-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(175, 2, 'ULTRA 6 ULTIMATE Christian Pulisic Men\'s Firm/Artificial Ground Soccer Cleats', 'Puma', 'Kick into sixth gear with ULTRA 6. Now featuring an updated, engineered mesh upper for powerful finishing, this soccer cleat feels and performs like a finely tuned machine at your feet. The PWRTAPE support frame stabilizes the foot inside the cleat without limiting agility or freedom of movement. The SPEEDSYSTEM outsole and FastTrax stud design are precision-engineered to take you from kick-off to the back of the net faster than you can say \"lights out.\"', 15060.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108779/01/sv01/fnd/PNA/fmt/png/ULTRA-6-ULTIMATE-Christian-Pulisic-Men\'s-Firm/Artificial-Ground-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(176, 2, 'ULTRA 6 PRO Christian Pulisic Men\'s Firm/Artificial Ground Soccer Cleats', 'Puma', 'How fast is ULTRA 6? Buckle up and play as fast as Christian Pulisic. Perfect for an aspiring pro with a need for (more) speed, this version of the new ULTRA 6 combines PUMA\'s brand-new SPEEDSYSTEM outsole and FastTrax stud design for traction that\'s miles ahead of the competition. Three rounded studs on the lateral side let you switch between firm ground and artificial turf seamlessly. Wherever you play, play at full throttle.', 8785.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108780/01/sv01/fnd/PNA/fmt/png/ULTRA-6-PRO-Christian-Pulisic-Men\'s-Firm/Artificial-Ground-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(177, 2, 'ULTRA 6 MATCH Christian Pulisic Men\'s Firm/Artificial Ground Soccer Cleats', 'Puma', 'How fast is the ULTRA 6? Buckle up. Perfect for rising speedsters, this version of the ULTRA features PUMA\'s all-new SPEEDSYSTEM outsole and FastTrax stud design for explosive traction. Three rounded studs on the lateral side let you switch between firm ground and artificial grass. Nothing extra. Everything ULTRA.', 5647.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108781/01/sv01/fnd/PNA/fmt/png/ULTRA-6-MATCH-Christian-Pulisic-Men\'s-Firm/Artificial-Ground-Soccer-Cleats', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(178, 2, 'Borussia Dortmund Home Authentic Men\'s Soccer Jersey', 'Puma', 'The Borussia Dortmund Home Authentic Jersey channels the city\'s transformation and is inspired by the historic buildings which helped shape the city. Featuring moisture-managing tech, this is a match-ready kit as worn by the team.', 9412.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784087/01/mod01/fnd/PNA/fmt/png/Borussia-Dortmund-Home-Authentic-Men\'s-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(179, 2, 'Borussia Dortmund Home Men\'s Soccer Jersey', 'Puma', 'Built for match days and city pride, the Borussia Dortmund Home Jersey has a design inspired by historic buildings. Performance details help you stay focused and comfortable in the stands, on the pitch, or repping your club.', 6275.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784088/01/mod01/fnd/PNA/fmt/png/Borussia-Dortmund-Home-Men\'s-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(180, 2, 'AC Milan Home Women\'s Soccer Jersey', 'Puma', 'Loyalty runs deep in the AC Milan Home Jersey. Worn at San Siro, it features performance details that help you stay cool through every match. Wear it and carry the Rossoneri spirit forward, on and off the pitch.', 5647.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784123/01/mod01/fnd/PNA/fmt/png/AC-Milan-Home-Women\'s-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(181, 2, 'AC Milan Home Big Kids\' Soccer Jersey', 'Puma', 'The AC Milan Home Jersey for youth carries AC Milan’s spirit of loyalty, defiance, and pride stitched into every stripe. This kit moves with you, on and off the pitch. For young Rossoneri, it’s a tribute to unwavering passion.', 5020.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784124/01/mod01/fnd/PNA/fmt/png/AC-Milan-Home-Big-Kids\'-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(182, 2, 'AC Milan Away Men\'s Soccer Jersey', 'Puma', 'The AC Milan Away Jersey channels club heritage, inspired by one of the club\'s most iconic victories. Classic Rossoneri pride built for those who rise stronger and carry the fire forward, on or off the pitch.', 6275.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784130/02/mod01/fnd/PNA/fmt/png/AC-Milan-Away-Men\'s-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(183, 2, 'AC Milan Away Big kids\' Soccer Jersey', 'Puma', 'The AC Milan Away Jersey for youth nods to legendary comebacks, carrying the Rossoneri spirit of resilience into every match. Inspired by one of the club\'s most iconic victories, it\'s redemption written in fabric.', 5020.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784133/02/mod01/fnd/PNA/fmt/png/AC-Milan-Away-Big-kids\'-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(184, 2, 'AC Milan Third Authentic Men\'s Soccer Jersey', 'Puma', 'The AC Milan Authentic Third Jersey fuses club pride with pro fit engineering just like the squad’s on-pitch kit. Worn by players, designed for San Siro spirit, it\'s made for those who move with Milan in their veins.', 9412.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/784137/03/mod01/fnd/PNA/fmt/png/AC-Milan-Third-Authentic-Men\'s-Soccer-Jersey', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(185, 3, 'FAST-R NITRO™ Elite 3 Women\'s Road Running Shoes', 'Puma', 'Fast-R3 is the fastest running shoe we’ve ever made – data-back, lab-tested, and built for breakthroughs. After testing it on elite runners and real athletes, we digitally engineered and optimized the product fully based on data. Fast-R3 is designed to shave minutes off your race time. With its 3.15% improved running economy*, this translates to an unprecedented potential marathon time saving of more than 4 minutes and 30 seconds, for a 3 hour marathon runner. We cut 95g from its predecessor, stacked it higher with new and improved NITROFOAM™ ELITE, and extended the carbon PWRPLATE for maximum propulsion. *Compared to the PUMA Fast-R NITRO™ Elite 2', 12549.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312061/09/sv01/fnd/PNA/fmt/png/FAST-R-NITRO™-Elite-3-Women\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(186, 3, 'Deviate NITRO™ 4 Men\'s Road Running Shoes', 'Puma', 'Deviate 4 isn\'t just fast – its too fast. 15g lighter than its predecessor, this high-performance shoe is built for runners who refuse to slow down. Featuring enhanced NITROFOAM™ technology for even better energy return, a breathable engineered mesh upper, and a carbon composite PWRPLATE, Deviate 4 gives you the edge you need to push through tempo runs or crush race day. Go further. Go faster.', 10667.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312123/01/sv01/fnd/PNA/fmt/png/Deviate-NITRO™-4-Men\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(187, 3, 'Deviate NITRO™ 4 Women\'s Road Running Shoes', 'Puma', 'Deviate 4 isn\'t just fast – its too fast. 15g lighter than its predecessor, this high-performance shoe is built for runners who refuse to slow down. Featuring enhanced NITROFOAM™ technology for even better energy return, a breathable engineered mesh upper, and a carbon composite PWRPLATE, Deviate 4 gives you the edge you need to push through tempo runs or crush race day. Go further. Go faster.', 10667.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312124/02/sv01/fnd/PNA/fmt/png/Deviate-NITRO™-4-Women\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(188, 3, 'MagMax NITRO™ 2 Men\'s Road Running Shoes', 'Puma', 'Feel the bounce with the MagMax NITRO™ 2. Packed with the highest stack of NITROFOAM™ cushioning, it delivers an ultra-plush ride that energises every step. The engineered mesh upper keeps things cool and secure, while the PUMAGRIP outsole provides steady traction. Mile after mile, these shoes bring effortless comfort and performance.', 11295.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312125/04/sv01/fnd/PNA/fmt/png/MagMax-NITRO™-2-Men\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(189, 3, 'Deviate NITRO™ Elite 4 Men\'s Road Running Shoes', 'Puma', 'When fast isn’t fast enough, you go beyond. The Deviate NITRO™ Elite 4 is built for race day – those moments when every second counts. Upgraded NITROFOAM™ ELITE delivers elite responsiveness for unbeatable speed, while a reengineered PWRPLATE channels every ounce of energy forward. 12% lighter than its predecessor, Deviate Elite 4 will keep you light, fast, and locked on your goal pace. Every detail is engineered to take you beyond fast.', 15687.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312127/03/sv01/fnd/PNA/fmt/png/Deviate-NITRO™-Elite-4-Men\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(190, 3, 'Deviate NITRO™ Elite 4 Women\'s Road Running Shoes', 'Puma', 'When fast isn’t fast enough, you go beyond. The Deviate NITRO™ Elite 4 is built for race day – those moments when every second counts. Upgraded NITROFOAM™ ELITE delivers elite responsiveness for unbeatable speed, while a reengineered PWRPLATE channels every ounce of energy forward. 12% lighter than its predecessor, Deviate Elite 4 will keep you light, fast, and locked on your goal pace. Every detail is engineered to take you beyond fast.', 15687.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312128/08/sv01/fnd/PNA/fmt/png/Deviate-NITRO™-Elite-4-Women\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00');
+INSERT INTO `products` (`product_id`, `category_id`, `name`, `brand`, `description`, `price`, `stock_quantity`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
+(191, 3, 'Deviate NITRO™ 4 Run Club Men\'s Road Running Shoes', 'Puma', 'Experience unparalleled propulsion in your everyday training runs with the Deviate NITRO™ 4, featuring PWRPLATE technology and NITRO™ foam. This highly responsive shoe delivers a snappy ride, infusing speed into every stride.', 10667.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312903/01/sv01/fnd/PNA/fmt/png/Deviate-NITRO™-4-Run-Club-Men\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(192, 3, 'FAST-R NITRO™ Elite 3 Digitokyo Women\'s Road Running Shoes', 'Puma', 'Fast-R3 is the fastest running shoe we’ve ever made – data-back, lab-tested, and built for breakthroughs. After testing it on elite runners and real athletes, we digitally engineered and optimized the product fully based on data. Fast-R3 is designed to shave minutes off your race time. With its 3.15% improved running economy*, this translates to an unprecedented potential marathon time saving of more than 4 minutes and 30 seconds, for a 3-hour marathon runner. We cut 95g from its predecessor, stacked it higher with new and improved NITROFOAM™ ELITE, and extended the carbon PWRPLATE for maximum propulsion. This DIGITOKYO version’s bold design is inspired by the lights and textures of Tokyo at night, with hits of purple as an ode to global competition. *Compared to the PUMA Fast-R NITRO™ Elite 2.', 18825.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/312059/01/sv01/fnd/PNA/fmt/png/FAST-R-NITRO™-Elite-3-Digitokyo-Women\'s-Road-Running-Shoes', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(193, 3, 'Lightspeed Men\'s Running Tee', 'Puma', 'Cut excess weight. The Lightspeed running tee is engineered for speed, freedom, and comfort on race day. ULTRASPUN fabric moves with you, wicks moisture fast, and keeps chafing out of your mind, so you can focus on the finish.', 3137.50, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528419/01/mod01/fnd/PNA/fmt/png/Lightspeed-Men\'s-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(194, 3, 'Lightspeed Women\'s Running Tee', 'Puma', 'The Lightspeed running tee is built for PR chasers, balancing featherweight ULTRASPUN fabric, dryCELL moisture control, and friction-fighting comfort. Every detail cuts distractions, because you’re built for breakthroughs.', 2509.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528499/01/mod01/fnd/PNA/fmt/png/Lightspeed-Women\'s-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(195, 3, 'Brightstride Cloudspun Ultra Soft Women\'s Running Tee', 'Puma', 'Our Brightstride collection brings style and comfort to your everyday runs. This tee pairs soft and stretchy CLOUDSPUN fabrics with moisture-wicking dryCELL tech to help you move with confidence.', 3765.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528988/35/mod01/fnd/PNA/fmt/png/Brightstride-Cloudspun-Ultra-Soft-Women\'s-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(196, 3, 'Brightstride CLOUDSPUN Ultra Soft Men\'s Long Sleeve Running Tee', 'Puma', 'Our Brightstride collection brings style and comfort to your everyday runs. This tee keeps you fresh and dry thanks to moisture-wicking dryCELL tech. Its sleeves have mitt cuff constructions for added coverage.', 5020.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/529007/01/mod01/fnd/PNA/fmt/png/Brightstride-CLOUDSPUN-Ultra-Soft-Men\'s-Long-Sleeve-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(197, 3, 'Lightspeed Women\'s Graphic Running Tee', 'Puma', 'Chasing a new personal record? The Lightspeed collection is designed with featherweight fabrics and nearly seamless construction to cut excess weight and drag. This moisture-wicking tee has a performance fit for streamlined movement.', 3765.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528771/35/mod01/fnd/PNA/fmt/png/Lightspeed-Women\'s-Graphic-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(198, 3, 'Lightspeed Men\'s Graphic Running Tee', 'Puma', 'Chasing a new personal record? The Lightspeed collection is built with featherweight fabrics and nearly seamless construction to cut excess weight. This tee has a performance fit for streamlined movement, and dryCELL tech helps wick away moisture.', 3765.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528772/55/mod01/fnd/PNA/fmt/png/Lightspeed-Men\'s-Graphic-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(199, 3, 'Everyday Cloudspun Ultra Soft Women\'s Running Tee', 'Puma', 'Feel free to run at your best with PUMA\'s softest fabric, CLOUDSPUN, featuring moisture-wicking dryCELL and 4-way stretch. Laser-cut perforations improve breathability, while bonded seams minimize friction. Thermoadapt technology helps keep you cool as you push your limits.', 2823.12, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/526652/01/mod01/fnd/PNA/fmt/png/Everyday-Cloudspun-Ultra-Soft-Women\'s-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
+(200, 3, 'Lightspeed Ultraweave Men\'s Lightweight Running Pants', 'Puma', 'Lightspeed running pants are built for pure pace. Lightweight, aerodynamic, and distraction-free, it moves with you—never against you. Ankle zips, moisture-wicking tech, and smart storage keep you focused on your finish.', 4517.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528776/65/mod01/fnd/PNA/fmt/png/Lightspeed-Ultraweave-Men\'s-Lightweight-Running-Pants', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `search_analytics`
+--
+
+CREATE TABLE `search_analytics` (
+  `search_id` int(10) UNSIGNED NOT NULL,
+  `keyword_searched` varchar(255) NOT NULL,
+  `results_found` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `search_date` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `full_name` varchar(150) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `role` enum('Customer','Admin','Staff') NOT NULL DEFAULT 'Customer',
+  `phone` varchar(30) DEFAULT NULL,
+  `physical_address` varchar(255) DEFAULT NULL,
+  `account_status` enum('Active','Suspended','Inactive') NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_login` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`audit_log_id`),
+  ADD KEY `idx_audit_user` (`user_id`),
+  ADD KEY `idx_audit_created` (`created_at`);
+
+--
+-- Indexes for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD PRIMARY KEY (`cart_item_id`),
+  ADD UNIQUE KEY `uq_cart_user_product` (`user_id`,`product_id`),
+  ADD KEY `idx_cart_product` (`product_id`);
+
+--
+-- Indexes for table `categories`
+--
+ALTER TABLE `categories`
+  ADD PRIMARY KEY (`category_id`),
+  ADD UNIQUE KEY `slug` (`slug`);
+
+--
+-- Indexes for table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`order_id`),
+  ADD KEY `idx_orders_user` (`user_id`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`order_item_id`),
+  ADD KEY `idx_order_items_order` (`order_id`),
+  ADD KEY `idx_order_items_product` (`product_id`);
+
+--
+-- Indexes for table `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`product_id`),
+  ADD KEY `idx_products_category` (`category_id`);
+
+--
+-- Indexes for table `search_analytics`
+--
+ALTER TABLE `search_analytics`
+  ADD PRIMARY KEY (`search_id`),
+  ADD KEY `idx_search_keyword` (`keyword_searched`),
+  ADD KEY `idx_search_date` (`search_date`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `audit_log_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  MODIFY `cart_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `categories`
+--
+ALTER TABLE `categories`
+  MODIFY `category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=860;
+
+--
+-- AUTO_INCREMENT for table `search_analytics`
+--
+ALTER TABLE `search_analytics`
+  MODIFY `search_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD CONSTRAINT `fk_audit_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `fk_order_items_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_order_items_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `products`
+--
+ALTER TABLE `products`
+  ADD CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) ON UPDATE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
