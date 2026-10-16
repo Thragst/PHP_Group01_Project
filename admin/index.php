@@ -1,7 +1,39 @@
 <?php
 session_start();
-$_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Jeam Paul';
-$_SESSION['user_role'] = $_SESSION['user_role'] ?? 'Admin';
+
+require_once '../db.php';
+
+if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
+    $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';
+    $_SESSION['user_role'] = $_SESSION['user_role'] ?? 'Developer';
+}
+
+$salesStmt = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) AS total_sales, COUNT(order_id) AS total_orders FROM orders WHERE status != 'Cancelled'");
+$salesData = $salesStmt->fetch();
+$totalSales = $salesData['total_sales'];
+$totalOrders = $salesData['total_orders'];
+
+$usersStmt = $pdo->query("SELECT COUNT(user_id) AS total_users FROM users");
+$totalUsers = $usersStmt->fetch()['total_users'];
+
+$activityStmt = $pdo->query("SELECT COUNT(audit_log_id) AS total_activity FROM audit_logs");
+$totalActivity = $activityStmt->fetch()['total_activity'];
+
+$topSearchesStmt = $pdo->query("SELECT keyword_searched, COUNT(*) AS search_count 
+                                FROM search_analytics 
+                                WHERE results_found > 0 
+                                GROUP BY keyword_searched 
+                                ORDER BY search_count DESC 
+                                LIMIT 4");
+$topSearches = $topSearchesStmt->fetchAll();
+
+$zeroResultsStmt = $pdo->query("SELECT keyword_searched, COUNT(*) AS attempts 
+                                 FROM search_analytics 
+                                 WHERE results_found = 0 
+                                 GROUP BY keyword_searched 
+                                 ORDER BY attempts DESC 
+                                 LIMIT 3");
+$zeroResults = $zeroResultsStmt->fetchAll();
 
 include 'includes/admin_header.php';
 ?>
@@ -9,26 +41,26 @@ include 'includes/admin_header.php';
 <div class="page-header">
     <div>
         <h2>Admin Dashboard</h2>
-        <p style="color: #666; font-size: 0.95rem; margin-top: 5px;">Platform-wide sales, site activity, users, and search insights</p>
+        <p class="text-muted-sm">Platform-wide sales, site activity, users, and search insights</p>
     </div>
 </div>
 
 <div class="stats-grid">
     <div class="stat-card">
         <h4>Platform-Wide Sales</h4>
-        <div class="stat-value">₱124,500.00</div>
+        <div class="stat-value">₱<?= number_format($totalSales, 2) ?></div>
     </div>
     <div class="stat-card">
         <h4>Site Activity</h4>
-        <div class="stat-value">1,420 Sessions</div>
+        <div class="stat-value"><?= number_format($totalActivity) ?> Logs</div>
     </div>
     <div class="stat-card">
         <h4>Total Users</h4>
-        <div class="stat-value">388</div>
+        <div class="stat-value"><?= number_format($totalUsers) ?></div>
     </div>
     <div class="stat-card">
         <h4>Total Orders</h4>
-        <div class="stat-value">94</div>
+        <div class="stat-value"><?= number_format($totalOrders) ?></div>
     </div>
 </div>
 
@@ -36,19 +68,32 @@ include 'includes/admin_header.php';
     <div class="insight-card">
         <h3>Top Searched Keywords</h3>
         <ul class="insight-list">
-            <li><span>1. Running Shoes</span> <strong style="color: var(--primary-dark-red);">342 searches</strong></li>
-            <li><span>2. Basketball</span> <strong style="color: var(--primary-dark-red);">215 searches</strong></li>
-            <li><span>3. Jersey</span> <strong style="color: var(--primary-dark-red);">180 searches</strong></li>
-            <li><span>4. Football</span> <strong style="color: var(--primary-dark-red);">95 searches</strong></li>
+            <?php if (!empty($topSearches)): ?>
+                <?php foreach ($topSearches as $index => $search): ?>
+                    <li>
+                        <span><?= ($index + 1) ?>. <?= htmlspecialchars($search['keyword_searched']) ?></span>
+                        <strong class="text-primary-red"><?= $search['search_count'] ?> searches</strong>
+                    </li>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <li><span>No search data available yet.</span></li>
+            <?php endif; ?>
         </ul>
     </div>
 
     <div class="insight-card">
         <h3>Queries with 0 Results</h3>
         <ul class="insight-list">
-            <li><span>Cleats size 13</span> <span style="color:#999; font-size:0.85rem;">8 attempts</span></li>
-            <li><span>Tennis racket bag</span> <span style="color:#999; font-size:0.85rem;">5 attempts</span></li>
-            <li><span>Red futsal goal</span> <span style="color:#999; font-size:0.85rem;">3 attempts</span></li>
+            <?php if (!empty($zeroResults)): ?>
+                <?php foreach ($zeroResults as $zero): ?>
+                    <li>
+                        <span><?= htmlspecialchars($zero['keyword_searched']) ?></span>
+                        <span class="text-subtle-sm"><?= $zero['attempts'] ?> attempts</span>
+                    </li>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <li><span>No zero-result searches logged.</span></li>
+            <?php endif; ?>
         </ul>
     </div>
 </div>
