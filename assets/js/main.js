@@ -140,29 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    const filterButtons = document.querySelectorAll(".filter-button");
-    const products = document.querySelectorAll(".products-grid .product");
-
-    filterButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-            filterButtons.forEach(function (item) {
-                item.classList.remove("active");
-            });
-
-            button.classList.add("active");
-
-            const category = button.dataset.category;
-
-            products.forEach(function (product) {
-                if (category === "All" || product.dataset.category === category) {
-                    product.style.display = "";
-                } else {
-                    product.style.display = "none";
-                }
-            });
-        });
-    });
-
     const sortProducts = document.getElementById("sortProducts");
 
     if (sortProducts) {
