@@ -24,11 +24,20 @@ if (isset($_SESSION['users']) && is_array($_SESSION['users'])) {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+function postString($key) {
+    $value = $_POST[$key] ?? '';
 
-    if (!empty($username) && isset($users[$username])) {
+    return is_string($value) ? $value : '';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim(postString('username'));
+    $password = postString('password');
+
+    $validUsername = preg_match('/^[A-Za-z0-9]{3,30}$/', $username);
+    $validPassword = $password !== '' && strlen($password) <= 64;
+
+    if ($validUsername && $validPassword && isset($users[$username])) {
         $user = $users[$username];
 
         if (password_verify($password, $user['password'])) {
@@ -55,4 +64,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 header('Location: index.php');
 exit;
-?>
