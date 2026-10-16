@@ -111,7 +111,7 @@ function showToast(message, showCartLink) {
 
     if (showCartLink) {
         const link = document.createElement("a");
-        link.href = "cart.php";
+        link.href = "index.php?page=cart";
         link.textContent = "View Cart";
         toast.appendChild(link);
     }
@@ -296,7 +296,7 @@ if (productList && productPagination) {
 
             button.disabled = true;
 
-            fetch("cart.php", {
+            fetch("pages/cart.php", {
                 method: "POST",
                 body: formData,
                 credentials: "same-origin",
@@ -344,7 +344,7 @@ if (productList && productPagination) {
 
             const form = document.createElement("form");
             form.method = "POST";
-            form.action = "cart.php";
+            form.action = "pages/cart.php";
 
             const fields = {
                 add_to_cart: "1",

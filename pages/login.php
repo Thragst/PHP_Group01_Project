@@ -50,17 +50,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_role'] = $user['role'];
 
             if ($user['role'] === 'Admin') {
-                header('Location: admin/index.php');
+                header('Location: ../admin/index.php');
             } else {
-                header('Location: index.php?login=success');
+                header('Location: ../index.php?login=success');
             }
             exit;
         }
     }
 
-    header('Location: index.php?login=error');
+    header('Location: ../index.php?login=error');
     exit;
 }
 
-header('Location: index.php');
+header('Location: ../index.php');
 exit;

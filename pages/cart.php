@@ -1,8 +1,52 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['add_to_cart'])) {
+        $productId = (int) ($_POST['product_id'] ?? 0);
+        if ($productId <= 0) {
+            header('Content-Type: application/json');
+            echo json_encode([ 'success' => false, 'message' => 'Invalid product.' ]); exit;
+        }
+        $stmt = $pdo->prepare(" SELECT product_id, name, brand, price, image_path FROM products WHERE product_id = ? AND status = 'Active' ");
+        $stmt->execute([$productId]);
+        $product = $stmt->fetch();
+        if (!$product) {
+            header('Content-Type: application/json');
+            echo json_encode([ 'success' => false, 'message' => 'Product not found.' ]); exit;
+        }
+        addToCart($product);
+        if (isset($_POST['buy_now'])) { header('Location: checkout.php'); exit; }
+        header('Content-Type: application/json');
+        echo json_encode([ 'success' => true, 'name' => $product['name'] ]); exit;
+    }
+    if (isset($_POST['update_cart'])) {
+        $productId = (int) ($_POST['product_id'] ?? 0);
+        $quantity = (int) ($_POST['quantity'] ?? 0);
+        if ($quantity <= 0) {
+            removeFromCart($productId);
+        } else {
+            $_SESSION['cart'][$productId]['quantity'] = min($quantity, 99);
+        }
+        header('Location: ../index.php?page=cart'); exit;
+    }
+    if (isset($_POST['remove_from_cart'])) {
+        $productId = (int) ($_POST['product_id'] ?? 0);
+        removeFromCart($productId);
+        header('Location: ../index.php?page=cart'); exit;
+    }
+    if (isset($_POST['clear_cart'])) {
+        clearCart();
+        header('Location: ../index.php?page=cart'); exit;
+    }
+}
 $cart = getCart();
 $subtotal = getCartSubtotal();
 $itemCount = getCartItemCount();
-$shipping = $subtotal >= 1000 || $subtotal <= 0 ? 0 : 100;
+$freeShippingMin = 3000;
+$shippingFee = 100;
+$shipping = $subtotal == 0 ? 0 : ($subtotal >= $freeShippingMin ? 0 : $shippingFee);
 $total = $subtotal + $shipping;
 ?>
 <section class="cart-page">
@@ -94,7 +138,7 @@ $total = $subtotal + $shipping;
                     <span> Total </span>
                     <strong> ₱<?php echo number_format($total, 2); ?> </strong>
                 </div>
-                <a href="checkout.php" class="checkout-button" > Proceed to Checkout </a>
+                <a href="pages/checkout.php" class="checkout-button" > Proceed to Checkout </a>
                 <a href="index.php?page=products" class="continue-shopping" > Continue Shopping </a>
             </aside>
         </div>

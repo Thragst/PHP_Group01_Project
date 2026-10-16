@@ -36,7 +36,7 @@ if (!in_array($page, $allowedPages, true)) {
     <?php if (!$isLoggedIn): ?>
         <div class="popup" id="loginPopup">
             <div class ="popup-box login-box">
-                <button class="close" onlick="closePopup('loginPopup')">x</button>
+                <button class="close" onclick="closePopup('loginPopup')">x</button>
                 <h2>Login</h2>
                 <p>Enter your Sportmart Account.</p>
                 <form action="pages/login.php" method="POST">
@@ -44,9 +44,9 @@ if (!in_array($page, $allowedPages, true)) {
                     <input type="password" name="password" placeholder="Password" required>
                     <?php if(isset($_GET['login'])): ?>
                         <?php if($_GET['login'] === 'error'): ?>
-                            <p class=login-message">Incorrect username or password.</p>
+                            <p class="login-message">Incorrect username or password.</p>
                         <?php elseif ($_GET['login'] === 'required'): ?>
-                            <p class="login-messsage">Please login to continue.</p>
+                            <p class="login-message">Please login to continue.</p>
                         <?php endif; ?>
                     <?php endif; ?>
                     <button type="submit" class="popup-button">Login</button>
@@ -92,6 +92,6 @@ if (!in_array($page, $allowedPages, true)) {
     <?php endif; ?>
     
     <?php include 'includes/footer.php'; ?>
-<script src="assets/js/main.js"></script>
+<script src="../assets/js/main.js"></script>
 </body>
 </html>

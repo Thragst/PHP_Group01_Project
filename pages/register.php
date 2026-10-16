@@ -6,7 +6,7 @@ if (!isset($_SESSION['users']) || !is_array($_SESSION['users'])) {
 }
 
 function redirectSignup($status) {
-    header('Location: index.php?signup=' . $status);
+    header('Location: ../index.php?signup=' . $status);
     exit;
 }
 
@@ -17,7 +17,7 @@ function postString($key) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: index.php');
+    header('Location: ../index.php');
     exit;
 }
 

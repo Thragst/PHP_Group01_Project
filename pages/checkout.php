@@ -1,12 +1,13 @@
 <?php
 session_start();
-require_once('db.php');
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
 date_default_timezone_set('Asia/Manila');
 
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 
 if (!$isLoggedIn) {
-    header('Location: index.php?login=required');
+    header('Location: ../index.php?login=required');
     exit;
 }
 
@@ -111,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             array_unshift($_SESSION['orders'], $order);
             $_SESSION['cart'] = [];
 
-            header('Location: index.php?page=orders&placed=1');
+            header('Location: ../index.php?page=orders&placed=1');
             exit;
         }
     }
@@ -135,7 +136,7 @@ $total = $subtotal + $shipping;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Checkout | SportMart</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
