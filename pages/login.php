@@ -47,39 +47,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ../index.php?login=locked');
         exit;
     }
-
     if (password_verify($password, $user['password'])) {
-
-        // Reset failed attempts after successful login
         $_SESSION['failed_attempts'][$username] = 0;
-
         session_regenerate_id(true);
-
         $_SESSION['logged_in'] = true;
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['username']  = $user['username'];
         $_SESSION['user_id']   = $user['user_id'];
         $_SESSION['user_role'] = $user['role'];
-
         if ($user['role'] === 'Admin') {
             header('Location: ../admin/index.php');
         } else {
             header('Location: ../index.php?login=success');
         }
-
         exit;
     }
-
-    // Wrong password
-    $_SESSION['failed_attempts'][$username] =
-        $failedAttempts + 1;
-
-    if ($_SESSION['failed_attempts'][$username] >= 3) {
-        header('Location: ../index.php?login=locked');
-        exit;
-    }
-}
-
+    $_SESSION['failed_attempts'][$username] = $failedAttempts + 1;
+    if ($_SESSION['failed_attempts'][$username] >= 3) { header('Location: ../index.php?login=locked'); exit; }}
     header('Location: ../index.php?login=error');
     exit;
 }
