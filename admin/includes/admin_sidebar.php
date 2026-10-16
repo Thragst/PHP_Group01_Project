@@ -1,8 +1,6 @@
 <?php
-// Determine current page for active menu highlights
 $currentPage = basename($_SERVER['PHP_SELF']);
-// Fallback role check (Default to Admin during UI development)
-$userRole = $_SESSION['user_role'] ?? 'Admin';
+$userRole = $_SESSION['user_role'] ?? 'Developer';
 ?>
 
 <aside class="admin-sidebar">
@@ -12,7 +10,6 @@ $userRole = $_SESSION['user_role'] ?? 'Admin';
     </div>
 
     <ul class="sidebar-menu">
-        <!-- Common Links (Staff & Admin) -->
         <li>
             <a href="index.php" class="<?php echo ($currentPage == 'index.php') ? 'active' : ''; ?>">
                 Dashboard
@@ -29,8 +26,7 @@ $userRole = $_SESSION['user_role'] ?? 'Admin';
             </a>
         </li>
 
-        <?php if ($userRole === 'Admin'): ?>
-            <!-- Admin-Only System Controls -->
+        <?php if (in_array($userRole, ['Admin', 'Developer'])): ?>
             <li class="sidebar-divider"></li>
             
             <li>

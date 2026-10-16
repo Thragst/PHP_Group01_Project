@@ -1,5 +1,5 @@
 <?php
-$userName = $_SESSION['user_name'] ?? 'Admin User';
+$userName = $_SESSION['user_name'] ?? 'Developer';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,14 +8,13 @@ $userName = $_SESSION['user_name'] ?? 'Admin User';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SportMart - Back-Office Portal</title>
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <script src="../assets/js/admin.js" defer></script>
 </head>
 <body>
 <div class="admin-container">
-    <!-- Load Sidebar Navigation -->
     <?php include __DIR__ . '/admin_sidebar.php'; ?>
 
     <div class="admin-main">
-        <!-- Top Navigation Header -->
         <header class="admin-header">
             <div class="header-title">
                 <h3>Back-Office Administration Portal</h3>
