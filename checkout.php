@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once('db.php');
 date_default_timezone_set('Asia/Manila');
 
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
@@ -141,144 +142,144 @@ $total = $subtotal + $shipping;
 
 <main class="checkout-page">
 
-<?php if (empty($cart)): ?>
+    <?php if (empty($cart)): ?>
 
-    <section class="panel empty-cart">
-        <div class="empty-cart-icon">S</div>
-        <h2>Nothing to checkout</h2>
-        <p>Your cart is empty. Add some products first.</p>
-        <a href="index.php?page=products" class="checkout-button">Browse Products</a>
-    </section>
+        <section class="panel empty-cart">
+            <div class="empty-cart-icon">S</div>
+            <h2>Nothing to checkout</h2>
+            <p>Your cart is empty. Add some products first.</p>
+            <a href="index.php?page=products" class="checkout-button">Browse Products</a>
+        </section>
 
-<?php else: ?>
+    <?php else: ?>
 
-    <div class="checkout-heading">
-        <div>
-            <p class="small-title">SPORTMART CHECKOUT</p>
-            <h1>Checkout</h1>
+        <div class="checkout-heading">
+            <div>
+                <p class="small-title">SPORTMART CHECKOUT</p>
+                <h1>Checkout</h1>
+            </div>
+            <span class="items-badge">Items: <?php echo $totalItems; ?></span>
         </div>
-        <span class="items-badge">Items: <?php echo $totalItems; ?></span>
-    </div>
 
-    <div class="checkout-layout">
-        <form method="POST" action="checkout.php" class="checkout-items panel" id="quantityForm">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-            <input type="hidden" name="action" value="update">
-
-            <div class="checkout-table-head">
-                <span>Product Details</span>
-                <span>Quantity</span>
-                <span>Total</span>
-            </div>
-
-            <?php foreach ($cart as $id => $item): ?>
-                <div class="checkout-item">
-                    <div class="checkout-product">
-                        <div class="cart-item-image small">
-                            <span><?php echo htmlspecialchars(strtoupper(substr($item['name'], 0, 1))); ?></span>
-                        </div>
-                        <div>
-                            <h3><?php echo htmlspecialchars($item['name']); ?></h3>
-                            <p class="cart-item-price">₱<?php echo number_format($item['price'], 2); ?></p>
-                        </div>
-                    </div>
-
-                    <div class="quantity-control">
-                        <button type="button" onclick="changeQuantity(<?php echo (int)$id; ?>,-1)">−</button>
-                        <input type="number"
-                               name="quantity[<?php echo (int)$id; ?>]"
-                               id="quantity-<?php echo (int)$id; ?>"
-                               value="<?php echo (int)$item['quantity']; ?>"
-                               min="0"
-                               max="99"
-                               readonly>
-                        <button type="button" onclick="changeQuantity(<?php echo (int)$id; ?>,1)">+</button>
-                    </div>
-
-                    <div class="checkout-total">₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?></div>
-                </div>
-            <?php endforeach; ?>
-        </form>
-
-        <aside class="summary-panel">
-            <h2>Order Summary</h2>
-
-            <div class="summary-row">
-                <span>Total Items</span>
-                <strong><?php echo $totalItems; ?></strong>
-            </div>
-
-            <div class="summary-row">
-                <span>Subtotal</span>
-                <strong>₱<?php echo number_format($subtotal, 2); ?></strong>
-            </div>
-
-            <div class="summary-row">
-                <span>Shipping Fee</span>
-                <strong><?php echo $shipping == 0 ? 'FREE' : '₱' . number_format($shipping, 2); ?></strong>
-            </div>
-
-            <hr class="summary-divider">
-
-            <div class="summary-row summary-total">
-                <span>Total Price</span>
-                <strong>₱<?php echo number_format($total, 2); ?></strong>
-            </div>
-
-            <form method="POST" action="checkout.php" id="placeOrderForm" class="delivery-form" novalidate>
+        <div class="checkout-layout">
+            <form method="POST" action="checkout.php" class="checkout-items panel" id="quantityForm">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                <input type="hidden" name="action" value="place_order">
+                <input type="hidden" name="action" value="update">
 
-                <?php if (isset($errors['cart'])): ?>
-                    <p class="form-alert"><?php echo htmlspecialchars($errors['cart']); ?></p>
-                <?php endif; ?>
-
-                <div class="form-group">
-                    <label for="checkoutMobile">Mobile Number</label>
-                    <input type="text"
-                           class="form-input"
-                           name="mobile"
-                           id="checkoutMobile"
-                           placeholder="09123456789"
-                           value="<?php echo htmlspecialchars($mobile); ?>">
-                    <?php if (isset($errors['mobile'])): ?>
-                        <p class="field-error"><?php echo htmlspecialchars($errors['mobile']); ?></p>
-                    <?php endif; ?>
+                <div class="checkout-table-head">
+                    <span>Product Details</span>
+                    <span>Quantity</span>
+                    <span>Total</span>
                 </div>
 
-                <div class="form-group">
-                    <label for="checkoutAddress">Address</label>
-                    <textarea class="form-input"
-                              name="address"
-                              id="checkoutAddress"
-                              rows="2"
-                              placeholder="House no., street, barangay, city"><?php echo htmlspecialchars($address); ?></textarea>
-                    <?php if (isset($errors['address'])): ?>
-                        <p class="field-error"><?php echo htmlspecialchars($errors['address']); ?></p>
-                    <?php endif; ?>
-                </div>
+                <?php foreach ($cart as $id => $item): ?>
+                    <div class="checkout-item">
+                        <div class="checkout-product">
+                            <div class="cart-item-image small">
+                                <span><?php echo htmlspecialchars(strtoupper(substr($item['name'], 0, 1))); ?></span>
+                            </div>
+                            <div>
+                                <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                                <p class="cart-item-price">₱<?php echo number_format($item['price'], 2); ?></p>
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label for="checkoutRequest">Request <span class="optional">(optional)</span></label>
-                    <textarea class="form-input"
-                              name="request"
-                              id="checkoutRequest"
-                              rows="4"
-                              maxlength="255"
-                              placeholder="Special instructions for your order"><?php echo htmlspecialchars($request); ?></textarea>
-                    <?php if (isset($errors['request'])): ?>
-                        <p class="field-error"><?php echo htmlspecialchars($errors['request']); ?></p>
-                    <?php endif; ?>
-                </div>
+                        <div class="quantity-control">
+                            <button type="button" onclick="changeQuantity(<?php echo (int)$id; ?>,-1)">−</button>
+                            <input type="number"
+                                   name="quantity[<?php echo (int)$id; ?>]"
+                                   id="quantity-<?php echo (int)$id; ?>"
+                                   value="<?php echo (int)$item['quantity']; ?>"
+                                   min="0"
+                                   max="99"
+                                   readonly>
+                            <button type="button" onclick="changeQuantity(<?php echo (int)$id; ?>,1)">+</button>
+                        </div>
 
-                <button type="submit" class="checkout-button" id="placeOrderButton">Place Order</button>
+                        <div class="checkout-total">₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?></div>
+                    </div>
+                <?php endforeach; ?>
             </form>
 
-            <a href="cart.php" class="continue-shopping">← Back to Cart</a>
-        </aside>
-    </div>
+            <aside class="summary-panel">
+                <h2>Order Summary</h2>
 
-<?php endif; ?>
+                <div class="summary-row">
+                    <span>Total Items</span>
+                    <strong><?php echo $totalItems; ?></strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong>₱<?php echo number_format($subtotal, 2); ?></strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Shipping Fee</span>
+                    <strong><?php echo $shipping == 0 ? 'FREE' : '₱' . number_format($shipping, 2); ?></strong>
+                </div>
+
+                <hr class="summary-divider">
+
+                <div class="summary-row summary-total">
+                    <span>Total Price</span>
+                    <strong>₱<?php echo number_format($total, 2); ?></strong>
+                </div>
+
+                <form method="POST" action="checkout.php" id="placeOrderForm" class="delivery-form" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                    <input type="hidden" name="action" value="place_order">
+
+                    <?php if (isset($errors['cart'])): ?>
+                        <p class="form-alert"><?php echo htmlspecialchars($errors['cart']); ?></p>
+                    <?php endif; ?>
+
+                    <div class="form-group">
+                        <label for="checkoutMobile">Mobile Number</label>
+                        <input type="text"
+                               class="form-input"
+                               name="mobile"
+                               id="checkoutMobile"
+                               placeholder="09123456789"
+                               value="<?php echo htmlspecialchars($mobile); ?>">
+                        <?php if (isset($errors['mobile'])): ?>
+                            <p class="field-error"><?php echo htmlspecialchars($errors['mobile']); ?></p>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="checkoutAddress">Address</label>
+                        <textarea class="form-input"
+                                  name="address"
+                                  id="checkoutAddress"
+                                  rows="2"
+                                  placeholder="House no., street, barangay, city"><?php echo htmlspecialchars($address); ?></textarea>
+                        <?php if (isset($errors['address'])): ?>
+                            <p class="field-error"><?php echo htmlspecialchars($errors['address']); ?></p>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="checkoutRequest">Request <span class="optional">(optional)</span></label>
+                        <textarea class="form-input"
+                                  name="request"
+                                  id="checkoutRequest"
+                                  rows="4"
+                                  maxlength="255"
+                                  placeholder="Special instructions for your order"><?php echo htmlspecialchars($request); ?></textarea>
+                        <?php if (isset($errors['request'])): ?>
+                            <p class="field-error"><?php echo htmlspecialchars($errors['request']); ?></p>
+                        <?php endif; ?>
+                    </div>
+
+                    <button type="submit" class="checkout-button" id="placeOrderButton">Place Order</button>
+                </form>
+
+                <a href="cart.php" class="continue-shopping">← Back to Cart</a>
+            </aside>
+        </div>
+
+    <?php endif; ?>
 
 </main>
 

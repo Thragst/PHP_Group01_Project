@@ -1,32 +1,35 @@
 <?php
 session_start();
+require_once('db.php');
 
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-$products = [
-    1 => ['name' => 'Basketball', 'price' => 1250],
-    2 => ['name' => 'Running Shoes', 'price' => 3499],
-    3 => ['name' => 'Football', 'price' => 1899],
-    4 => ['name' => 'Tennis Racket', 'price' => 2799],
-    5 => ['name' => 'Boxing Gloves', 'price' => 1599],
-    6 => ['name' => 'Badminton Racket', 'price' => 2299]
-];
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_to_cart'])) {
         $productId = (int)($_POST['product_id'] ?? 0);
         $added = false;
+        $product = null;
 
-        if (isset($products[$productId])) {
+        if ($productId > 0) {
+            $stmt = $pdo->prepare("
+                SELECT product_id, name, price
+                FROM products
+                WHERE product_id = ? AND status = 'Active'
+            ");
+            $stmt->execute([$productId]);
+            $product = $stmt->fetch();
+        }
+
+        if ($product) {
             if (isset($_SESSION['cart'][$productId])) {
                 $_SESSION['cart'][$productId]['quantity'] =
                     min(99, (int)$_SESSION['cart'][$productId]['quantity'] + 1);
             } else {
                 $_SESSION['cart'][$productId] = [
-                    'name' => $products[$productId]['name'],
-                    'price' => $products[$productId]['price'],
+                    'name' => $product['name'],
+                    'price' => (float)$product['price'],
                     'quantity' => 1
                 ];
             }
@@ -48,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             echo json_encode([
                 'success' => $added,
-                'name' => $added ? $products[$productId]['name'] : '',
+                'name' => $added ? $product['name'] : '',
                 'cart_count' => $cartCount
             ]);
             exit;

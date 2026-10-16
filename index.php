@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once('db.php');
 
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
@@ -9,6 +10,50 @@ $userName = $_SESSION['user_name'] ?? '';
 $userId = $_SESSION['user_id'] ?? '';
 $username = $_SESSION['username'] ?? '';
 $userRole = $_SESSION['user_role'] ?? '';
+
+function productImageSrc($path) {
+    $path = trim($path ?? '');
+
+    if ($path === '') {
+        return '';
+    }
+
+    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        return $path;
+    }
+
+    $clean = ltrim($path, '/');
+
+    if (str_starts_with(strtolower($clean), 'admin/')) {
+        $clean = substr($clean, 6);
+    }
+
+    return $clean;
+}
+
+$dbProducts = [];
+$popularProducts = [];
+
+if ($page === 'products') {
+    $stmt = $pdo->query("
+        SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.name AS category
+        FROM products p
+        JOIN categories c ON c.category_id = p.category_id
+        WHERE p.status = 'Active' AND c.status = 'Active'
+        ORDER BY p.product_id ASC
+    ");
+    $dbProducts = $stmt->fetchAll();
+} elseif ($page !== 'orders') {
+    $stmt = $pdo->query("
+        SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.name AS category
+        FROM products p
+        JOIN categories c ON c.category_id = p.category_id
+        WHERE p.status = 'Active' AND c.status = 'Active'
+        ORDER BY p.product_id ASC
+        LIMIT 4
+    ");
+    $popularProducts = $stmt->fetchAll();
+}
 ?>
 
 <!DOCTYPE html>
@@ -54,119 +99,42 @@ $userRole = $_SESSION['user_role'] ?? '';
 
         <div class="product-list products-grid" id="productList">
 
-            <div class="product" data-id="1" data-category="Basketball" data-price="1250" data-order="1">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Basketball</p>
-                    <h3>Basketball</h3>
-                    <p class="brand">Spalding</p>
-                    <div class="stars">★★★★★</div>
-                    <div class="product-bottom">
-                        <strong>₱1,250</strong>
-                        <div class="product-buttons">
-                            <button class="add-cart-button">Add to Cart</button>
-                            <button class="buy-button">Buy</button>
+            <?php foreach ($dbProducts as $index => $product): ?>
+                <div class="product"
+                     data-id="<?php echo (int)$product['product_id']; ?>"
+                     data-category="<?php echo htmlspecialchars($product['category']); ?>"
+                     data-price="<?php echo htmlspecialchars($product['price']); ?>"
+                     data-order="<?php echo $index + 1; ?>">
+                    <div class="product-image">
+                        <?php $imgSrc = productImageSrc($product['image_path']); ?>
+                        <?php if ($imgSrc !== ''): ?>
+                            <img src="<?php echo htmlspecialchars($imgSrc); ?>"
+                                 alt="<?php echo htmlspecialchars($product['name']); ?>"
+                                 loading="lazy"
+                                 style="width:100%;height:100%;object-fit:contain;display:block;"
+                                 onerror="this.style.display='none'">
+                        <?php endif; ?>
+                        <button class="heart">♡</button>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-category"><?php echo htmlspecialchars($product['category']); ?></p>
+                        <h3 title="<?php echo htmlspecialchars($product['name']); ?>"><?php echo htmlspecialchars($product['name']); ?></h3>
+                        <p class="brand"><?php echo htmlspecialchars($product['brand'] ?? ''); ?></p>
+                        <div class="stars">★★★★★</div>
+                        <div class="product-bottom">
+                            <strong>₱<?php echo number_format($product['price'], 2); ?></strong>
+                            <div class="product-buttons">
+                                <button class="add-cart-button">Add to Cart</button>
+                                <button class="buy-button">Buy</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            <?php endforeach; ?>
 
-            <div class="product" data-id="2" data-category="Running" data-price="3499" data-order="2">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Running</p>
-                    <h3>Running Shoes</h3>
-                    <p class="brand">Nike</p>
-                    <div class="stars">★★★★★</div>
-                    <div class="product-bottom">
-                        <strong>₱3,499</strong>
-                        <div class="product-buttons">
-                            <button class="add-cart-button">Add to Cart</button>
-                            <button class="buy-button">Buy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="product" data-id="3" data-category="Football" data-price="1899" data-order="3">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Football</p>
-                    <h3>Football</h3>
-                    <p class="brand">Adidas</p>
-                    <div class="stars">★★★★☆</div>
-                    <div class="product-bottom">
-                        <strong>₱1,899</strong>
-                        <div class="product-buttons">
-                            <button class="add-cart-button">Add to Cart</button>
-                            <button class="buy-button">Buy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="product" data-id="4" data-category="Tennis" data-price="2799" data-order="4">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Tennis</p>
-                    <h3>Tennis Racket</h3>
-                    <p class="brand">Wilson</p>
-                    <div class="stars">★★★★★</div>
-                    <div class="product-bottom">
-                        <strong>₱2,799</strong>
-                        <div class="product-buttons">
-                            <button class="add-cart-button">Add to Cart</button>
-                            <button class="buy-button">Buy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="product" data-id="5" data-category="Boxing" data-price="1599" data-order="5">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Boxing</p>
-                    <h3>Boxing Gloves</h3>
-                    <p class="brand">Everlast</p>
-                    <div class="stars">★★★★☆</div>
-                    <div class="product-bottom">
-                        <strong>₱1,599</strong>
-                        <div class="product-buttons">
-                            <button class="add-cart-button">Add to Cart</button>
-                            <button class="buy-button">Buy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="product" data-id="6" data-category="Badminton" data-price="2299" data-order="6">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Badminton</p>
-                    <h3>Badminton Racket</h3>
-                    <p class="brand">Yonex</p>
-                    <div class="stars">★★★★★</div>
-                    <div class="product-bottom">
-                        <strong>₱2,299</strong>
-                        <div class="product-buttons">
-                            <button class="add-cart-button">Add to Cart</button>
-                            <button class="buy-button">Buy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php if (empty($dbProducts)): ?>
+                <p>No products available right now.</p>
+            <?php endif; ?>
 
         </div>
     </section>
@@ -374,57 +342,28 @@ $userRole = $_SESSION['user_role'] ?? '';
 
         <div class="product-list">
 
-            <div class="product">
-                <div class="product-image">
-                    <button class="heart">♡</button>
+            <?php foreach ($popularProducts as $product): ?>
+                <div class="product">
+                    <div class="product-image">
+                        <?php $imgSrc = productImageSrc($product['image_path']); ?>
+                        <?php if ($imgSrc !== ''): ?>
+                            <img src="<?php echo htmlspecialchars($imgSrc); ?>"
+                                 alt="<?php echo htmlspecialchars($product['name']); ?>"
+                                 loading="lazy"
+                                 style="width:100%;height:100%;object-fit:contain;display:block;"
+                                 onerror="this.style.display='none'">
+                        <?php endif; ?>
+                        <button class="heart">♡</button>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-category"><?php echo htmlspecialchars($product['category']); ?></p>
+                        <h3 title="<?php echo htmlspecialchars($product['name']); ?>"><?php echo htmlspecialchars($product['name']); ?></h3>
+                        <p class="brand"><?php echo htmlspecialchars($product['brand'] ?? ''); ?></p>
+                        <div class="stars">★★★★★</div>
+                        <strong>₱<?php echo number_format($product['price'], 2); ?></strong>
+                    </div>
                 </div>
-                <div class="product-info">
-                    <p class="product-category">Basketball</p>
-                    <h3>Basketball</h3>
-                    <p class="brand">Spalding</p>
-                    <div class="stars">★★★★★</div>
-                    <strong>₱1,250</strong>
-                </div>
-            </div>
-
-            <div class="product">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Running</p>
-                    <h3>Running Shoes</h3>
-                    <p class="brand">Nike</p>
-                    <div class="stars">★★★★★</div>
-                    <strong>₱3,499</strong>
-                </div>
-            </div>
-
-            <div class="product">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Football</p>
-                    <h3>Football</h3>
-                    <p class="brand">Adidas</p>
-                    <div class="stars">★★★★☆</div>
-                    <strong>₱1,899</strong>
-                </div>
-            </div>
-
-            <div class="product">
-                <div class="product-image">
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category">Tennis</p>
-                    <h3>Tennis Racket</h3>
-                    <p class="brand">Wilson</p>
-                    <div class="stars">★★★★★</div>
-                    <strong>₱2,799</strong>
-                </div>
-            </div>
+            <?php endforeach; ?>
 
         </div>
     </section>
