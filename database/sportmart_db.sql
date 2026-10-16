@@ -12,32 +12,6 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-CREATE TABLE users (
-    user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(150) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM(
-        'Customer',
-        'Admin', 
-        'Staff') 
-    NOT NULL DEFAULT 'Customer',
-    phone VARCHAR(30),
-    physical_address VARCHAR(255),
-    account_status ENUM(
-        'Active',
-        'Suspended',
-        'Inactive'
-    ) NOT NULL DEFAULT 'Active',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP NULL DEFAULT NULL
-)
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_unicode_ci;
-
-
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;

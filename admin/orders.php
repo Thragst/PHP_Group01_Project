@@ -1,41 +1,62 @@
+
 <?php
 session_start();
-include 'includes/admin_header.php';
 
-if (!isset($_SESSION['mock_orders'])) {
-    $_SESSION['mock_orders'] = [
-        '1001' => ['customer' => 'Juan Dela Cruz', 'date' => 'Oct 2, 2026', 'total' => '₱3,450.00', 'payment' => 'GCash', 'status' => 'Pending'],
-        '1002' => ['customer' => 'Maria Santos', 'date' => 'Oct 1, 2026', 'total' => '₱5,995.00', 'payment' => 'Cash on Delivery', 'status' => 'Shipped'],
-        '1003' => ['customer' => 'Mark Reyes', 'date' => 'Sep 28, 2026', 'total' => '₱1,850.00', 'payment' => 'Credit Card', 'status' => 'Delivered'],
-        '1004' => ['customer' => 'Alex Medina', 'date' => 'Oct 5, 2026', 'total' => '₱2,100.00', 'payment' => 'Bank Transfer', 'status' => 'Processing'],
-    ];
+require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../includes/tracking_config.php';
+
+if (!canUpdateOrders()) {
+    http_response_code(403);
+    exit('Access denied.');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
-    $id = str_replace('#ORD-', '', $_POST['order_id']); 
-    if (isset($_SESSION['mock_orders'][$id])) {
-        $_SESSION['mock_orders'][$id]['status'] = $_POST['new_status'];
-    }
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+$sql = "SELECT order_id, status
+        FROM orders
+        ORDER BY order_id DESC";
+
+$result = $conn->query($sql);
+$orders = $result->fetch_all(MYSQLI_ASSOC);
+
+include __DIR__ . '/includes/admin_header.php';
 ?>
 
 <div class="page-header">
     <div>
         <h2>Order Management</h2>
-        <p style="color: #666; font-size: 0.95rem; margin-top: 5px;">Track customer orders, review payment methods, and update order statuses.</p>
+        <p style="color: #666; font-size: 0.95rem; margin-top: 5px;">
+            Track customer orders, review payment methods, and update order statuses.
+        </p>
     </div>
 </div>
 
 <div class="admin-card">
+
     <div style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Order ID or Customer Name..." style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; width: 320px;">
-        <select id="statusFilter" onchange="filterTable()" style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px;">
+
+        <input
+            type="text"
+            id="searchInput"
+            onkeyup="filterTable()"
+            placeholder="Search by Order ID..."
+            style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; width: 320px;"
+        >
+
+        <select
+            id="statusFilter"
+            onchange="filterTable()"
+            style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px;"
+        >
             <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Processing">Processing</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
+
+            <?php foreach ($statuses as $status): ?>
+                <option value="<?= e($status) ?>">
+                    <?= e($status) ?>
+                </option>
+            <?php endforeach; ?>
         </select>
     </div>
 
@@ -43,87 +64,193 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
         <thead>
             <tr>
                 <th>Order ID</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Payment</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
         </thead>
+
         <tbody>
-            <?php foreach ($_SESSION['mock_orders'] as $id => $order): ?>
+            <?php foreach ($orders as $order): ?>
+
+                <?php
+                $orderId = (int) $order['order_id'];
+                $currentStatus = $order['status'];
+                $nextStatuses = $allowedTransitions[$currentStatus] ?? [];
+                ?>
+
                 <tr class="order-row">
-                    <td class="order-id">#ORD-<?php echo $id; ?></td>
-                    <td class="customer-name"><?php echo htmlspecialchars($order['customer']); ?></td>
-                    <td><?php echo $order['date']; ?></td>
-                    <td><?php echo $order['total']; ?></td>
-                    <td><?php echo $order['payment']; ?></td>
-                    <td class="order-status"><span class="badge badge-<?php echo strtolower($order['status']); ?>"><?php echo $order['status']; ?></span></td>
-                    <td><button class="btn-action" onclick="openStatusModal('<?php echo $id; ?>', '<?php echo $order['status']; ?>')">Update Status</button></td>
+
+                    <td class="order-id">
+                        #ORD-<?= $orderId ?>
+                    </td>
+
+                    <td class="order-status">
+                        <span class="status-badge">
+                            <?= e($currentStatus) ?>
+                        </span>
+                    </td>
+
+                    <td>
+                        <?php if (!empty($nextStatuses)): ?>
+                            <button
+                                type="button"
+                                class="btn-primary"
+                                onclick="openStatusModal(<?= $orderId ?>, <?= e(json_encode($currentStatus)) ?>)"
+                            >
+                                Update Status
+                            </button>
+                        <?php endif; ?>
+
+                        <a
+                            href="../track_order.php?order_id=<?= $orderId ?>"
+                            class="btn-secondary"
+                        >
+                            View Tracking
+                        </a>
+                    </td>
+
                 </tr>
+
             <?php endforeach; ?>
         </tbody>
     </table>
+
+    <?php if (empty($orders)): ?>
+        <p>No orders found in the database.</p>
+    <?php endif; ?>
+
 </div>
 
 <div class="modal-overlay" id="statusModal">
     <div class="modal-content" style="max-width: 450px;">
+
         <div class="modal-header">
             <h3>Update Order Status</h3>
-            <button class="modal-close" onclick="closeModal('statusModal')" type="button">&times;</button>
+
+            <button
+                class="modal-close"
+                onclick="closeModal('statusModal')"
+                type="button"
+            >&times;</button>
         </div>
-        
-        <form action="orders.php" method="POST">
+
+        <form action="update_order_status.php" method="POST">
+
+            <input
+                type="hidden"
+                id="modalOrderId"
+                name="order_id"
+            >
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= e($_SESSION['csrf_token']) ?>"
+            >
+
             <div class="form-group">
                 <label>Order Reference</label>
-                <input type="text" id="modalOrderId" name="order_id" readonly style="background-color: #F3F3F3; font-weight: bold;">
+                <input
+                    type="text"
+                    id="modalOrderReference"
+                    readonly
+                >
             </div>
 
             <div class="form-group">
-                <label>Order Status</label>
-                <select id="modalStatusSelect" name="new_status">
-                    <option value="Pending">Pending</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
+                <label>New Order Status</label>
+
+                <select
+                    id="modalStatusSelect"
+                    name="status"
+                    required
+                ></select>
+            </div>
+
+            <div class="form-group">
+                <label>Current NCR Location</label>
+
+                <select name="current_location" id="modalLocation">
+                    <option value="">Select NCR City</option>
+
+                    <?php foreach ($ncrCities as $city): ?>
+                        <option value="<?= e($city) ?>">
+                            <?= e($city) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
+            <div class="form-group">
+                <label>Tracking Remarks</label>
+
+                <textarea
+                    name="remarks"
+                    rows="3"
+                    maxlength="255"
+                    placeholder="Example: Arrived at Pasig Sorting Hub"
+                ></textarea>
+            </div>
+
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <button type="button" class="btn-secondary" onclick="closeModal('statusModal')">Cancel</button>
-                <button type="submit" class="btn-primary">Save Status</button>
+
+                <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="closeModal('statusModal')"
+                >
+                    Cancel
+                </button>
+
+                <button type="submit" class="btn-primary">
+                    Save Status
+                </button>
+
             </div>
         </form>
     </div>
 </div>
 
 <script>
+const allowedTransitions = <?= json_encode(
+    $allowedTransitions,
+    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+) ?>;
+
 function filterTable() {
-    let searchFilter = document.getElementById('searchInput').value.toLowerCase();
-    let statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-    let rows = document.getElementsByClassName('order-row');
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('.order-row');
 
-    for (let i = 0; i < rows.length; i++) {
-        let orderId = rows[i].querySelector('.order-id').innerText.toLowerCase();
-        let customer = rows[i].querySelector('.customer-name').innerText.toLowerCase();
-        let status = rows[i].querySelector('.order-status').innerText.toLowerCase();
+    rows.forEach(row => {
+        const orderId = row.querySelector('.order-id').textContent.toLowerCase();
+        const currentStatus = row.querySelector('.order-status').textContent.trim().toLowerCase();
 
-        let matchesSearch = orderId.includes(searchFilter) || customer.includes(searchFilter);
-        let matchesStatus = statusFilter === "" || status === statusFilter;
+        const matchesSearch = orderId.includes(search);
+        const matchesStatus = status === '' || currentStatus === status;
 
-        if (matchesSearch && matchesStatus) {
-            rows[i].style.display = "";
-        } else {
-            rows[i].style.display = "none";
-        }
-    }
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
 }
 
 function openStatusModal(orderId, currentStatus) {
-    document.getElementById('modalOrderId').value = '#ORD-' + orderId;
-    document.getElementById('modalStatusSelect').value = currentStatus;
+    document.getElementById('modalOrderId').value = orderId;
+    document.getElementById('modalOrderReference').value = '#ORD-' + orderId;
+
+    const select = document.getElementById('modalStatusSelect');
+    select.innerHTML = '';
+
+    const nextStatuses = allowedTransitions[currentStatus] || [];
+
+    nextStatuses.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        select.appendChild(option);
+    });
+
+    document.getElementById('modalLocation').value = '';
+
     document.getElementById('statusModal').classList.add('active');
 }
 
