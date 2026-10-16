@@ -560,6 +560,32 @@ document.addEventListener("DOMContentLoaded", function () {
             sessionStorage.removeItem("checkoutFields");
         } catch (error) {}
     }
+
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+
+    passwordInputs.forEach(function (input) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "password-field";
+
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "password-toggle";
+        toggle.textContent = "Show";
+        toggle.setAttribute("aria-label", "Show password");
+
+        toggle.addEventListener("click", function () {
+            const hidden = input.type === "password";
+
+            input.type = hidden ? "text" : "password";
+            toggle.textContent = hidden ? "Hide" : "Show";
+            toggle.setAttribute("aria-label", hidden ? "Hide password" : "Show password");
+        });
+
+        wrapper.appendChild(toggle);
+    });
 });
 
 let quantityTimer = null;
