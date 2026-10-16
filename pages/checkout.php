@@ -275,7 +275,7 @@ $total = $subtotal + $shipping;
                     <button type="submit" class="checkout-button" id="placeOrderButton">Place Order</button>
                 </form>
 
-                <a href="cart.php" class="continue-shopping">← Back to Cart</a>
+                <a href="index.php?page=cart" class="continue-shopping">← Back to Cart</a>
             </aside>
         </div>
 

@@ -23,7 +23,7 @@
         <div class="footer-column">
             <h3>Account</h3>
             <a href="index.php?page=orders">My Orders</a>
-            <a href="cart.php">Shopping Cart</a>
+            <a href="index.php?page=cart">Shopping Cart</a>
         </div>
     </div>
 

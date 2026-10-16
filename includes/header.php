@@ -1,12 +1,8 @@
 
 <?php
-if(session_status()===PHP_SESSION_NONE){
-    session_start();
-}
-
+if(session_status()===PHP_SESSION_NONE){ session_start(); }
 $currentPage=isset($_GET['page'])?$_GET['page']:'home';
-$isLoggedIn=isset($_SESSION['logged_in'])&&
-            $_SESSION['logged_in']===true;
+$isLoggedIn = isLoggedIn();
 $userName=$_SESSION['user_name']??'';
 ?>
 
@@ -19,7 +15,7 @@ $userName=$_SESSION['user_name']??'';
         <a href="index.php" class="<?php echo $currentPage=='home'?'active':''; ?>">Home</a>
         <a href="index.php?page=products" class="<?php echo $currentPage=='products'?'active':''; ?>">Products</a>
         <a href="index.php?page=orders" class="<?php echo $currentPage=='orders'?'active':''; ?>">My Orders</a>
-        <a href="cart.php" class="<?php echo basename($_SERVER['PHP_SELF'])=='cart.php'?'active':''; ?>">Cart</a>
+        <a href="index.php?page=cart" class="<?php echo $currentPage === 'cart' ? 'active' : ''; ?>">Cart</a>
     </div>
 
     <div class="nav-right">
@@ -28,8 +24,8 @@ $userName=$_SESSION['user_name']??'';
                 <?php echo htmlspecialchars($userName); ?>
             </button>
         <?php else: ?>
-            <a href="#" class="login-link" onclick="showLogin();return false;">Login</a>
-            <a href="#" class="signup-link" onclick="showSignup();return false;">Sign Up</a>
+            <a href="index.php?login=required" class="login-link">Login</a>
+            <a href="index.php?signup=open" class="signup-link">Sign Up</a>
         <?php endif; ?>
     </div>
 </nav>

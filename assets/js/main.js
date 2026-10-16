@@ -140,64 +140,122 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    const filterButtons = document.querySelectorAll(".filter-button");
-    const products = document.querySelectorAll(".products-grid .product");
+const filterButtons = document.querySelectorAll(".filter-button");
+const sortProducts = document.getElementById("sortProducts");
+const productList = document.getElementById("productList");
+const productPagination = document.getElementById("productPagination");
 
+if (productList && productPagination) {
+    const products = Array.from( productList.querySelectorAll(".product") );
+    const PRODUCTS_PER_PAGE = 20;
+    let currentPage = 1;
+    let currentCategory = "All";
+    let currentSort = sortProducts ? sortProducts.value : "newest";
+    function getFilteredAndSortedProducts() {
+        let result = products.filter(function (product) {
+            if (currentCategory === "All") { return true; }
+            return product.dataset.category === currentCategory;
+        });
+        result.sort(function (a, b) {
+            if (currentSort === "lowest") {
+                return Number(a.dataset.price)
+                    - Number(b.dataset.price);
+            }
+            if (currentSort === "highest") {
+                return Number(b.dataset.price)
+                    - Number(a.dataset.price);
+            }
+            if (currentSort === "oldest") {
+                return Number(a.dataset.order)
+                    - Number(b.dataset.order);
+            }
+            return Number(b.dataset.order)
+                - Number(a.dataset.order);
+        });
+        return result;
+    }
+    function renderPagination(totalProducts) {
+        productPagination.innerHTML = "";
+        const totalPages = Math.ceil( totalProducts / PRODUCTS_PER_PAGE );
+        if (totalPages <= 1) { return; }
+        const previousButton = document.createElement("button");
+        previousButton.textContent = "‹";
+        previousButton.className = "pagination-button";
+        if (currentPage === 1) { previousButton.disabled = true; }
+        previousButton.addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                renderProducts();
+            }
+        });
+        productPagination.appendChild(previousButton);
+        for (let page = 1; page <= totalPages; page++) {
+            const pageButton = document.createElement("button");
+            pageButton.textContent = page;
+            pageButton.className = "pagination-button";
+            if (page === currentPage) {
+                pageButton.classList.add("active");
+            }
+            pageButton.addEventListener("click", function () {
+                currentPage = page;
+                renderProducts();
+            });
+            productPagination.appendChild(pageButton);
+        }
+        const nextButton = document.createElement("button");
+        nextButton.textContent = "›";
+        nextButton.className = "pagination-button";
+        if (currentPage === totalPages) { nextButton.disabled = true; }
+        nextButton.addEventListener("click", function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderProducts();
+            }
+        });
+        productPagination.appendChild(nextButton);
+    }
+
+    function renderProducts() {
+        const filteredProducts = getFilteredAndSortedProducts();
+        const totalPages = Math.max(
+            1,
+            Math.ceil(
+                filteredProducts.length / PRODUCTS_PER_PAGE
+            )
+        );
+        if (currentPage > totalPages) { currentPage = totalPages;}
+        const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        const endIndex = startIndex + PRODUCTS_PER_PAGE;
+        const visibleProducts = filteredProducts.slice(startIndex, endIndex);
+        products.forEach(function (product) { product.style.display = "none"; });
+        visibleProducts.forEach(function (product) {
+            product.style.display = "";
+            productList.appendChild(product);
+        });
+        document.querySelector(".products-page").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+        renderPagination(filteredProducts.length);
+    }
     filterButtons.forEach(function (button) {
         button.addEventListener("click", function () {
-            filterButtons.forEach(function (item) {
-                item.classList.remove("active");
-            });
-
+            filterButtons.forEach(function (item) { item.classList.remove("active");});
             button.classList.add("active");
-
-            const category = button.dataset.category;
-
-            products.forEach(function (product) {
-                if (category === "All" || product.dataset.category === category) {
-                    product.style.display = "";
-                } else {
-                    product.style.display = "none";
-                }
-            });
+            currentCategory = button.dataset.category;
+            currentPage = 1;
+            renderProducts();
         });
     });
-
-    const sortProducts = document.getElementById("sortProducts");
-
     if (sortProducts) {
         sortProducts.addEventListener("change", function () {
-            const productList = document.getElementById("productList");
-
-            if (!productList) {
-                return;
-            }
-
-            const productItems = Array.from(productList.children);
-
-            if (sortProducts.value === "lowest") {
-                productItems.sort(function (a, b) {
-                    return Number(a.dataset.price) - Number(b.dataset.price);
-                });
-            } else if (sortProducts.value === "highest") {
-                productItems.sort(function (a, b) {
-                    return Number(b.dataset.price) - Number(a.dataset.price);
-                });
-            } else if (sortProducts.value === "oldest") {
-                productItems.sort(function (a, b) {
-                    return Number(a.dataset.order) - Number(b.dataset.order);
-                });
-            } else {
-                productItems.sort(function (a, b) {
-                    return Number(b.dataset.order) - Number(a.dataset.order);
-                });
-            }
-
-            productItems.forEach(function (product) {
-                productList.appendChild(product);
-            });
+            currentSort = sortProducts.value;
+            currentPage = 1;
+            renderProducts();
         });
     }
+    renderProducts();
+}
 
     const orderFilter = document.getElementById("orderFilter");
 
