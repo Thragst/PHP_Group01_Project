@@ -1,6 +1,7 @@
 
 <?php
 if(session_status()===PHP_SESSION_NONE){ session_start(); }
+$basePath = $basePath ?? '';
 $currentPage=isset($_GET['page'])?$_GET['page']:'home';
 $isLoggedIn = isLoggedIn();
 $userName=$_SESSION['user_name']??'';
@@ -23,7 +24,8 @@ $userName=$_SESSION['user_name']??'';
             <button class="profile-button" onclick="showProfileMenu()">
                 <?php echo htmlspecialchars($userName); ?>
             </button>
-        <?php else: ?>
+            <a href="pages/logout.php" class="logout-link">Logout</a>
+                <?php else: ?>
             <a href="index.php?login=required" class="login-link">Login</a>
             <a href="index.php?signup=open" class="signup-link">Sign Up</a>
         <?php endif; ?>
