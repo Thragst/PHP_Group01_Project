@@ -1,85 +1,74 @@
 <?php
 session_start();
+require_once __DIR__ . '/../includes/db.php';
 
 $envFile = __DIR__ . '/../.env';
+$recaptchaSecret = '';
 
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
     foreach ($lines as $line) {
         if (strpos(trim($line), '#') === 0) {
             continue;
         }
-
         [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
-
         if (trim($key) === 'RECAPTCHA_SECRET_KEY') {
             $recaptchaSecret = trim($value);
         }
     }
 }
 
-$recaptchaSecret = $recaptchaSecret ?? '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
-
-    if ($recaptchaResponse === '') {
-        header('Location: ../index.php?signup=captcha');
-        exit;
-    }
-
-    $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
-
-    $postData = http_build_query([
-        'secret'   => $recaptchaSecret,
-        'response' => $recaptchaResponse,
-        'remoteip' => $_SERVER['REMOTE_ADDR']
-    ]);
-
-    $options = [
-        'http' => [
-            'method'  => 'POST',
-            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
-            'content' => $postData
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $verifyResult = file_get_contents($verifyUrl, false, $context);
-    $verifyData = json_decode($verifyResult, true);
-
-    if (!$verifyData || empty($verifyData['success'])) {
-        header('Location: ../index.php?signup=captcha');
-        exit;
-    }
-}
-
-if (!isset($_SESSION['users']) || !is_array($_SESSION['users'])) {
-    $_SESSION['users'] = [];
-}
-
 function redirectSignup($status) {
     header('Location: ../index.php?signup=' . $status);
-    exit;
+    exit();
 }
 
 function postString($key) {
     $value = $_POST[$key] ?? '';
-
-    return is_string($value) ? $value : '';
+    return is_string($value) ? trim($value) : '';
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../index.php');
-    exit;
+    exit();
+}
+//Commented out for local testing, uncomment for live
+/*
+$recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+
+if ($recaptchaResponse === '' || $recaptchaSecret === '') {
+    redirectSignup('captcha');
 }
 
-$fullname = preg_replace('/\s+/', ' ', trim(postString('fullname')));
-$username = trim(postString('username'));
-$email    = strtolower(trim(postString('email')));
-$password = postString('password');
-$confirm  = postString('confirm_password');
+$verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+$postData = http_build_query([
+    'secret'   => $recaptchaSecret,
+    'response' => $recaptchaResponse,
+    'remoteip' => $_SERVER['REMOTE_ADDR']
+]);
+
+$options = [
+    'http' => [
+        'method'  => 'POST',
+        'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+        'content' => $postData
+    ]
+];
+
+$context = stream_context_create($options);
+$verifyResult = @file_get_contents($verifyUrl, false, $context);
+$verifyData = json_decode($verifyResult, true);
+
+if (!$verifyData || empty($verifyData['success'])) {
+    redirectSignup('captcha');
+}
+*/
+
+$fullname = preg_replace('/\s+/', ' ', postString('fullname'));
+$username = postString('username');
+$email    = strtolower(postString('email'));
+$password = $_POST['password'] ?? '';
+$confirm  = $_POST['confirm_password'] ?? '';
 
 if ($fullname === '' || $username === '' || $email === '' || $password === '' || $confirm === '') {
     redirectSignup('empty');
@@ -117,32 +106,40 @@ if ($password !== $confirm) {
 }
 
 $reservedUsernames = ['admin', 'customer'];
-
 if (in_array(strtolower($username), $reservedUsernames, true)) {
     redirectSignup('exists');
 }
 
-foreach ($_SESSION['users'] as $existingUser) {
-    if (strcasecmp($existingUser['username'], $username) === 0) {
-        redirectSignup('exists');
-    }
+$stmt = $pdo->prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1");
+$stmt->execute([$username]);
+if ($stmt->fetch()) {
+    redirectSignup('exists');
 }
 
-foreach ($_SESSION['users'] as $existingUser) {
-    if (($existingUser['email'] ?? '') === $email) {
-        redirectSignup('email_taken');
-    }
+$stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ? LIMIT 1");
+$stmt->execute([$email]);
+if ($stmt->fetch()) {
+    redirectSignup('email_taken');
 }
 
-$newUser = [
-    'username' => $username,
-    'password' => password_hash($password, PASSWORD_DEFAULT),
-    'name'     => $fullname,    
-    'email'    => $email,
-    'user_id'  => 'SM-USER-' . (count($_SESSION['users']) + 1),
-    'role'     => 'Customer'
-];
+$stmt = $pdo->query("SELECT COUNT(*) AS total FROM users");
+$row = $stmt->fetch();
+$nextNumber = ((int)$row['total']) + 1;
+$userId = 'SM-CUST-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
-$_SESSION['users'][$username] = $newUser;
+$passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-redirectSignup('success');
+try {
+    $insertStmt = $pdo->prepare("
+        INSERT INTO users (
+            user_id, username, full_name, email, password_hash, role, account_status, login_attempts, created_at
+        ) VALUES (
+            ?, ?, ?, ?, ?, 'Customer', 'Active', 0, NOW()
+        )
+    ");
+    $insertStmt->execute([$userId, $username, $fullname, $email, $passwordHash]);
+    
+    redirectSignup('success');
+} catch (PDOException $e) {
+    redirectSignup('error');
+}

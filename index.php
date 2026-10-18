@@ -63,7 +63,7 @@ if (!in_array($page, $allowedPages, true)) {
                 <h2>Sign Up</h2>
                 <p>Create your SportMart Account.</p>
                 <?php $signupStatus = $_GET['signup'] ?? '';
-                $signupErrors = ['empty' => 'Please fill in all fields.', 'name' => 'Full name cannot contain numbers.', 'username' => 'Username can only contain letters and numbers, and cannot be numbers only.', 'exists' => 'Username already exists.', 'email' => 'Please use valid email', 'mismatch' => 'Passwords do not match. Please re-enter your password.', 'password' => 'Password does not meet the requirments.', 'error' => 'Unable to create account.', 'captcha' => 'Please complete the CAPTCHA.'];?>
+                $signupErrors = ['empty' => 'Please fill in all fields.', 'name' => 'Full name cannot contain numbers.', 'username' => 'Username can only contain letters and numbers, and cannot be numbers only.', 'exists' => 'Username already exists.', 'email' => 'Please use valid email', 'email_taken' => 'Email is already registered.', 'mismatch' => 'Passwords do not match. Please re-enter your password.', 'password' => 'Password does not meet the requirments.', 'error' => 'Unable to create account.', 'captcha' => 'Please complete the CAPTCHA.'];?>
                 <form action="pages/register.php" method="POST" id="signupForm" novalidate>
                     <input type="text" name="fullname" id="SignupFullname" placeholder="Full Name" required >
                     <p class="signup-error" id="fullnameError">
@@ -73,7 +73,7 @@ if (!in_array($page, $allowedPages, true)) {
                     <?php echo in_array( $signupStatus, ['username', 'exists'] ) ? $signupErrors[$signupStatus] : ''; ?>
                 </p>
                 <input type="text" name="email" id="signupEmail" placeholder="Email Address" required >
-                <p class="signup-error" id="emailError"> <?php echo $signupStatus === 'email' ? $signupErrors['email'] : ''; ?> </p>
+                <p class="signup-error" id="emailError"> <?php echo in_array($signupStatus, ['email', 'email_taken']) ? $signupErrors[$signupStatus] : ''; ?> </p>
                 <input type="password" name="password" id="signupPassword" placeholder="Password" required >
                 <ul class="password-rules" id="passwordRules">
                     <li id="ruleLength"> At least twelve (12) characters in length </li>
@@ -84,7 +84,9 @@ if (!in_array($page, $allowedPages, true)) {
                 </ul>
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required >
                 <p class="signup-error" id="confirmMessage"> <?php echo $signupStatus === 'mismatch' ? $signupErrors['mismatch'] : ''; ?> </p>
-                <p class="login-message" id="signupMessage"> <?php echo in_array( $signupStatus, ['empty', 'password', 'error', 'captcha'] ) ? $signupErrors[$signupStatus] : ''; ?> </p>
+                <p class="login-message" id="signupMessage" <?php echo $signupStatus === 'success' ? 'style="color: #28a745; font-weight: bold;"' : ''; ?>>
+                    <?php echo $signupStatus === 'success' ? 'Account created successfully! Please login.' : (in_array( $signupStatus, ['empty', 'password', 'error', 'captcha'] ) ? $signupErrors[$signupStatus] : ''); ?>
+                </p>
                 <div class="g-recaptcha" data-sitekey="6LfM9fItAAAAANmJl31ryWpfPiOzSXCW4wj8Aa0j"></div>
                 <button type="submit" class="popup-button"> Create Account </button>
             </form>
