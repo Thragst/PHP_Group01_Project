@@ -72,3 +72,41 @@ function deleteProduct() {
         document.getElementById('deleteForm').submit();
     }
 }
+
+//Orders
+function filterTable() {
+    let searchFilter = document.getElementById('searchInput').value.toLowerCase();
+    let statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+    let rows = document.getElementsByClassName('order-row');
+
+    for (let i = 0; i < rows.length; i++) {
+        let orderId = rows[i].querySelector('.order-id').innerText.toLowerCase();
+        let customer = rows[i].querySelector('.customer-name').innerText.toLowerCase();
+        let status = rows[i].querySelector('.order-status').innerText.toLowerCase();
+
+        let matchesSearch = orderId.includes(searchFilter) || customer.includes(searchFilter);
+        let matchesStatus = statusFilter === "" || status === statusFilter;
+
+        if (matchesSearch && matchesStatus) {
+            rows[i].style.display = "";
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+}
+
+function openStatusModal(orderId, currentStatus, currentDriverId = '') {
+    document.getElementById('modalOrderId').value = '#ORD-' + orderId;
+    document.getElementById('modalStatusSelect').value = currentStatus;
+    
+    let driverSelect = document.getElementById('modalDriverSelect');
+    if (driverSelect) {
+        driverSelect.value = currentDriverId;
+    }
+    
+    document.getElementById('statusModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}

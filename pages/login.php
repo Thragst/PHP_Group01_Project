@@ -42,10 +42,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username']  = $user['username'] ?? $user['email'];
             $_SESSION['user_role'] = $user['role'];
 
-            if (in_array($user['role'], ['Admin', 'Staff', 'Developer'], true)) {
-                header('Location: ../admin/index.php');
-            } else {
-                header('Location: ../index.php?login=success');
+            switch ($user['role']) {
+                case 'Admin':
+                case 'Staff':
+                case 'Developer':
+                    header('Location: ../admin/index.php');
+                    break;
+
+                case 'Driver':
+                    header('Location: ../driver/deliveries.php');
+                    break;
+
+                case 'Customer':
+                default:
+                    header('Location: ../index.php?login=success');
+                    break;
             }
             exit();
         } else {
