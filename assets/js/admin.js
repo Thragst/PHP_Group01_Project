@@ -110,3 +110,71 @@ function openStatusModal(orderId, currentStatus, currentDriverId = '') {
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
+
+//Categories
+let isCategoryEditMode = false;
+
+function openAddCategoryModal() {
+    isCategoryEditMode = false;
+    document.getElementById('categoryModalTitle').textContent = 'Add New Category';
+    document.getElementById('categoryAction').value = 'save';
+    document.getElementById('categoryId').value = '';
+    document.getElementById('categoryName').value = '';
+    document.getElementById('categorySlug').value = '';
+    document.getElementById('categoryDescription').value = '';
+    document.getElementById('categoryStatus').value = 'Active';
+    document.getElementById('deleteCategoryBtn').style.display = 'none';
+    
+    openModal('categoryModal');
+}
+
+function openEditCategoryModal(id, name, slug, description, status) {
+    isCategoryEditMode = true;
+    document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+    document.getElementById('categoryAction').value = 'save';
+    document.getElementById('categoryId').value = id;
+    document.getElementById('categoryName').value = name;
+    document.getElementById('categorySlug').value = slug;
+    document.getElementById('categoryDescription').value = description;
+    document.getElementById('categoryStatus').value = status;
+    document.getElementById('deleteCategoryBtn').style.display = 'block';
+    
+    openModal('categoryModal');
+}
+
+function autoGenerateSlug() {
+    if (!isCategoryEditMode) {
+        const nameInput = document.getElementById('categoryName').value;
+        const slugInput = nameInput
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9 -]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+        document.getElementById('categorySlug').value = slugInput;
+    }
+}
+
+function confirmDeleteCategory() {
+    const catName = document.getElementById('categoryName').value;
+    if (confirm(`Are you sure you want to delete category "${catName}"?`)) {
+        document.getElementById('categoryAction').value = 'delete';
+        document.getElementById('categoryForm').submit();
+    }
+}
+
+function filterCategories() {
+    const filter = document.getElementById('categorySearch').value.toLowerCase();
+    const rows = document.getElementsByClassName('category-row');
+
+    for (let i = 0; i < rows.length; i++) {
+        const name = rows[i].querySelector('.cat-name').innerText.toLowerCase();
+        const slug = rows[i].querySelector('.cat-slug').innerText.toLowerCase();
+
+        if (name.includes(filter) || slug.includes(filter)) {
+            rows[i].style.display = "";
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+}
