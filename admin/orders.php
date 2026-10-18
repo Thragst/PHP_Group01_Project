@@ -1,3 +1,4 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -73,9 +74,22 @@ include __DIR__ . '/includes/admin_header.php';
 </div>
 
 <div class="admin-card">
+
     <div style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Order ID or Customer Name..." style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; width: 320px;">
-        <select id="statusFilter" onchange="filterTable()" style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px;">
+
+        <input
+            type="text"
+            id="searchInput"
+            onkeyup="filterTable()"
+            placeholder="Search by Order ID..."
+            style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; width: 320px;"
+        >
+
+        <select
+            id="statusFilter"
+            onchange="filterTable()"
+            style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px;"
+        >
             <option value="">All Statuses</option>
             <option value="Pending">Pending</option>
             <option value="Processing">Processing</option>
@@ -99,6 +113,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <th>Action</th>
             </tr>
         </thead>
+
         <tbody>
             <?php if (!empty($orders)): ?>
                 <?php foreach ($orders as $order): ?>
@@ -133,11 +148,17 @@ include __DIR__ . '/includes/admin_header.php';
             <?php endif; ?>
         </tbody>
     </table>
+
+    <?php if (empty($orders)): ?>
+        <p>No orders found in the database.</p>
+    <?php endif; ?>
+
 </div>
 
 <!-- Modal for Admin / Staff Management -->
 <div class="modal-overlay" id="statusModal">
     <div class="modal-content" style="max-width: 450px;">
+
         <div class="modal-header">
             <h3>Update Order & Driver Assignment</h3>
             <button class="modal-close" onclick="closeModal('statusModal')" type="button">&times;</button>

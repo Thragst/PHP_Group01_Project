@@ -21,6 +21,7 @@ if (!in_array($page, $allowedPages, true)) {
         <link rel="stylesheet" href="assets/css/styles.css" >
     <title>SportMart</title>
 </head>
+
 <body>
 <?php include 'includes/header.php'; ?>
 <?php
@@ -92,6 +93,14 @@ if (!in_array($page, $allowedPages, true)) {
             </form>
             <p class="popup-disclaimer"> Already have an account? <a href="index.php?login=required"> Login here </a>. </p>
         </div>
+
+    </div>
+
+
+    <div
+        class="profile-overlay"
+        id="profileOverlay"
+        onclick="closeProfileMenu()">
     </div>
 
     <?php endif; ?>
@@ -100,4 +109,5 @@ if (!in_array($page, $allowedPages, true)) {
 <script src="assets/js/main.js"></script>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
+
 </html>
