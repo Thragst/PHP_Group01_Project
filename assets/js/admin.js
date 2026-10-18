@@ -73,6 +73,22 @@ function deleteProduct() {
     }
 }
 
+function validateFileSize(input) {
+    const fileError = document.getElementById('fileError');
+    if (input.files && input.files[0]) {
+        const fileSizeMB = input.files[0].size / (1024 * 1024);
+        if (fileSizeMB > 10) {
+            if (fileError) {
+                fileError.textContent = 'File size exceeds 10MB limit.';
+                fileError.style.display = 'block';
+            }
+            input.value = '';
+        } else if (fileError) {
+            fileError.style.display = 'none';
+        }
+    }
+}
+
 //Orders
 function filterTable() {
     let searchFilter = document.getElementById('searchInput').value.toLowerCase();

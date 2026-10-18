@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $search = trim($_GET['search'] ?? '');
 $sort = $_GET['sort'] ?? 'newest';
 $page = max(1, (int)($_GET['page'] ?? 1));
-$limit = 8;
+$limit = isset($_GET['limit']) && in_array((int)$_GET['limit'], [10, 20, 30, 50], true) ? (int)$_GET['limit'] : 10;
 $offset = ($page - 1) * $limit;
 
 switch ($sort) {
@@ -121,7 +121,7 @@ if (!empty($search)) {
     $products = $stmt->fetchAll();
 }
 
-$totalPages = ceil($totalProducts / $limit);
+$totalPages = max(1, ceil($totalProducts / $limit));
 $categories = $pdo->query("SELECT category_id, name FROM categories ORDER BY name ASC")->fetchAll();
 
 include 'includes/admin_header.php';
@@ -140,6 +140,13 @@ include 'includes/admin_header.php';
         <form method="GET" action="products.php" class="filter-group">
             <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search product name or brand..." style="padding: 10px 15px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; width: 300px;">
             <button type="submit" class="btn-primary" style="padding: 10px 18px;">Search</button>
+
+            <select name="limit" class="filter-select" onchange="this.form.submit()">
+                <option value="10" <?= $limit === 10 ? 'selected' : '' ?>>Show: 10 per page</option>
+                <option value="20" <?= $limit === 20 ? 'selected' : '' ?>>Show: 20 per page</option>
+                <option value="30" <?= $limit === 30 ? 'selected' : '' ?>>Show: 30 per page</option>
+                <option value="50" <?= $limit === 50 ? 'selected' : '' ?>>Show: 50 per page</option>
+            </select>
 
             <select name="sort" class="filter-select" onchange="this.form.submit()">
                 <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Sort: Newest Added</option>
@@ -209,20 +216,20 @@ include 'includes/admin_header.php';
         </tbody>
     </table>
 
-    <?php if ($totalPages > 1): ?>
+    <?php if ($totalProducts > 0): ?>
         <div class="pagination-wrapper">
             <div class="pagination-info">
                 Showing <?= min($offset + 1, $totalProducts) ?> to <?= min($offset + $limit, $totalProducts) ?> of <?= $totalProducts ?> products
             </div>
             <div class="pagination-controls">
-                <a href="?page=<?= max(1, $page - 1) ?>&sort=<?= $sort ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>">Previous</a>
+                <a href="?page=<?= max(1, $page - 1) ?>&limit=<?= $limit ?>&sort=<?= $sort ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>">Previous</a>
                 
                 <?php
                 $startPage = max(1, $page - 2);
                 $endPage = min($totalPages, $page + 2);
 
                 if ($startPage > 1) {
-                    echo '<a href="?page=1&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn">1</a>';
+                    echo '<a href="?page=1&limit=' . $limit . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn">1</a>';
                     if ($startPage > 2) {
                         echo '<span style="padding: 0 4px; color: #888;">...</span>';
                     }
@@ -230,18 +237,18 @@ include 'includes/admin_header.php';
 
                 for ($i = $startPage; $i <= $endPage; $i++) {
                     $activeClass = ($i === $page) ? 'active' : '';
-                    echo '<a href="?page=' . $i . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn ' . $activeClass . '">' . $i . '</a>';
+                    echo '<a href="?page=' . $i . '&limit=' . $limit . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn ' . $activeClass . '">' . $i . '</a>';
                 }
 
                 if ($endPage < $totalPages) {
                     if ($endPage < $totalPages - 1) {
                         echo '<span style="padding: 0 4px; color: #888;">...</span>';
                     }
-                    echo '<a href="?page=' . $totalPages . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn">' . $totalPages . '</a>';
+                    echo '<a href="?page=' . $totalPages . '&limit=' . $limit . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn">' . $totalPages . '</a>';
                 }
                 ?>
 
-                <a href="?page=<?= min($totalPages, $page + 1) ?>&sort=<?= $sort ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>">Next</a>
+                <a href="?page=<?= min($totalPages, $page + 1) ?>&limit=<?= $limit ?>&sort=<?= $sort ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>">Next</a>
             </div>
         </div>
     <?php endif; ?>
@@ -317,5 +324,7 @@ include 'includes/admin_header.php';
         </form>
     </div>
 </div>
+
+<script src="../assets/js/admin.js"></script>
 
 <?php echo '</main></div></div></body></html>'; ?>
