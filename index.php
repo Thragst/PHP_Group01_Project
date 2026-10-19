@@ -2,6 +2,22 @@
 session_start();
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
+
+$defaultPolicy = [
+    'max_failed_attempts' => '3',
+    'min_password_length' => '12',
+    'require_uppercase'   => '1',
+    'require_lowercase'   => '1',
+    'require_number'      => '1',
+    'require_special'     => '1'
+];
+try {
+    $rawSettings = $pdo->query("SELECT setting_key, setting_value FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+    $activePolicy = array_merge($defaultPolicy, $rawSettings ?: []);
+} catch (Exception $e) {
+    $activePolicy = $defaultPolicy;
+}
+
 $page = $_GET['page'] ?? 'home';
 $isLoggedIn = isLoggedIn();
 $userName = $_SESSION['user_name'] ?? '';
@@ -57,7 +73,10 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                         <?php if($_GET['login'] === 'error'): ?>
                             <p class="login-message">Incorrect username or password.</p>
                     <?php elseif ($_GET['login'] === 'locked'): ?>
-                            <p class="login-message">Account locked after 3 failed login attempts.</p>
+                            <?php $maxAtt = (int)($activePolicy['max_failed_attempts'] ?? 3); ?>
+                            <p class="login-message">Account locked after <?php echo $maxAtt; ?> failed login attempt<?php echo $maxAtt === 1 ? '' : 's'; ?>.</p>
+                    <?php elseif ($_GET['login'] === 'timeout'): ?>
+                            <p class="login-message">You have been logged out due to inactivity.</p>
                     <?php elseif ($_GET['login'] === 'required'): ?>
                             <p class="login-message">Please login to continue.</p>
                     <?php endif; ?>
@@ -87,11 +106,19 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 <p class="signup-error" id="emailError"> <?php echo in_array($signupStatus, ['email', 'email_taken']) ? $signupErrors[$signupStatus] : ''; ?> </p>
                 <input type="password" name="password" id="signupPassword" placeholder="Password" required >
                 <ul class="password-rules" id="passwordRules">
-                    <li id="ruleLength"> At least twelve (12) characters in length </li>
-                    <li id="ruleUpper"> At least one (1) CAPITAL letter </li>
-                    <li id="ruleLower"> At least one (1) small letter </li>
-                    <li id="ruleNumber"> At least one (1) number </li>
-                    <li id="ruleSpecial"> At least one (1) special character </li>
+                    <li id="ruleLength"> At least <?php echo (int)($activePolicy['min_password_length'] ?? 12); ?> characters in length </li>
+                    <?php if (($activePolicy['require_uppercase'] ?? '1') === '1'): ?>
+                        <li id="ruleUpper"> At least one (1) CAPITAL letter </li>
+                    <?php endif; ?>
+                    <?php if (($activePolicy['require_lowercase'] ?? '1') === '1'): ?>
+                        <li id="ruleLower"> At least one (1) small letter </li>
+                    <?php endif; ?>
+                    <?php if (($activePolicy['require_number'] ?? '1') === '1'): ?>
+                        <li id="ruleNumber"> At least one (1) number </li>
+                    <?php endif; ?>
+                    <?php if (($activePolicy['require_special'] ?? '1') === '1'): ?>
+                        <li id="ruleSpecial"> At least one (1) special character </li>
+                    <?php endif; ?>
                 </ul>
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required >
                 <p class="signup-error" id="confirmMessage"> <?php echo $signupStatus === 'mismatch' ? $signupErrors['mismatch'] : ''; ?> </p>

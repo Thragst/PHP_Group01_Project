@@ -344,3 +344,70 @@ function filterCustomerTable() {
         rows[i].style.display = (matchesSearch && matchesStatus) ? '' : 'none';
     }
 }
+
+//Inactivity
+if (typeof SESSION_TIMEOUT_MINUTES !== 'undefined' && SESSION_TIMEOUT_MINUTES > 0) {
+    let idleTimer;
+    const idleTimeMs = SESSION_TIMEOUT_MINUTES * 60 * 1000;
+
+    function createInactivityModal() {
+        if (document.getElementById('inactivityModal')) return;
+
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.id = 'inactivityModal';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content modal-xs';
+
+        const modalHeader = document.createElement('div');
+        modalHeader.className = 'modal-header-center';
+        
+        const title = document.createElement('h3');
+        title.textContent = 'Session Expired';
+        modalHeader.appendChild(title);
+
+        const modalBody = document.createElement('div');
+        modalBody.className = 'inactivity-body';
+
+        const message = document.createElement('p');
+        message.className = 'inactivity-text';
+        message.textContent = 'You have been logged out due to inactivity.';
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'btn-primary';
+        confirmBtn.textContent = 'OK / Login Again';
+        confirmBtn.onclick = function() {
+            window.location.href = '../pages/login.php?action=logout&timeout=1';
+        };
+
+        modalBody.appendChild(message);
+        modalBody.appendChild(confirmBtn);
+
+        modalContent.appendChild(modalHeader);
+        modalContent.appendChild(modalBody);
+        modalOverlay.appendChild(modalContent);
+
+        document.body.appendChild(modalOverlay);
+    }
+
+    function triggerInactivityLogout() {
+        createInactivityModal();
+        openModal('inactivityModal');
+    }
+
+    function resetIdleTimer() {
+        const modal = document.getElementById('inactivityModal');
+        if (modal && modal.classList.contains('active')) return;
+
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(triggerInactivityLogout, idleTimeMs);
+    }
+
+    ['mousemove', 'keydown', 'click', 'scroll'].forEach(function(evt) {
+        document.addEventListener(evt, resetIdleTimer, true);
+    });
+
+    resetIdleTimer();
+}

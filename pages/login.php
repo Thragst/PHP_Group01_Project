@@ -2,9 +2,27 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['action']) || isset($_GET['timeout']))) {
+    session_unset();
+    session_destroy();
+    header('Location: ../index.php?login=timeout');
+    exit();
+}
+
 function postString($key) {
     $value = $_POST[$key] ?? '';
     return is_string($value) ? trim($value) : '';
+}
+
+$maxAttempts = 3;
+try {
+    $stmt = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'max_failed_attempts' LIMIT 1");
+    $stmt->execute();
+    $val = $stmt->fetchColumn();
+    if ($val !== false && (int)$val > 0) {
+        $maxAttempts = (int)$val;
+    }
+} catch (PDOException $e) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,9 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch();
 
     if ($user) {
-        if ($user['account_status'] === 'Locked' || (int)$user['login_attempts'] >= 3) {
-            if ($user['account_status'] !== 'Locked') {
-                $lockStmt = $pdo->prepare("UPDATE users SET account_status = 'Locked' WHERE user_id = ?");
+        $currentStatus = $user['status'] ?? $user['account_status'] ?? 'Active';
+        $currentAttempts = (int)($user['failed_attempts'] ?? $user['login_attempts'] ?? 0);
+
+        if (strtolower($currentStatus) === 'locked' || strtolower($currentStatus) === 'suspended' || $currentAttempts >= $maxAttempts) {
+            if (strtolower($currentStatus) !== 'locked') {
+                $lockStmt = $pdo->prepare("UPDATE users SET status = 'Locked', account_status = 'Locked' WHERE user_id = ?");
                 $lockStmt->execute([$user['user_id']]);
             }
             header('Location: ../index.php?login=locked');
@@ -31,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (password_verify($password, $user['password_hash'])) {
-            $resetStmt = $pdo->prepare("UPDATE users SET login_attempts = 0 WHERE user_id = ?");
+            $resetStmt = $pdo->prepare("UPDATE users SET failed_attempts = 0, login_attempts = 0 WHERE user_id = ?");
             $resetStmt->execute([$user['user_id']]);
 
             session_regenerate_id(true);
@@ -41,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_name'] = $user['full_name'];
             $_SESSION['username']  = $user['username'] ?? $user['email'];
             $_SESSION['user_role'] = $user['role'];
+            $_SESSION['last_activity'] = time();
 
             switch ($user['role']) {
                 case 'Admin':
@@ -60,15 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             exit();
         } else {
-            $newAttempts = (int)$user['login_attempts'] + 1;
+            $newAttempts = $currentAttempts + 1;
             
-            if ($newAttempts >= 3) {
-                $updateStmt = $pdo->prepare("UPDATE users SET login_attempts = ?, account_status = 'Locked' WHERE user_id = ?");
-                $updateStmt->execute([$newAttempts, $user['user_id']]);
+            if ($newAttempts >= $maxAttempts) {
+                $updateStmt = $pdo->prepare("UPDATE users SET failed_attempts = ?, login_attempts = ?, status = 'Locked', account_status = 'Locked' WHERE user_id = ?");
+                $updateStmt->execute([$newAttempts, $newAttempts, $user['user_id']]);
                 header('Location: ../index.php?login=locked');
             } else {
-                $updateStmt = $pdo->prepare("UPDATE users SET login_attempts = ? WHERE user_id = ?");
-                $updateStmt->execute([$newAttempts, $user['user_id']]);
+                $updateStmt = $pdo->prepare("UPDATE users SET failed_attempts = ?, login_attempts = ? WHERE user_id = ?");
+                $updateStmt->execute([$newAttempts, $newAttempts, $user['user_id']]);
                 header('Location: ../index.php?login=error');
             }
             exit();
