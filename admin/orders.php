@@ -1,4 +1,3 @@
-
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -42,10 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     exit();
 }
 
-
 $driversQuery = "SELECT user_id, full_name FROM users WHERE role = 'Driver' AND account_status = 'Active' ORDER BY full_name ASC";
 $driversList = $pdo->query($driversQuery)->fetchAll();
-
 
 $query = "SELECT 
             o.order_id, 
@@ -69,26 +66,24 @@ include __DIR__ . '/includes/admin_header.php';
 <div class="page-header">
     <div>
         <h2>Order Management</h2>
-        <p style="color: #666; font-size: 0.95rem; margin-top: 5px;">Track customer orders, assign delivery drivers, and update order fulfillment statuses.</p>
+        <p class="text-muted-sm">Track customer orders, assign delivery drivers, and update order fulfillment statuses.</p>
     </div>
 </div>
 
 <div class="admin-card">
-
-    <div style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">
-
+    <div class="card-header-flex mb-20">
         <input
             type="text"
             id="searchInput"
+            class="table-search-lg"
             onkeyup="filterTable()"
             placeholder="Search by Order ID..."
-            style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; width: 320px;"
         >
 
         <select
             id="statusFilter"
+            class="table-filter-lg"
             onchange="filterTable()"
-            style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px;"
         >
             <option value="">All Statuses</option>
             <option value="Pending">Pending</option>
@@ -128,7 +123,7 @@ include __DIR__ . '/includes/admin_header.php';
                         <td><?php echo $formattedDate; ?></td>
                         <td><?php echo $formattedTotal; ?></td>
                         <td><?php echo $paymentDisplay; ?></td>
-                        <td style="font-weight: 500; color: #444;"><?php echo htmlspecialchars($order['driver_name']); ?></td>
+                        <td class="driver-name-text"><?php echo htmlspecialchars($order['driver_name']); ?></td>
                         <td class="order-status">
                             <span class="badge badge-<?php echo strtolower(str_replace(' ', '-', $order['status'])); ?>">
                                 <?php echo htmlspecialchars($order['status']); ?>
@@ -143,36 +138,29 @@ include __DIR__ . '/includes/admin_header.php';
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 30px; color: #777;">No orders found in database.</td>
+                    <td colspan="8" class="table-empty-notice">No orders found in database.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
     </table>
-
-    <?php if (empty($orders)): ?>
-        <p>No orders found in the database.</p>
-    <?php endif; ?>
-
 </div>
 
-<!-- Modal for Admin / Staff Management -->
 <div class="modal-overlay" id="statusModal">
-    <div class="modal-content" style="max-width: 450px;">
-
+    <div class="modal-content modal-xs">
         <div class="modal-header">
             <h3>Update Order & Driver Assignment</h3>
             <button class="modal-close" onclick="closeModal('statusModal')" type="button">&times;</button>
         </div>
         
         <form action="orders.php" method="POST">
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Order Reference</label>
-                <input type="text" id="modalOrderId" name="order_id" readonly style="background-color: #F3F3F3; font-weight: bold; width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" id="modalOrderId" name="order_id" readonly class="form-input-readonly">
             </div>
 
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Order Status</label>
-                <select id="modalStatusSelect" name="new_status" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <select id="modalStatusSelect" name="new_status">
                     <option value="Pending">Pending</option>
                     <option value="Processing">Processing</option>
                     <option value="Shipped">Shipped</option>
@@ -182,9 +170,9 @@ include __DIR__ . '/includes/admin_header.php';
                 </select>
             </div>
 
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Assign Delivery Driver</label>
-                <select id="modalDriverSelect" name="driver_id" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <select id="modalDriverSelect" name="driver_id">
                     <option value="">-- No Driver Assigned --</option>
                     <?php foreach ($driversList as $driver): ?>
                         <option value="<?php echo $driver['user_id']; ?>">
@@ -194,7 +182,7 @@ include __DIR__ . '/includes/admin_header.php';
                 </select>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <div class="modal-footer-bordered">
                 <button type="button" class="btn-secondary" onclick="closeModal('statusModal')">Cancel</button>
                 <button type="submit" class="btn-primary">Save Changes</button>
             </div>

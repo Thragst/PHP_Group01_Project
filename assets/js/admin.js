@@ -194,3 +194,153 @@ function filterCategories() {
         }
     }
 }
+
+//Users
+function setElementText(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = value;
+    }
+}
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function openStaffModal() {
+    setElementText('staffModalTitle', 'Create Staff Account');
+    
+    const actionEl = document.getElementById('staffAction');
+    if (actionEl) actionEl.value = 'create_staff';
+
+    const userIdEl = document.getElementById('staffUserId');
+    if (userIdEl) userIdEl.value = '';
+
+    const nameEl = document.getElementById('staffName');
+    if (nameEl) nameEl.value = '';
+
+    const emailEl = document.getElementById('staffEmail');
+    if (emailEl) emailEl.value = '';
+
+    const roleEl = document.getElementById('staffRole');
+    if (roleEl) roleEl.value = 'Staff';
+
+    const statusGroupEl = document.getElementById('staffStatusGroup');
+    if (statusGroupEl) statusGroupEl.style.display = 'none';
+
+    const passEl = document.getElementById('staffPassword');
+    if (passEl) passEl.required = true;
+
+    setElementText('staffPasswordLabel', 'Password');
+    
+    openModal('staffModal');
+}
+
+function openEditPermissionsModal(user) {
+    setElementText('staffModalTitle', 'Edit Account Permissions');
+
+    const actionEl = document.getElementById('staffAction');
+    if (actionEl) actionEl.value = 'update_staff';
+
+    const userIdEl = document.getElementById('staffUserId');
+    if (userIdEl) userIdEl.value = user.user_id;
+
+    const nameEl = document.getElementById('staffName');
+    if (nameEl) nameEl.value = user.full_name || user.name || '';
+
+    const emailEl = document.getElementById('staffEmail');
+    if (emailEl) emailEl.value = user.email || '';
+
+    const roleEl = document.getElementById('staffRole');
+    if (roleEl) roleEl.value = user.role || 'Staff';
+
+    const statusEl = document.getElementById('staffStatus');
+    if (statusEl) statusEl.value = user.status || 'Active';
+
+    const statusGroupEl = document.getElementById('staffStatusGroup');
+    if (statusGroupEl) statusGroupEl.style.display = 'block';
+
+    const passEl = document.getElementById('staffPassword');
+    if (passEl) passEl.required = false;
+
+    setElementText('staffPasswordLabel', 'New Password (Leave blank to keep current)');
+    
+    openModal('staffModal');
+}
+
+function openCustomerProfileModal(customer) {
+    setElementText('profileName', customer.full_name || customer.name || 'N/A');
+    setElementText('profileUsername', customer.username ? customer.username : 'N/A');
+    setElementText('profileEmail', customer.email || 'N/A');
+    setElementText('profileDate', customer.created_at || 'N/A');
+    setElementText('profileStatus', customer.status || 'Active');
+    setElementText('profilePhone', customer.phone || 'Not Provided');
+    setElementText('profileAddress', customer.physical_address || 'No address saved');
+    setElementText('profileOrdersCount', customer.total_orders || '0');
+    setElementText('profileTotalSpent', customer.total_spent ? '₱' + parseFloat(customer.total_spent).toFixed(2) : '₱0.00');
+    setElementText('profileFailedAttempts', customer.failed_attempts || '0');
+
+    openModal('customerProfileModal');
+}
+
+function filterStaffTable() {
+    const searchInput = document.getElementById('staffSearchInput');
+    const roleSelect = document.getElementById('staffRoleFilter');
+    if (!searchInput || !roleSelect) return;
+
+    const search = searchInput.value.toLowerCase();
+    const role = roleSelect.value.toLowerCase();
+    const rows = document.getElementsByClassName('staff-row');
+
+    for (let i = 0; i < rows.length; i++) {
+        const nameEl = rows[i].querySelector('.staff-name');
+        const emailEl = rows[i].querySelector('.staff-email');
+        const roleEl = rows[i].querySelector('.staff-role');
+
+        const name = nameEl ? nameEl.innerText.toLowerCase() : '';
+        const email = emailEl ? emailEl.innerText.toLowerCase() : '';
+        const staffRole = roleEl ? roleEl.innerText.toLowerCase() : '';
+
+        const matchesSearch = name.includes(search) || email.includes(search);
+        const matchesRole = role === 'all' || staffRole === role;
+
+        rows[i].style.display = (matchesSearch && matchesRole) ? '' : 'none';
+    }
+}
+
+function filterCustomerTable() {
+    const searchInput = document.getElementById('customerSearchInput');
+    const statusSelect = document.getElementById('customerStatusFilter');
+    if (!searchInput || !statusSelect) return;
+
+    const search = searchInput.value.toLowerCase();
+    const status = statusSelect.value.toLowerCase();
+    const rows = document.getElementsByClassName('customer-row');
+
+    for (let i = 0; i < rows.length; i++) {
+        const nameEl = rows[i].querySelector('.cust-name');
+        const emailEl = rows[i].querySelector('.cust-email');
+        const statusEl = rows[i].querySelector('.cust-status');
+
+        const name = nameEl ? nameEl.innerText.toLowerCase() : '';
+        const email = emailEl ? emailEl.innerText.toLowerCase() : '';
+        const custStatus = statusEl ? statusEl.innerText.toLowerCase() : '';
+
+        const matchesSearch = name.includes(search) || email.includes(search);
+        const matchesStatus = status === 'all' || 
+            (status === 'locked' && custStatus.includes('locked')) || 
+            (status === 'active' && custStatus === 'active');
+
+        rows[i].style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+    }
+}

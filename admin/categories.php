@@ -93,20 +93,20 @@ include __DIR__ . '/includes/admin_header.php';
 <div class="page-header">
     <div>
         <h2>Category Management</h2>
-        <p style="color: #666; font-size: 0.95rem; margin-top: 5px;">Organize store products by sports discipline, gear types, and collections.</p>
+        <p class="text-muted-sm">Organize store products by sports discipline, gear types, and collections.</p>
     </div>
     <button class="btn-primary" onclick="openAddCategoryModal()">+ Add New Category</button>
 </div>
 
 <?php if (!empty($flashError)): ?>
-    <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 0.95rem;">
+    <div class="alert-banner alert-error">
         ⚠️ <?php echo htmlspecialchars($flashError); ?>
     </div>
 <?php endif; ?>
 
 <div class="admin-card">
-    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-        <input type="text" id="categorySearch" onkeyup="filterCategories()" placeholder="Search category name or slug..." style="padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; width: 320px;">
+    <div class="mb-20 flex-gap-10">
+        <input type="text" id="categorySearch" onkeyup="filterCategories()" placeholder="Search category name or slug..." class="table-search-lg">
     </div>
 
     <table class="admin-table" id="categoriesTable">
@@ -125,8 +125,8 @@ include __DIR__ . '/includes/admin_header.php';
                 <?php foreach ($categories as $cat): ?>
                     <tr class="category-row">
                         <td><?php echo $cat['category_id']; ?></td>
-                        <td class="cat-name" style="font-weight: 600;"><?php echo htmlspecialchars($cat['name']); ?></td>
-                        <td class="cat-slug" style="color: #666; font-family: monospace;"><?php echo htmlspecialchars($cat['slug']); ?></td>
+                        <td class="cat-name font-semi-bold"><?php echo htmlspecialchars($cat['name']); ?></td>
+                        <td class="cat-slug"><?php echo htmlspecialchars($cat['slug']); ?></td>
                         <td><?php echo (int)$cat['product_count']; ?> Product<?php echo $cat['product_count'] == 1 ? '' : 's'; ?></td>
                         <td>
                             <span class="badge badge-<?php echo strtolower($cat['status']) === 'active' ? 'active' : 'locked'; ?>">
@@ -146,7 +146,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 30px; color: #777;">No categories found in database.</td>
+                    <td colspan="6" class="table-empty-notice">No categories found in database.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
@@ -154,7 +154,7 @@ include __DIR__ . '/includes/admin_header.php';
 </div>
 
 <div class="modal-overlay" id="categoryModal">
-    <div class="modal-content" style="max-width: 550px;">
+    <div class="modal-content modal-550">
         <div class="modal-header">
             <h3 id="categoryModalTitle">Add New Category</h3>
             <button class="modal-close" onclick="closeModal('categoryModal')" type="button">&times;</button>
@@ -164,32 +164,32 @@ include __DIR__ . '/includes/admin_header.php';
             <input type="hidden" name="action" id="categoryAction" value="save">
             <input type="hidden" name="category_id" id="categoryId">
 
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Category Name</label>
-                <input type="text" name="name" id="categoryName" required placeholder="e.g. Badminton" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" onkeyup="autoGenerateSlug()">
+                <input type="text" name="name" id="categoryName" required placeholder="e.g. Badminton" onkeyup="autoGenerateSlug()">
             </div>
 
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Slug</label>
-                <input type="text" name="slug" id="categorySlug" required placeholder="e.g. badminton" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                <input type="text" name="slug" id="categorySlug" required placeholder="e.g. badminton">
             </div>
 
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" id="categoryDescription" rows="3" placeholder="Enter category details..." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-family:inherit;"></textarea>
+                <textarea name="description" id="categoryDescription" rows="3" placeholder="Enter category details..."></textarea>
             </div>
 
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group">
                 <label>Status</label>
-                <select name="status" id="categoryStatus" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                <select name="status" id="categoryStatus">
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                 </select>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <button type="button" class="btn-danger" id="deleteCategoryBtn" onclick="confirmDeleteCategory()" style="display: none;">Delete</button>
-                <div style="display: flex; gap: 10px; margin-left: auto;">
+            <div class="modal-footer-space-between">
+                <button type="button" class="btn-danger hidden-element" id="deleteCategoryBtn" onclick="confirmDeleteCategory()">Delete</button>
+                <div class="flex-end-group">
                     <button type="button" class="btn-secondary" onclick="closeModal('categoryModal')">Cancel</button>
                     <button type="submit" class="btn-primary">Save Category</button>
                 </div>

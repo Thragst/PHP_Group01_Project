@@ -136,10 +136,10 @@ include 'includes/admin_header.php';
 </div>
 
 <div class="admin-card">
-    <div style="margin-bottom: 20px;">
+    <div class="mb-20">
         <form method="GET" action="products.php" class="filter-group">
-            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search product name or brand..." style="padding: 10px 15px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; width: 300px;">
-            <button type="submit" class="btn-primary" style="padding: 10px 18px;">Search</button>
+            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search product name or brand..." class="product-search-input">
+            <button type="submit" class="btn-primary">Search</button>
 
             <select name="limit" class="filter-select" onchange="this.form.submit()">
                 <option value="10" <?= $limit === 10 ? 'selected' : '' ?>>Show: 10 per page</option>
@@ -188,14 +188,14 @@ include 'includes/admin_header.php';
                     ?>
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="product-info-cell">
                                 <img src="<?= htmlspecialchars($imgSrc) ?>" class="product-thumb" alt="<?= htmlspecialchars($prod['name']) ?>" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23aaa\' stroke-width=\'2\'><rect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\'/><circle cx=\'8.5\' cy=\'8.5\' r=\'1.5\'/><path d=\'M21 15l-5-5L5 21\'/></svg>';">
-                                <span style="font-weight: 500; color: #222;"><?= htmlspecialchars($prod['name']) ?></span>
+                                <span class="product-title-text"><?= htmlspecialchars($prod['name']) ?></span>
                             </div>
                         </td>
                         <td><?= htmlspecialchars($prod['brand']) ?></td>
                         <td><?= htmlspecialchars($prod['category_name'] ?? 'Uncategorized') ?></td>
-                        <td style="font-weight: 600;">₱<?= number_format($prod['price'], 2) ?></td>
+                        <td class="font-semi-bold">₱<?= number_format($prod['price'], 2) ?></td>
                         <td>
                             <?php if ($prod['stock_quantity'] <= 5): ?>
                                 <span class="badge badge-locked"><?= $prod['stock_quantity'] ?> Low Stock</span>
@@ -210,7 +210,7 @@ include 'includes/admin_header.php';
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 30px; color: #777;">No products found.</td>
+                    <td colspan="6" class="table-empty-notice">No products found.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
@@ -231,7 +231,7 @@ include 'includes/admin_header.php';
                 if ($startPage > 1) {
                     echo '<a href="?page=1&limit=' . $limit . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn">1</a>';
                     if ($startPage > 2) {
-                        echo '<span style="padding: 0 4px; color: #888;">...</span>';
+                        echo '<span class="pagination-ellipsis">...</span>';
                     }
                 }
 
@@ -242,7 +242,7 @@ include 'includes/admin_header.php';
 
                 if ($endPage < $totalPages) {
                     if ($endPage < $totalPages - 1) {
-                        echo '<span style="padding: 0 4px; color: #888;">...</span>';
+                        echo '<span class="pagination-ellipsis">...</span>';
                     }
                     echo '<a href="?page=' . $totalPages . '&limit=' . $limit . '&sort=' . $sort . (!empty($search) ? '&search=' . urlencode($search) : '') . '" class="page-btn">' . $totalPages . '</a>';
                 }
@@ -271,7 +271,7 @@ include 'includes/admin_header.php';
                 <input type="text" name="name" id="productName" placeholder="e.g. Nike Air Zoom Pegasus 40" required>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="grid-2-col">
                 <div class="form-group">
                     <label>Brand</label>
                     <input type="text" name="brand" id="productBrand" placeholder="e.g. Nike" required>
@@ -287,7 +287,7 @@ include 'includes/admin_header.php';
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="grid-2-col">
                 <div class="form-group">
                     <label>Price (₱)</label>
                     <input type="number" step="0.01" name="price" id="productPrice" placeholder="0.00" required>
@@ -300,25 +300,25 @@ include 'includes/admin_header.php';
 
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" id="productDescription" style="width:100%; padding:10px; border:1px solid var(--border-color, #ccc); border-radius:6px; font-family:inherit;" rows="3" placeholder="Enter product details..."></textarea>
+                <textarea name="description" id="productDescription" rows="3" placeholder="Enter product details..."></textarea>
             </div>
 
             <div class="form-group">
-                <label>Product Display Image <small style="color: #666;">(Max: 10MB)</small></label>
+                <label>Product Display Image <small class="text-subtle-sm">(Max: 10MB)</small></label>
                 <input type="file" id="productImage" name="product_image" accept="image/png, image/jpeg, image/webp" onchange="validateFileSize(this)">
-                <small id="fileError" style="color: #C62828; display: none; margin-top: 5px; font-weight: bold;"></small>
+                <small id="fileError" class="file-error-text"></small>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid var(--border-color, #eee); padding-top: 15px;">
-                <button type="button" class="btn-danger" id="deleteBtn" style="display: none;" onclick="deleteProduct()">Delete</button>
-                <div style="display: flex; gap: 10px; margin-left: auto;">
+            <div class="modal-footer-space-between">
+                <button type="button" class="btn-danger hidden-element" id="deleteBtn" onclick="deleteProduct()">Delete</button>
+                <div class="flex-end-group">
                     <button type="button" class="btn-secondary" onclick="closeModal('productModal')">Cancel</button>
                     <button type="submit" class="btn-primary">Save Product</button>
                 </div>
             </div>
         </form>
 
-        <form action="products.php" method="POST" id="deleteForm" style="display:none;">
+        <form action="products.php" method="POST" id="deleteForm" class="hidden-element">
             <input type="hidden" name="action" value="delete_product">
             <input type="hidden" name="product_id" id="deleteProductId">
         </form>
