@@ -1,20 +1,33 @@
 .profile-menu a {
     color: #333;
     display: block;
+    padding: 14px 16px;
+    transition: none;
 }
 
 .profile-menu a:hover,
 .profile-menu a.active {
-    color: #8b2e2e;
+    background: #8b2e2e;
+    color: #fff;
 }
 
 .profile-menu a.active {
     font-weight: bold;
 }
 
+.profile-menu:hover a.active:not(:hover) {
+    background: white;
+    color: #333;
+}
+
 .profile-menu a.logout-link {
     color: #8b2e2e;
     border-bottom: none;
+}
+
+.profile-menu a.logout-link:hover {
+    background: #8b2e2e;
+    color: #fff;
 }
 
 .account-page {

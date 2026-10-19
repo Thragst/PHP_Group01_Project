@@ -11,21 +11,44 @@ if (!$isLoggedIn) {
     exit;
 }
 
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
-
-if (!isset($_SESSION['orders']) || !is_array($_SESSION['orders'])) {
-    $_SESSION['orders'] = [];
-}
+$userId = (int) $_SESSION['user_id'];
 
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 $errors = [];
-$mobile = '';
-$address = '';
+
+if (isset($_GET['from']) && $_GET['from'] === 'cart') {
+    unset($_SESSION['buy_now']);
+}
+
+function getBuyNowItems(PDO $pdo)
+{
+    $items = [];
+    foreach ($_SESSION['buy_now'] ?? [] as $pid => $qty) {
+        $stmt = $pdo->prepare("SELECT product_id, name, brand, price, image_path FROM products WHERE product_id = ? AND status = 'Active'");
+        $stmt->execute([(int) $pid]);
+        $row = $stmt->fetch();
+        if ($row && (int) $qty > 0) {
+            $row['quantity'] = min((int) $qty, 99);
+            $items[(int) $row['product_id']] = $row;
+        }
+    }
+    return $items;
+}
+
+function getCheckoutCart(PDO $pdo, $userId)
+{
+    return isset($_SESSION['buy_now']) ? getBuyNowItems($pdo) : getCart($pdo, $userId);
+}
+
+$stmt = $pdo->prepare("SELECT phone, physical_address FROM users WHERE user_id = ? LIMIT 1");
+$stmt->execute([$userId]);
+$profile = $stmt->fetch() ?: [];
+
+$mobile = $profile['phone'] ?? '';
+$address = $profile['physical_address'] ?? '';
 $request = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -40,15 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'update') {
         foreach ($_POST['quantity'] ?? [] as $id => $quantity) {
-            $id = (int)$id;
-            $quantity = (int)$quantity;
-
-            if (isset($_SESSION['cart'][$id])) {
-                if ($quantity <= 0) {
-                    unset($_SESSION['cart'][$id]);
-                } else {
-                    $_SESSION['cart'][$id]['quantity'] = min($quantity, 99);
-                }
+            if (isset($_SESSION['buy_now'])) {
+                if ((int)$quantity <= 0) { unset($_SESSION['buy_now'][(int)$id]); }
+                else { $_SESSION['buy_now'][(int)$id] = min((int)$quantity, 99); }
+                if (empty($_SESSION['buy_now'])) { unset($_SESSION['buy_now']); }
+            } else {
+                setCartQuantity($pdo, $userId, (int)$id, (int)$quantity);
             }
         }
 
@@ -61,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address = trim($_POST['address'] ?? '');
         $request = trim($_POST['request'] ?? '');
 
-        if (empty($_SESSION['cart'])) {
+        if (empty(getCheckoutCart($pdo, $userId))) {
             $errors['cart'] = 'Your cart is empty.';
         }
 
@@ -71,6 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (strlen($address) < 10) {
             $errors['address'] = 'Please enter your complete address.';
+        } elseif (mb_strlen($address) > 255) {
+            $errors['address'] = 'Address must be 255 characters or less.';
         }
 
         if (strlen($request) > 255) {
@@ -78,54 +100,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            $orderItems = [];
-            $orderSubtotal = 0;
+            $hasContact = tableHasColumn($pdo, 'orders', 'contact_number');
+            $hasNotes = tableHasColumn($pdo, 'orders', 'order_notes');
 
-            foreach ($_SESSION['cart'] as $item) {
-                $qty = (int)$item['quantity'];
-                $price = (float)$item['price'];
-                $orderSubtotal += $price * $qty;
+            try {
+                $pdo->beginTransaction();
 
-                $orderItems[] = [
-                    'name' => $item['name'],
-                    'price' => $price,
-                    'quantity' => $qty
-                ];
+                $orderCart = getCheckoutCart($pdo, $userId);
+
+                if (empty($orderCart)) {
+                    throw new DomainException('Cart is empty.');
+                }
+
+                $orderSubtotal = getCartSubtotal($orderCart);
+                $orderShipping = $orderSubtotal >= 3000 ? 0 : 100;
+                $orderTotal = $orderSubtotal + $orderShipping;
+
+                $columns = ['user_id', 'total_amount', 'payment_method', 'status', 'shipping_address'];
+                $values = [$userId, number_format($orderTotal, 2, '.', ''), 'COD', 'Pending', $address];
+
+                if ($hasContact) {
+                    $columns[] = 'contact_number';
+                    $values[] = $mobile;
+                }
+
+                if ($hasNotes) {
+                    $columns[] = 'order_notes';
+                    $values[] = $request === '' ? null : $request;
+                }
+
+                $stmt = $pdo->prepare(
+                    'INSERT INTO orders (' . implode(', ', $columns) . ')
+                     VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ')'
+                );
+                $stmt->execute($values);
+
+                $orderId = (int) $pdo->lastInsertId();
+
+                $itemStmt = $pdo->prepare(
+                    'INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
+                     VALUES (?, ?, ?, ?)'
+                );
+
+                foreach ($orderCart as $item) {
+                    $itemStmt->execute([
+                        $orderId,
+                        (int) $item['product_id'],
+                        (int) $item['quantity'],
+                        $item['price']
+                    ]);
+                }
+
+                if (isset($_SESSION['buy_now'])) { unset($_SESSION['buy_now']); } else { clearCart($pdo, $userId); }
+
+                $pdo->commit();
+
+                header('Location: ../index.php?page=orders&placed=1');
+                exit;
+            } catch (Throwable $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+
+                error_log('Checkout failed: ' . $e->getMessage());
+
+                $errors['cart'] = $e instanceof DomainException
+                    ? 'Your cart is empty.'
+                    : 'Unable to place your order. Please try again.';
             }
-
-            $orderShipping = $orderSubtotal >= 3000 ? 0 : 100;
-
-            $order = [
-                'number' => 'SM-' . date('ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 5)),
-                'date' => date('M j, Y · g:i A'),
-                'status' => 'Processing',
-                'user_id' => $_SESSION['user_id'] ?? '',
-                'items' => $orderItems,
-                'subtotal' => $orderSubtotal,
-                'shipping' => $orderShipping,
-                'total' => $orderSubtotal + $orderShipping,
-                'mobile' => $mobile,
-                'address' => $address,
-                'request' => $request
-            ];
-
-            array_unshift($_SESSION['orders'], $order);
-            $_SESSION['cart'] = [];
-
-            header('Location: ../index.php?page=orders&placed=1');
-            exit;
         }
     }
 }
 
-$cart = $_SESSION['cart'];
-$totalItems = 0;
-$subtotal = 0;
-
-foreach ($cart as $item) {
-    $totalItems += (int)$item['quantity'];
-    $subtotal += (float)$item['price'] * (int)$item['quantity'];
-}
+$cart = getCheckoutCart($pdo, $userId);
+$totalItems = getCartItemCount($cart);
+$subtotal = getCartSubtotal($cart);
 
 $shipping = $subtotal == 0 ? 0 : ($subtotal >= 3000 ? 0 : 100);
 $total = $subtotal + $shipping;
@@ -136,10 +185,11 @@ $total = $subtotal + $shipping;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Checkout | SportMart</title>
-    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/styles.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/styles.css'); ?>">
+    <link rel="stylesheet" href="../assets/css/account.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/account.css'); ?>">
 </head>
 <body>
-<?php include 'includes/header.php'; ?>
+<?php $basePath = '../'; include __DIR__ . '/../includes/header.php'; ?>
 
 <main class="checkout-page">
 
@@ -149,7 +199,7 @@ $total = $subtotal + $shipping;
             <div class="empty-cart-icon">S</div>
             <h2>Nothing to checkout</h2>
             <p>Your cart is empty. Add some products first.</p>
-            <a href="index.php?page=products" class="checkout-button">Browse Products</a>
+            <a href="../index.php?page=products" class="checkout-button">Browse Products</a>
         </section>
 
     <?php else: ?>
@@ -176,8 +226,17 @@ $total = $subtotal + $shipping;
                 <?php foreach ($cart as $id => $item): ?>
                     <div class="checkout-item">
                         <div class="checkout-product">
-                            <div class="cart-item-image small">
-                                <span><?php echo htmlspecialchars(strtoupper(substr($item['name'], 0, 1))); ?></span>
+                            <div class="cart-item-image small" style="overflow:hidden;">
+                                <?php $coImg = productImageSrc($item['image_path'] ?? '', '../'); ?>
+                                <?php if ($coImg !== ''): ?>
+                                    <img src="<?php echo htmlspecialchars($coImg); ?>"
+                                         alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                         referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:contain;display:block;background:#fff;"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                    <span style="display:none"><?php echo htmlspecialchars(strtoupper(substr($item['name'], 0, 1))); ?></span>
+                                <?php else: ?>
+                                    <span><?php echo htmlspecialchars(strtoupper(substr($item['name'], 0, 1))); ?></span>
+                                <?php endif; ?>
                             </div>
                             <div>
                                 <h3><?php echo htmlspecialchars($item['name']); ?></h3>
@@ -276,7 +335,7 @@ $total = $subtotal + $shipping;
                     <button type="submit" class="checkout-button" id="placeOrderButton">Place Order</button>
                 </form>
 
-                <a href="index.php?page=cart" class="continue-shopping">← Back to Cart</a>
+                <a href="../index.php?page=cart" class="continue-shopping">← Back to Cart</a>
             </aside>
         </div>
 
@@ -284,8 +343,8 @@ $total = $subtotal + $shipping;
 
 </main>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 
-<script src="assets/js/main.js"></script>
+<script src="../assets/js/main.js"></script>
 </body>
 </html>

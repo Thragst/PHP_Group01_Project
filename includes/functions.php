@@ -47,7 +47,7 @@ function redirect($url)
 */
 
 // (convert image path to url)
-function productImageSrc($path)
+function productImageSrc($path, $base = '')
 {
     $path = trim($path ?? '');
     if ($path === '') {
@@ -61,7 +61,7 @@ function productImageSrc($path)
     if (str_starts_with(strtolower($clean), 'admin/')) {
         $clean = substr($clean, 6);
     }
-    return $clean;
+    return $base . $clean;
 }
 
 // (format the price)
@@ -145,25 +145,34 @@ function verifyCsrfToken($token)
 |--------------------------------------------------------------------------
 */
 
-// (get the cart)
-function getCart()
+function getCart(PDO $pdo, $userId)
 {
-    return $_SESSION['cart'] ?? [];
+    $stmt = $pdo->prepare(
+        "SELECT ci.product_id, ci.quantity,
+                p.name, p.brand, p.price, p.image_path
+         FROM cart_items ci
+         JOIN products p ON p.product_id = ci.product_id
+         WHERE ci.user_id = ? AND p.status = 'Active'
+         ORDER BY ci.cart_item_id ASC"
+    );
+    $stmt->execute([(int) $userId]);
+
+    $cart = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $cart[(int) $row['product_id']] = $row;
+    }
+    return $cart;
 }
 
-// (count total items)
-function getCartItemCount()
+function getCartItemCount(array $cart)
 {
-    $cart = getCart();
     $count = 0;
     foreach ($cart as $item) { $count += (int) ($item['quantity'] ?? 0); }
     return $count;
 }
 
-// (calculate the subtotal of cart)
-function getCartSubtotal()
+function getCartSubtotal(array $cart)
 {
-    $cart = getCart();
     $subtotal = 0;
     foreach ($cart as $item) {
         $price = (float) ($item['price'] ?? 0);
@@ -173,39 +182,43 @@ function getCartSubtotal()
     return $subtotal;
 }
 
-// (add product to cart)
-function addToCart($product)
+function addToCart(PDO $pdo, $userId, $productId, $quantity = 1)
 {
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
+    $stmt = $pdo->prepare(
+        "INSERT INTO cart_items (user_id, product_id, quantity)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE quantity = LEAST(quantity + ?, 99)"
+    );
+    $stmt->execute([(int) $userId, (int) $productId, (int) $quantity, (int) $quantity]);
+}
+
+function setCartQuantity(PDO $pdo, $userId, $productId, $quantity)
+{
+    $quantity = (int) $quantity;
+
+    if ($quantity <= 0) {
+        removeFromCart($pdo, $userId, $productId);
+        return;
     }
-    $productId = (int) $product['product_id'];
-    if (isset($_SESSION['cart'][$productId])) {
-        $_SESSION['cart'][$productId]['quantity']++;
-    } else {
-        $_SESSION['cart'][$productId] = [
-            'product_id' => $productId,
-            'name' => $product['name'],
-            'price' => (float) $product['price'],
-            'image_path' => $product['image_path'] ?? '',
-            'quantity' => 1
-        ];
-    }
+
+    $stmt = $pdo->prepare(
+        "UPDATE cart_items SET quantity = ? WHERE user_id = ? AND product_id = ?"
+    );
+    $stmt->execute([min($quantity, 99), (int) $userId, (int) $productId]);
 }
 
 // (remove product from cart)
-function removeFromCart($productId)
+function removeFromCart(PDO $pdo, $userId, $productId)
 {
-    $productId = (int) $productId;
-    if (isset($_SESSION['cart'][$productId])) {
-        unset($_SESSION['cart'][$productId]);
-    }
+    $stmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ? AND product_id = ?");
+    $stmt->execute([(int) $userId, (int) $productId]);
 }
 
 // (clear the whole cart)
-function clearCart()
+function clearCart(PDO $pdo, $userId)
 {
-    $_SESSION['cart'] = [];
+    $stmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
+    $stmt->execute([(int) $userId]);
 }
 
 /*
@@ -218,12 +231,97 @@ function clearCart()
 function getOrderStatusClass($status)
 {
     $statusClasses = [
+        'Pending' => 'pending',
         'Processing' => 'processing',
         'Shipped' => 'shipped',
         'Out for Delivery' => 'delivery',
-        'Delivered' => 'delivered'
+        'Delivered' => 'delivered',
+        'Cancelled' => 'cancelled'
     ];
     return $statusClasses[$status] ?? 'processing';
+}
+
+function tableHasColumn(PDO $pdo, $table, $column)
+{
+    static $cache = [];
+    $key = $table . '.' . $column;
+
+    if (!isset($cache[$key])) {
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?"
+        );
+        $stmt->execute([$table, $column]);
+        $cache[$key] = ((int) $stmt->fetchColumn()) > 0;
+    }
+
+    return $cache[$key];
+}
+
+function getUserOrders(PDO $pdo, $userId)
+{
+    $stmt = $pdo->prepare(
+        "SELECT o.*, u.phone AS user_phone
+         FROM orders o
+         LEFT JOIN users u ON u.user_id = o.user_id
+         WHERE o.user_id = ?
+         ORDER BY o.created_at DESC, o.order_id DESC"
+    );
+    $stmt->execute([(int) $userId]);
+    $rows = $stmt->fetchAll();
+
+    if (!$rows) {
+        return [];
+    }
+
+    $orders = [];
+    foreach ($rows as $row) {
+        $orderId = (int) $row['order_id'];
+
+        $orders[$orderId] = [
+            'number' => '#ORD-' . $orderId,
+            'date' => date('M j, Y · g:i A', strtotime($row['created_at'])),
+            'status' => $row['status'],
+            'items' => [],
+            'shipping' => 0.0,
+            'total' => (float) $row['total_amount'],
+            'mobile' => $row['contact_number'] ?? $row['user_phone'] ?? '',
+            'address' => $row['shipping_address'],
+            'request' => $row['order_notes'] ?? ''
+        ];
+    }
+
+        $marks = implode(',', array_fill(0, count($orders), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT oi.order_id, oi.quantity, oi.price_at_purchase,
+                COALESCE(p.name, 'Unavailable product') AS name, p.image_path
+         FROM order_items oi
+         LEFT JOIN products p ON p.product_id = oi.product_id
+         WHERE oi.order_id IN ($marks)
+         ORDER BY oi.order_item_id ASC"
+    );
+    $stmt->execute(array_keys($orders));
+
+    $subtotals = [];
+    foreach ($stmt->fetchAll() as $item) {
+        $orderId = (int) $item['order_id'];
+        $price = (float) $item['price_at_purchase'];
+        $quantity = (int) $item['quantity'];
+
+        $orders[$orderId]['items'][] = [
+            'name' => $item['name'],
+            'image_path' => $item['image_path'] ?? '',
+            'price' => $price,
+            'quantity' => $quantity
+        ];
+        $subtotals[$orderId] = ($subtotals[$orderId] ?? 0) + ($price * $quantity);
+    }
+
+    foreach ($orders as $orderId => $order) {
+        $orders[$orderId]['shipping'] = max(0, round($order['total'] - ($subtotals[$orderId] ?? 0), 2));
+    }
+
+    return array_values($orders);
 }
 
 /*
@@ -299,26 +397,6 @@ function getAccountStats(PDO $pdo, $userId)
         $totalSpent += $amount;
 
         if (strtotime($row['created_at']) >= $weekStart) {
-            $weekSpent += $amount;
-        }
-    }
-
-    foreach ($_SESSION['orders'] ?? [] as $order) {
-        if ((string) ($order['user_id'] ?? '') !== (string) $userId) {
-            continue;
-        }
-        if (($order['status'] ?? '') === 'Cancelled') {
-            continue;
-        }
-
-        $amount = (float) ($order['total'] ?? 0);
-        $totalOrders++;
-        $totalSpent += $amount;
-
-        $dateText = preg_replace('/\s+/', ' ', str_replace('·', ' ', $order['date'] ?? ''));
-        $timestamp = strtotime($dateText);
-
-        if ($timestamp !== false && $timestamp >= $weekStart) {
             $weekSpent += $amount;
         }
     }

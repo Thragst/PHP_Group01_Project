@@ -9,15 +9,15 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
 ?>
 
 <nav class="navbar">
-    <a href="index.php" class="logo">
+    <a href="<?php echo $basePath; ?>index.php" class="logo">
         <span>S</span> SportMart
     </a>
 
     <div class="nav-links">
-        <a href="index.php" class="<?php echo $currentPage=='home'?'active':''; ?>">Home</a>
-        <a href="index.php?page=products" class="<?php echo $currentPage=='products'?'active':''; ?>">Products</a>
-        <a href="index.php?page=orders" class="<?php echo $currentPage=='orders'?'active':''; ?>">My Orders</a>
-        <a href="index.php?page=cart" class="<?php echo $currentPage === 'cart' ? 'active' : ''; ?>">Cart</a>
+        <a href="<?php echo $basePath; ?>index.php" class="<?php echo $currentPage=='home'?'active':''; ?>">Home</a>
+        <a href="<?php echo $basePath; ?>index.php?page=products" class="<?php echo $currentPage=='products'?'active':''; ?>">Products</a>
+        <a href="<?php echo $basePath; ?>index.php?page=orders" class="<?php echo $currentPage=='orders'?'active':''; ?>">My Orders</a>
+        <a href="<?php echo $basePath; ?>index.php?page=cart" class="<?php echo $currentPage === 'cart' ? 'active' : ''; ?>">Cart</a>
     </div>
 
     <div class="nav-right">
@@ -26,8 +26,8 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
                 <?php echo htmlspecialchars($userName); ?>
             </button>
         <?php else: ?>
-            <a href="index.php?login=required" class="login-link">Login</a>
-            <a href="index.php?signup=open" class="signup-link">Sign Up</a>
+            <a href="<?php echo $basePath; ?>index.php?login=required" class="login-link">Login</a>
+            <a href="<?php echo $basePath; ?>index.php?signup=open" class="signup-link">Sign Up</a>
         <?php endif; ?>
     </div>
 </nav>
@@ -50,9 +50,9 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
         </div>
 
         <nav class="profile-menu">
-            <a href="index.php?page=profile" class="<?php echo $currentPage === 'profile' ? 'active' : ''; ?>">Profile</a>
-            <a href="index.php?page=settings" class="<?php echo $currentPage === 'settings' ? 'active' : ''; ?>">Settings</a>
-            <a href="pages/logout.php" class="logout-link">Logout</a>
+            <a href="<?php echo $basePath; ?>index.php?page=profile" class="<?php echo $currentPage === 'profile' ? 'active' : ''; ?>">Profile</a>
+            <a href="<?php echo $basePath; ?>index.php?page=settings" class="<?php echo $currentPage === 'settings' ? 'active' : ''; ?>">Settings</a>
+            <a href="<?php echo $basePath; ?>pages/logout.php" class="logout-link">Logout</a>
         </nav>
     </aside>
 <?php endif; ?>

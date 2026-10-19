@@ -8,9 +8,9 @@
 
         <div class="footer-column">
             <h3>Shop</h3>
-            <a href="index.php?page=products">Products</a>
-            <a href="index.php?page=products">Categories</a>
-            <a href="index.php?page=products">Best Sellers</a>
+            <a href="<?php echo $basePath ?? ''; ?>index.php?page=products">Products</a>
+            <a href="<?php echo $basePath ?? ''; ?>index.php?page=products">Categories</a>
+            <a href="<?php echo $basePath ?? ''; ?>index.php?page=products">Best Sellers</a>
         </div>
 
         <div class="footer-column">
@@ -22,8 +22,8 @@
 
         <div class="footer-column">
             <h3>Account</h3>
-            <a href="index.php?page=orders">My Orders</a>
-            <a href="index.php?page=cart">Shopping Cart</a>
+            <a href="<?php echo $basePath ?? ''; ?>index.php?page=orders">My Orders</a>
+            <a href="<?php echo $basePath ?? ''; ?>index.php?page=cart">Shopping Cart</a>
         </div>
     </div>
 

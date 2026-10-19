@@ -1,6 +1,6 @@
 <?php
 $isLoggedIn = isLoggedIn();
-$orders = $_SESSION['orders'] ?? [];
+$orders = $isLoggedIn ? getUserOrders($pdo, $_SESSION['user_id']) : [];
 ?>
 <section class="orders-page">
     <div class="orders-header">
@@ -11,10 +11,12 @@ $orders = $_SESSION['orders'] ?? [];
         </div>
         <select class="order-filter" id="orderFilter" >
             <option value="All"> FILTER </option>
+            <option value="Pending"> Pending </option>
             <option value="Processing"> Processing </option>
             <option value="Shipped"> Shipped </option>
             <option value="Out for Delivery"> Out for Delivery </option>
             <option value="Delivered"> Delivered </option>
+            <option value="Cancelled"> Cancelled </option>
         </select>
     </div>
     <?php if (isset($_GET['placed']) && $isLoggedIn && !empty($orders)): ?>
@@ -70,8 +72,17 @@ $orders = $_SESSION['orders'] ?? [];
                         <div class="order-items">
                             <?php foreach ($order['items'] as $orderItem): ?>
                                 <div class="order-line">
-                                    <div class="order-line-image">
-                                        <span> <?php echo htmlspecialchars( strtoupper( substr( $orderItem['name'], 0, 1 ) ) ); ?> </span>
+                                    <div class="order-line-image" style="overflow:hidden;">
+                                        <?php $olImg = productImageSrc($orderItem['image_path'] ?? ''); ?>
+                                        <?php if ($olImg !== ''): ?>
+                                            <img src="<?php echo htmlspecialchars($olImg); ?>"
+                                                 alt="<?php echo htmlspecialchars($orderItem['name']); ?>"
+                                                 referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:contain;display:block;background:#fff;"
+                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                            <span style="display:none"> <?php echo htmlspecialchars( strtoupper( substr( $orderItem['name'], 0, 1 ) ) ); ?> </span>
+                                        <?php else: ?>
+                                            <span> <?php echo htmlspecialchars( strtoupper( substr( $orderItem['name'], 0, 1 ) ) ); ?> </span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="order-line-info">
                                         <h3> <?php echo htmlspecialchars( $orderItem['name'] ); ?> </h3>

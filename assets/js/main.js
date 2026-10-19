@@ -310,6 +310,9 @@ if (productList && productPagination) {
                 .then(function (data) {
                     if (data.success) {
                         showToast(data.name + " added to cart.", true);
+                    } else if (data.login_required) {
+                        showToast(data.message, false);
+                        showLogin();
                     } else {
                         showToast("Unable to add product to cart.", false);
                     }
@@ -462,10 +465,12 @@ if (productList && productPagination) {
         try {
             const saved = JSON.parse(sessionStorage.getItem("checkoutFields") || "null");
 
-            if (saved) {
-                if (mobile.value === "") mobile.value = saved.mobile || "";
-                if (address.value === "") address.value = saved.address || "";
-                if (request.value === "") request.value = saved.request || "";
+                if (saved) {
+                if (typeof saved.mobile === "string") mobile.value = saved.mobile;
+                if (typeof saved.address === "string") address.value = saved.address;
+                if (typeof saved.request === "string") request.value = saved.request;
+
+                sessionStorage.removeItem("checkoutFields");
             }
         } catch (error) {}
     }
