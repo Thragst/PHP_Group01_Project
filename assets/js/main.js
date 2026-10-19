@@ -554,3 +554,68 @@ function changeQuantity(id, change) {
         }
     }, 400);
 }
+
+function openPopup(id) {
+    const popup = document.getElementById(id);
+
+    if (popup) {
+        popup.style.display = "flex";
+    }
+}
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeProfileMenu();
+        closePopup("deleteAccountPopup");
+    }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const newPassword = document.getElementById("newPassword");
+    const confirmPassword = document.getElementById("confirmNewPassword");
+    const rulesList = document.getElementById("newPasswordRules");
+    const confirmMessage = document.getElementById("confirmNewMessage");
+
+    if (!newPassword || !confirmPassword || !rulesList) {
+        return;
+    }
+
+    const tests = {
+        length: function (value) { return value.length >= 12 && value.length <= 64; },
+        upper: function (value) { return /[A-Z]/.test(value); },
+        lower: function (value) { return /[a-z]/.test(value); },
+        number: function (value) { return /[0-9]/.test(value); },
+        special: function (value) { return /[^A-Za-z0-9]/.test(value); }
+    };
+
+    const updateRules = function () {
+        rulesList.querySelectorAll("li").forEach(function (item) {
+            const test = tests[item.dataset.rule];
+            item.classList.toggle("met", !!test && test(newPassword.value));
+        });
+    };
+
+    const updateConfirm = function () {
+        if (confirmPassword.value === "") {
+            confirmMessage.textContent = "";
+            confirmMessage.className = "match-message";
+            return;
+        }
+
+        if (newPassword.value === confirmPassword.value) {
+            confirmMessage.textContent = "Passwords match.";
+            confirmMessage.className = "match-message ok";
+        } else {
+            confirmMessage.textContent = "Passwords do not match.";
+            confirmMessage.className = "match-message bad";
+        }
+    };
+
+    newPassword.addEventListener("input", function () {
+        updateRules();
+        updateConfirm();
+    });
+
+    confirmPassword.addEventListener("input", updateConfirm);
+});

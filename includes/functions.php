@@ -250,3 +250,82 @@ function logoutUser()
     }
     session_destroy();
 }
+
+function setFlash($type, $message)
+{
+    $_SESSION['flash'] = [
+        'type' => $type,
+        'message' => $message
+    ];
+}
+
+function getFlash()
+{
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
+    return $flash;
+}
+
+function isValidPhMobile($mobile)
+{
+    return preg_match('/^(09|\+639)\d{9}$/', $mobile) === 1;
+}
+
+function meetsPasswordPolicy($password)
+{
+    $length = strlen($password);
+    return $length >= 12
+        && $length <= 64
+        && isStrongPassword($password);
+}
+
+function getAccountStats(PDO $pdo, $userId)
+{
+    $totalOrders = 0;
+    $totalSpent = 0.0;
+    $weekSpent = 0.0;
+    $weekStart = strtotime('monday this week 00:00:00');
+
+    $stmt = $pdo->prepare(
+        "SELECT total_amount, created_at
+         FROM orders
+         WHERE user_id = ? AND status <> 'Cancelled'"
+    );
+    $stmt->execute([$userId]);
+
+    foreach ($stmt->fetchAll() as $row) {
+        $amount = (float) $row['total_amount'];
+        $totalOrders++;
+        $totalSpent += $amount;
+
+        if (strtotime($row['created_at']) >= $weekStart) {
+            $weekSpent += $amount;
+        }
+    }
+
+    foreach ($_SESSION['orders'] ?? [] as $order) {
+        if ((string) ($order['user_id'] ?? '') !== (string) $userId) {
+            continue;
+        }
+        if (($order['status'] ?? '') === 'Cancelled') {
+            continue;
+        }
+
+        $amount = (float) ($order['total'] ?? 0);
+        $totalOrders++;
+        $totalSpent += $amount;
+
+        $dateText = preg_replace('/\s+/', ' ', str_replace('·', ' ', $order['date'] ?? ''));
+        $timestamp = strtotime($dateText);
+
+        if ($timestamp !== false && $timestamp >= $weekStart) {
+            $weekSpent += $amount;
+        }
+    }
+
+    return [
+        'total_orders' => $totalOrders,
+        'week_spent' => $weekSpent,
+        'total_spent' => $totalSpent
+    ];
+}

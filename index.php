@@ -8,9 +8,14 @@ $userName = $_SESSION['user_name'] ?? '';
 $userId = $_SESSION['user_id'] ?? '';
 $username = $_SESSION['username'] ?? '';
 $userRole = $_SESSION['user_role'] ?? '';
-$allowedPages = [ 'home', 'products', 'orders', 'cart' ];
+$allowedPages = [ 'home', 'products', 'orders', 'cart', 'profile', 'settings' ];
 if (!in_array($page, $allowedPages, true)) {
     $page = 'home';
+}
+
+if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
+    header('Location: index.php?login=required');
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -19,6 +24,7 @@ if (!in_array($page, $allowedPages, true)) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1.0" >
         <link rel="stylesheet" href="assets/css/styles.css" >
+        <link rel="stylesheet" href="assets/css/account.css" >
     <title>SportMart</title>
 </head>
 
@@ -33,6 +39,10 @@ if (!in_array($page, $allowedPages, true)) {
         include 'pages/orders.php';
     } elseif ($page === 'cart') {
         include 'pages/cart.php';
+    } elseif ($page === 'profile') {
+        include 'pages/profile.php';
+    } elseif ($page === 'settings') {
+        include 'pages/settings.php';
     } ?>
     <?php if (!$isLoggedIn): ?>
         <div class="popup" id="loginPopup">
@@ -97,16 +107,13 @@ if (!in_array($page, $allowedPages, true)) {
     </div>
 
 
-    <div
-        class="profile-overlay"
-        id="profileOverlay"
-        onclick="closeProfileMenu()">
-    </div>
-
     <?php endif; ?>
     
     <?php include 'includes/footer.php'; ?>
 <script src="assets/js/main.js"></script>
+<?php if (($_GET['account'] ?? '') === 'deleted'): ?>
+<script>document.addEventListener("DOMContentLoaded", function () { showToast("Your account has been deleted."); });</script>
+<?php endif; ?>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 

@@ -1,0 +1,230 @@
+.profile-menu a {
+    color: #333;
+    display: block;
+}
+
+.profile-menu a:hover,
+.profile-menu a.active {
+    color: #8b2e2e;
+}
+
+.profile-menu a.active {
+    font-weight: bold;
+}
+
+.profile-menu a.logout-link {
+    color: #8b2e2e;
+    border-bottom: none;
+}
+
+.account-page {
+    width: 88%;
+    max-width: 860px;
+    margin: 40px auto 80px;
+}
+
+.account-header {
+    margin-bottom: 26px;
+}
+
+.account-header h1 {
+    color: #351818;
+    font-size: 34px;
+    margin-bottom: 8px;
+}
+
+.account-header p:not(.small-title) {
+    color: #666;
+}
+
+.account-notice {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.account-notice.success {
+    background: #eaf5ea;
+    color: #2f6b32;
+    border: 1px solid #cfe6cf;
+}
+
+.account-notice.error {
+    background: #fdeeee;
+    color: #c62828;
+    border: 1px solid #f3cccc;
+}
+
+.stat-boxes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 26px;
+}
+
+.stat-box {
+    background: white;
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 10px rgba(53, 24, 24, .05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 13px;
+}
+
+.stat-value {
+    color: #8b2e2e;
+    font-size: 26px;
+}
+
+.account-card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 10px rgba(53, 24, 24, .05);
+}
+
+.account-card h2 {
+    color: #351818;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+
+.form-row label {
+    color: #351818;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.form-row input,
+.form-row textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    background: white;
+    color: #222;
+}
+
+.form-row textarea {
+    resize: vertical;
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+    outline: none;
+    border-color: #8b2e2e;
+}
+
+.form-row input:disabled {
+    background: #f3efed;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.form-row small {
+    color: #888;
+    font-size: 12px;
+}
+
+.match-message.ok {
+    color: #2f6b32;
+}
+
+.match-message.bad {
+    color: #c62828;
+}
+
+.account-button {
+    background: #8b2e2e;
+    color: white;
+    border: none;
+    padding: 12px 26px;
+    border-radius: 24px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.account-button:hover {
+    background: #702323;
+}
+
+.account-button.secondary {
+    background: #eee;
+    color: #333;
+}
+
+.account-button.secondary:hover {
+    background: #ddd;
+}
+
+.account-button.danger {
+    background: #c62828;
+}
+
+.account-button.danger:hover {
+    background: #a71e1e;
+}
+
+.form-row .password-field {
+    margin-bottom: 0;
+}
+
+.account-form .password-rules {
+    margin: 6px 0 0;
+}
+
+.danger-card {
+    border: 1px solid #f3cccc;
+}
+
+.danger-card h2 {
+    color: #c62828;
+}
+
+.danger-text {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+.delete-box {
+    text-align: left;
+}
+
+.delete-box h2,
+.delete-box > p {
+    text-align: center;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 700px) {
+    .stat-boxes {
+        grid-template-columns: 1fr;
+    }
+
+    .account-card {
+        padding: 22px 18px;
+    }
+}
