@@ -2,22 +2,6 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 
-$envFile = __DIR__ . '/../.env';
-$recaptchaSecret = '';
-
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) {
-            continue;
-        }
-        [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
-        if (trim($key) === 'RECAPTCHA_SECRET_KEY') {
-            $recaptchaSecret = trim($value);
-        }
-    }
-}
-
 function redirectSignup($status) {
     header('Location: ../index.php?signup=' . $status);
     exit();
@@ -32,37 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../index.php');
     exit();
 }
-//Commented out for local testing, uncomment for live
-/*
-$recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
-
-if ($recaptchaResponse === '' || $recaptchaSecret === '') {
-    redirectSignup('captcha');
-}
-
-$verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
-$postData = http_build_query([
-    'secret'   => $recaptchaSecret,
-    'response' => $recaptchaResponse,
-    'remoteip' => $_SERVER['REMOTE_ADDR']
-]);
-
-$options = [
-    'http' => [
-        'method'  => 'POST',
-        'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
-        'content' => $postData
-    ]
-];
-
-$context = stream_context_create($options);
-$verifyResult = @file_get_contents($verifyUrl, false, $context);
-$verifyData = json_decode($verifyResult, true);
-
-if (!$verifyData || empty($verifyData['success'])) {
-    redirectSignup('captcha');
-}
-*/
 
 $fullname = preg_replace('/\s+/', ' ', postString('fullname'));
 $username = postString('username');
@@ -91,13 +44,40 @@ if (strlen($email) > 255 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     redirectSignup('email');
 }
 
-$hasLength  = strlen($password) >= 12 && strlen($password) <= 64;
-$hasUpper   = preg_match('/[A-Z]/', $password);
-$hasLower   = preg_match('/[a-z]/', $password);
-$hasNumber  = preg_match('/[0-9]/', $password);
-$hasSpecial = preg_match('/[^A-Za-z0-9]/', $password);
+$defaultSettings = [
+    'min_password_length' => '12',
+    'require_uppercase'   => '1',
+    'require_lowercase'   => '1',
+    'require_number'      => '1',
+    'require_special'     => '1'
+];
 
-if (!$hasLength || !$hasUpper || !$hasLower || !$hasNumber || !$hasSpecial) {
+try {
+    $rawSettings = $pdo->query("SELECT setting_key, setting_value FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+    $policy = array_merge($defaultSettings, $rawSettings ?: []);
+} catch (PDOException $e) {
+    $policy = $defaultSettings;
+}
+
+$minLength       = (int)$policy['min_password_length'];
+$requireUpper   = $policy['require_uppercase'] === '1';
+$requireLower   = $policy['require_lowercase'] === '1';
+$requireNumber  = $policy['require_number'] === '1';
+$requireSpecial = $policy['require_special'] === '1';
+
+if (strlen($password) < $minLength || strlen($password) > 64) {
+    redirectSignup('password');
+}
+if ($requireUpper && !preg_match('/[A-Z]/', $password)) {
+    redirectSignup('password');
+}
+if ($requireLower && !preg_match('/[a-z]/', $password)) {
+    redirectSignup('password');
+}
+if ($requireNumber && !preg_match('/[0-9]/', $password)) {
+    redirectSignup('password');
+}
+if ($requireSpecial && !preg_match('/[^A-Za-z0-9]/', $password)) {
     redirectSignup('password');
 }
 
@@ -132,9 +112,9 @@ $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 try {
     $insertStmt = $pdo->prepare("
         INSERT INTO users (
-            user_id, username, full_name, email, password_hash, role, account_status, login_attempts, created_at
+            user_id, username, full_name, email, password_hash, role, status, account_status, failed_attempts, login_attempts, created_at
         ) VALUES (
-            ?, ?, ?, ?, ?, 'Customer', 'Active', 0, NOW()
+            ?, ?, ?, ?, ?, 'Customer', 'Active', 'Active', 0, 0, NOW()
         )
     ");
     $insertStmt->execute([$userId, $username, $fullname, $email, $passwordHash]);

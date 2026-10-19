@@ -721,3 +721,102 @@
     padding: 0 4px;
     color: #888;
 }
+
+.security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 20px;
+}
+
+.card-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-title-icon {
+    background-color: var(--primary-dark-red);
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+}
+
+.card-title-icon-dark {
+    background-color: var(--text-dark);
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+}
+
+.card-title-bar h3 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.checkbox-group-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: #fcfcfc;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.checkbox-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.form-field-note {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.label-bold {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.btn-submit-large {
+    padding: 12px 25px;
+    font-size: 1rem;
+}
+
+.modal-header-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.inactivity-body {
+    text-align: center;
+    padding: 15px 0;
+}
+
+.inactivity-text {
+    font-size: 1rem;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+}
