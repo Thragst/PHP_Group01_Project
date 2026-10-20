@@ -820,3 +820,28 @@
     color: var(--text-dark);
     margin-bottom: 20px;
 }
+
+.modal-textarea-readonly {
+    width: 100%;
+    height: 60px;
+    resize: none;
+}
+
+.modal-items-box {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 6px;
+    padding: 10px;
+    background: #fafafa;
+}
+
+.modal-item-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+}
+
+.modal-item-list li {
+    margin-bottom: 4px;
+}

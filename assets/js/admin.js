@@ -90,42 +90,67 @@ function validateFileSize(input) {
 }
 
 //Orders
-function filterTable() {
-    let searchFilter = document.getElementById('searchInput').value.toLowerCase();
-    let statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-    let rows = document.getElementsByClassName('order-row');
+window.openOrderModal = function(btn) {
+    if (!btn) return;
 
-    for (let i = 0; i < rows.length; i++) {
-        let orderId = rows[i].querySelector('.order-id').innerText.toLowerCase();
-        let customer = rows[i].querySelector('.customer-name').innerText.toLowerCase();
-        let status = rows[i].querySelector('.order-status').innerText.toLowerCase();
+    var orderId = btn.getAttribute('data-order-id');
+    var status = btn.getAttribute('data-status');
+    var driverId = btn.getAttribute('data-driver-id');
+    var address = btn.getAttribute('data-address');
+    var itemsJson = btn.getAttribute('data-items');
 
-        let matchesSearch = orderId.includes(searchFilter) || customer.includes(searchFilter);
-        let matchesStatus = statusFilter === "" || status === statusFilter;
+    var modalOrderId = document.getElementById('modalOrderId');
+    var modalStatusSelect = document.getElementById('modalStatusSelect');
+    var modalDriverSelect = document.getElementById('modalDriverSelect');
+    var modalShippingAddress = document.getElementById('modalShippingAddress');
+    var container = document.getElementById('modalItemsContainer');
 
-        if (matchesSearch && matchesStatus) {
-            rows[i].style.display = "";
-        } else {
-            rows[i].style.display = "none";
+    if (modalOrderId) modalOrderId.value = '#ORD-' + orderId;
+    if (modalStatusSelect) modalStatusSelect.value = status;
+    if (modalDriverSelect) modalDriverSelect.value = driverId || '';
+    if (modalShippingAddress) modalShippingAddress.value = address || 'N/A';
+
+    if (container) {
+        container.innerHTML = '';
+        try {
+            var items = JSON.parse(itemsJson || '[]');
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p class="text-muted-sm" style="margin: 0;">No item details available.</p>';
+            } else {
+                var listHtml = '<ul class="modal-item-list">';
+                items.forEach(function(item) {
+                    var price = parseFloat(item.price_at_purchase).toFixed(2);
+                    listHtml += '<li><strong>' + item.product_name + '</strong> &times; ' + item.quantity + ' <span class="text-muted-sm">(₱' + price + ' each)</span></li>';
+                });
+                listHtml += '</ul>';
+                container.innerHTML = listHtml;
+            }
+        } catch (e) {
+            container.innerHTML = '<p class="text-muted-sm" style="margin: 0;">Error loading items.</p>';
         }
     }
-}
 
-function openStatusModal(orderId, currentStatus, currentDriverId = '') {
-    document.getElementById('modalOrderId').value = '#ORD-' + orderId;
-    document.getElementById('modalStatusSelect').value = currentStatus;
-    
-    let driverSelect = document.getElementById('modalDriverSelect');
-    if (driverSelect) {
-        driverSelect.value = currentDriverId;
+    var modal = document.getElementById('statusModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
     }
-    
-    document.getElementById('statusModal').classList.add('active');
-}
+};
 
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-}
+window.closeModal = function(modalId) {
+    var modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
+};
+
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('modal-overlay')) {
+        e.target.style.display = 'none';
+        e.target.classList.remove('active');
+    }
+});
 
 //Categories
 let isCategoryEditMode = false;

@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $orderId = (int)$_POST['order_id'];
     $city = trim($_POST['location_city']);
 
-    if ($orderId > 0 && !empty($city)) {
+    if ($orderId >= 0 && !empty($city)) {
         $trackStmt = $pdo->prepare("INSERT INTO order_tracking (order_id, location_city, status_note, updated_by) VALUES (?, ?, 'Package processed at location', ?)");
         $trackStmt->execute([$orderId, $city, $driverId]);
 
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mark_delivered') {
     $orderId = (int)$_POST['order_id'];
 
-    if ($orderId > 0) {
+    if ($orderId >= 0) {
         $updateStmt = $pdo->prepare("UPDATE orders SET status = 'Delivered' WHERE order_id = ? AND driver_id = ?");
         $updateStmt->execute([$orderId, $driverId]);
 
@@ -154,11 +154,9 @@ $deliveries = $stmt->fetchAll();
                         <button type="submit" class="btn-update">Log Location Checkpoint</button>
                     </form>
 
-                    <form action="deliveries.php" method="POST" onsubmit="return confirm('Confirm order #ORD-<?php echo $item['order_id']; ?> has been delivered?');">
-                        <input type="hidden" name="action" value="mark_delivered">
-                        <input type="hidden" name="order_id" value="<?php echo $item['order_id']; ?>">
-                        <button type="submit" class="btn-deliver">Mark as Delivered</button>
-                    </form>
+                    <button type="button" class="btn-deliver" onclick="openConfirmModal('<?php echo $item['order_id']; ?>')">
+                        Mark as Delivered
+                    </button>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
@@ -169,5 +167,21 @@ $deliveries = $stmt->fetchAll();
     <?php endif; ?>
 </div>
 
+<div class="custom-modal-overlay" id="confirmDeliveryModal" style="display: none;">
+    <div class="custom-modal-card">
+        <h3>Confirm Delivery</h3>
+        <p id="confirmModalText">Are you sure you want to mark this order as delivered?</p>
+        <form action="deliveries.php" method="POST">
+            <input type="hidden" name="action" value="mark_delivered">
+            <input type="hidden" name="order_id" id="confirmModalOrderId" value="">
+            <div class="custom-modal-actions">
+                <button type="button" class="btn-modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button type="submit" class="btn-modal-confirm">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../assets/js/driver.js"></script>
 </body>
 </html>
