@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['action']) || isset($_GET['timeout']))) {
     session_unset();
@@ -47,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $lockStmt = $pdo->prepare("UPDATE users SET status = 'Locked', account_status = 'Locked' WHERE user_id = ?");
                 $lockStmt->execute([$user['user_id']]);
             }
+            logAudit($pdo, $user['user_id'], "Login blocked: Account is currently locked for '" . $inputIdentifier . "'");
             header('Location: ../index.php?login=locked');
             exit();
         }
@@ -63,6 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username']  = $user['username'] ?? $user['email'];
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['last_activity'] = time();
+
+            logAudit($pdo, $user['user_id'], "Successful login (" . $user['role'] . ")");
 
             switch ($user['role']) {
                 case 'Admin':
@@ -87,16 +91,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($newAttempts >= $maxAttempts) {
                 $updateStmt = $pdo->prepare("UPDATE users SET failed_attempts = ?, login_attempts = ?, status = 'Locked', account_status = 'Locked' WHERE user_id = ?");
                 $updateStmt->execute([$newAttempts, $newAttempts, $user['user_id']]);
+                logAudit($pdo, $user['user_id'], "Account lockout triggered for '" . $inputIdentifier . "' after " . $newAttempts . " failed attempts");
                 header('Location: ../index.php?login=locked');
             } else {
                 $updateStmt = $pdo->prepare("UPDATE users SET failed_attempts = ?, login_attempts = ? WHERE user_id = ?");
                 $updateStmt->execute([$newAttempts, $newAttempts, $user['user_id']]);
+                logAudit($pdo, $user['user_id'], "Failed login attempt for '" . $inputIdentifier . "'");
                 header('Location: ../index.php?login=error');
             }
             exit();
         }
     }
 
+    logAudit($pdo, null, "Failed login attempt for unknown identifier: '" . $inputIdentifier . "'");
     header('Location: ../index.php?login=error');
     exit();
 }

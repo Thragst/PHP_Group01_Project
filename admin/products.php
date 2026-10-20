@@ -2,6 +2,7 @@
 session_start();
 
 require_once '../includes/db.php';
+require_once '../includes/audit_helper.php';
 
 if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
     $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';
@@ -45,9 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($productId) {
             $stmt = $pdo->prepare("UPDATE products SET category_id = ?, name = ?, brand = ?, description = ?, price = ?, stock_quantity = ?, image_path = ?, status = ? WHERE product_id = ?");
             $stmt->execute([$categoryId, $name, $brand, $description, $price, $stock, $imagePath, $status, $productId]);
+            logAudit($pdo, $_SESSION['user_id'] ?? null, "Updated product #$productId ('$name')");
         } else {
             $stmt = $pdo->prepare("INSERT INTO products (category_id, name, brand, description, price, stock_quantity, image_path, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$categoryId, $name, $brand, $description, $price, $stock, $imagePath, $status]);
+            $newProductId = $pdo->lastInsertId();
+            logAudit($pdo, $_SESSION['user_id'] ?? null, "Created new product #$newProductId ('$name')");
         }
         
         header('Location: products.php');
@@ -58,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $productId = (int)$_POST['product_id'];
         $stmt = $pdo->prepare("DELETE FROM products WHERE product_id = ?");
         $stmt->execute([$productId]);
+        logAudit($pdo, $_SESSION['user_id'] ?? null, "Deleted product #$productId");
         
         header('Location: products.php');
         exit();

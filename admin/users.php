@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
@@ -36,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                     $stmt = $pdo->prepare("INSERT INTO users (username, full_name, email, role, password_hash, status) VALUES (?, ?, ?, ?, ?, 'Active')");
                     $stmt->execute([$username, $fullName, $email, $role, $passwordHash]);
+                    $newUserId = $pdo->lastInsertId();
+                    logAudit($pdo, $_SESSION['user_id'], "Created new " . $role . " account for " . $email . " (User ID #" . $newUserId . ")");
                     $_SESSION['flash_success'] = "New $role account created successfully.";
                 }
             } else if ($action === 'update_staff' && $userId) {
@@ -47,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, status = ? WHERE user_id = ?");
                     $stmt->execute([$fullName, $email, $role, $status, $userId]);
                 }
+                logAudit($pdo, $_SESSION['user_id'], "Updated permissions/details for " . $role . " account: " . $fullName . " (User ID #" . $userId . ")");
                 $_SESSION['flash_success'] = "Account permissions updated successfully.";
             }
         }
@@ -55,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($userId > 0) {
             $stmt = $pdo->prepare("UPDATE users SET status = 'Active', failed_attempts = 0 WHERE user_id = ? AND role = 'Customer'");
             $stmt->execute([$userId]);
+            logAudit($pdo, $_SESSION['user_id'], "Admin unlocked customer account for User ID #" . $userId);
             $_SESSION['flash_success'] = "Customer account unlocked successfully.";
         }
     }

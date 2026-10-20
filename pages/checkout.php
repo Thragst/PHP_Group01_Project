@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 date_default_timezone_set('Asia/Manila');
 
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
@@ -152,6 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if (isset($_SESSION['buy_now'])) { unset($_SESSION['buy_now']); } else { clearCart($pdo, $userId); }
+
+                logAudit($pdo, $userId, "Customer placed order #ORD-" . $orderId . " (Total: ₱" . number_format($orderTotal, 2) . ")");
 
                 $pdo->commit();
 

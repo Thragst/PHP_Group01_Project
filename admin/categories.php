@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
@@ -38,14 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $logDetails = "Created new category #$newId ($name)";
             }
 
-            if (isset($_SESSION['user_id'])) {
-                $logStmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_description, ip_address) VALUES (?, ?, ?)");
-                $logStmt->execute([
-                    $_SESSION['user_id'],
-                    $logDetails,
-                    $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
-                ]);
-            }
+            logAudit($pdo, $_SESSION['user_id'] ?? null, $logDetails);
         }
     } elseif ($action === 'delete' && $categoryId > 0) {
         $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id = ?");
@@ -58,14 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $delStmt = $pdo->prepare("DELETE FROM categories WHERE category_id = ?");
             $delStmt->execute([$categoryId]);
 
-            if (isset($_SESSION['user_id'])) {
-                $logStmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_description, ip_address) VALUES (?, ?, ?)");
-                $logStmt->execute([
-                    $_SESSION['user_id'],
-                    "Deleted category #$categoryId ($name)",
-                    $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
-                ]);
-            }
+            logAudit($pdo, $_SESSION['user_id'] ?? null, "Deleted category #$categoryId ($name)");
         }
     }
 

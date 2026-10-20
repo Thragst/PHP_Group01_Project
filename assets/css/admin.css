@@ -845,3 +845,53 @@
 .modal-item-list li {
     margin-bottom: 4px;
 }
+
+.badge-out-for-delivery {
+    background-color: #f59e0b;
+    color: #ffffff;
+}
+
+/* Audit Log Role Badges */
+.badge-admin {
+    background-color: #800000;
+    color: #ffffff;
+}
+
+.badge-staff {
+    background-color: #0284c7;
+    color: #ffffff;
+}
+
+.badge-driver {
+    background-color: #16a34a;
+    color: #ffffff;
+}
+
+.badge-customer {
+    background-color: #6b7280;
+    color: #ffffff;
+}
+
+.badge-system {
+    background-color: #475569;
+    color: #ffffff;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.modal-overlay.active {
+    display: flex !important;
+    pointer-events: auto;
+}

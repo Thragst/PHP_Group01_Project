@@ -2,6 +2,7 @@
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
+        modal.style.display = 'flex';
         modal.classList.add('active');
     }
 }
@@ -9,6 +10,7 @@ function openModal(modalId) {
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
+        modal.style.display = 'none';
         modal.classList.remove('active');
     }
 }
@@ -73,22 +75,6 @@ function deleteProduct() {
     }
 }
 
-function validateFileSize(input) {
-    const fileError = document.getElementById('fileError');
-    if (input.files && input.files[0]) {
-        const fileSizeMB = input.files[0].size / (1024 * 1024);
-        if (fileSizeMB > 10) {
-            if (fileError) {
-                fileError.textContent = 'File size exceeds 10MB limit.';
-                fileError.style.display = 'block';
-            }
-            input.value = '';
-        } else if (fileError) {
-            fileError.style.display = 'none';
-        }
-    }
-}
-
 //Orders
 window.openOrderModal = function(btn) {
     if (!btn) return;
@@ -130,25 +116,12 @@ window.openOrderModal = function(btn) {
         }
     }
 
-    var modal = document.getElementById('statusModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('active');
-    }
-};
-
-window.closeModal = function(modalId) {
-    var modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('active');
-    }
+    openModal('statusModal');
 };
 
 document.addEventListener('click', function(e) {
     if (e.target && e.target.classList.contains('modal-overlay')) {
-        e.target.style.display = 'none';
-        e.target.classList.remove('active');
+        closeModal(e.target.id);
     }
 });
 
@@ -225,20 +198,6 @@ function setElementText(id, value) {
     const el = document.getElementById(id);
     if (el) {
         el.textContent = value;
-    }
-}
-
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('active');
     }
 }
 
