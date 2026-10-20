@@ -54,7 +54,7 @@ $userRole = $_SESSION['user_role'] ?? 'Developer';
         <li class="sidebar-divider"></li>
 
         <li>
-            <a href="../logout.php">
+            <a href="../pages/logout.php">
                 Logout
             </a>
         </li>

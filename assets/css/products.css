@@ -1,0 +1,240 @@
+/* ========================================
+   PRODUCTS PAGE
+======================================== */
+
+.products-page {
+    width: 88%;
+    margin: 50px auto 80px;
+}
+
+.products-header {
+    margin-bottom: 35px;
+}
+
+.products-header h1 {
+    font-size: 42px;
+    color: #351818;
+    margin-bottom: 8px;
+}
+
+.products-header p {
+    color: #777;
+}
+
+
+/* ========================================
+   FILTERS
+======================================== */
+
+.product-filters {
+    background: white;
+    border: 2px solid #222;
+    border-radius: 35px;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-group label {
+    color: #555;
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+.filter-group select,
+#sortProducts {
+    border: none;
+    background: white;
+    padding: 10px;
+    outline: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#sortProducts {
+    border-left: 1px solid #ddd;
+    margin-left: 10px;
+}
+
+
+/* ========================================
+   PRODUCT GRID
+======================================== */
+
+.products-page .product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+}
+
+.products-page .product-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    transition: 0.2s;
+}
+
+.products-page .product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(53, 24, 24, 0.08);
+}
+
+.products-page .product-image {
+    height: 250px;
+    background: #f2eeee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.products-page .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.products-page .product-info {
+    padding: 18px;
+}
+
+.products-page .product-category {
+    color: #8b2e2e;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.products-page .product-info h3 {
+    margin: 8px 0;
+    font-size: 17px;
+    color: #333;
+}
+
+.products-page .product-brand {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.products-page .product-price {
+    color: #351818;
+    font-size: 17px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+
+/* ========================================
+   PRODUCT ACTIONS
+======================================== */
+
+.product-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.product-actions button {
+    flex: 1;
+    border: none;
+    padding: 10px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.add-to-cart {
+    background: #f3e7e5;
+    color: #8b2e2e;
+}
+
+.add-to-cart:hover {
+    background: #e8d3d0;
+}
+
+.btn-buy {
+    background: #8b2e2e;
+    color: white;
+}
+
+.btn-buy:hover {
+    background: #702323;
+}
+
+.product-actions button:disabled {
+    background: #d9c6c3;
+    color: white;
+    cursor: not-allowed;
+}
+
+
+/* ========================================
+   PRODUCTS RESPONSIVE
+======================================== */
+
+@media (max-width: 1100px) {
+
+    .products-page .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .products-page {
+        width: 92%;
+    }
+
+    .product-filters {
+        flex-direction: column;
+        border-radius: 20px;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .filter-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .products-page .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .products-header h1 {
+        font-size: 34px;
+    }
+
+    .products-page .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-group {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filter-group select {
+        width: 100%;
+    }
+
+}

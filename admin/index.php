@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once '../db.php';
+require_once '../includes/db.php';
 
 if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
     $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';

@@ -1,0 +1,315 @@
+/* ========================================
+   HOME PAGE
+======================================== */
+
+.hero {
+    width: 88%;
+    min-height: 430px;
+    margin: 35px auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #8b2e2e;
+    color: white;
+}
+
+.hero-content {
+    width: 100%;
+    max-width: 850px;
+    padding: 70px;
+    text-align: center;
+}
+
+.hero-content h1 {
+    font-size: 60px;
+    line-height: 1;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+.hero-content h2 {
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    max-width: 600px;
+    margin: 0 auto 30px;
+    color: #f5dddd;
+    line-height: 1.7;
+}
+
+.hero-content .btn {
+    display: inline-block;
+    background: white;
+    color: #8b2e2e;
+    padding: 13px 28px;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.hero-content .btn:hover {
+    background: #f3e7e5;
+    transform: translateY(-1px);
+}
+
+
+/* ========================================
+   BENEFITS
+======================================== */
+
+.benefits {
+    width: 88%;
+    margin: 30px auto 60px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.benefit {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #eee;
+    text-align: center;
+}
+
+.benefit h3 {
+    color: #351818;
+    margin-bottom: 8px;
+}
+
+.benefit p {
+    color: #777;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* ========================================
+   POPULAR PRODUCTS
+======================================== */
+
+.popular-products {
+    width: 88%;
+    margin: 0 auto 70px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-header h2 {
+    color: #351818;
+    font-size: 32px;
+}
+
+.section-header a {
+    color: #8b2e2e;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.section-header a:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   PRODUCT GRID
+======================================== */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    transition: 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(53, 24, 24, 0.08);
+}
+
+.product-image {
+    height: 220px;
+    background: #f2eeee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.no-image {
+    color: #999;
+    font-size: 14px;
+}
+
+.product-info {
+    padding: 18px;
+}
+
+.product-category {
+    color: #8b2e2e;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.product-info h3 {
+    margin: 8px 0;
+    font-size: 17px;
+    color: #333;
+}
+
+.product-brand {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.product-price {
+    color: #351818;
+    font-size: 17px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.product-info .btn {
+    display: inline-block;
+    background: #8b2e2e;
+    color: white;
+    padding: 9px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+}
+
+.product-info .btn:hover {
+    background: #702323;
+}
+
+
+/* ========================================
+   TRACK ORDERS
+======================================== */
+
+.track-orders {
+    width: 88%;
+    margin: 0 auto 70px;
+    background: #351818;
+    border-radius: 20px;
+    color: white;
+    padding: 60px;
+}
+
+.track-orders h2 {
+    font-size: 34px;
+    margin-bottom: 15px;
+}
+
+.track-orders p {
+    color: #ddd;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.track-orders .btn {
+    display: inline-block;
+    background: white;
+    color: #351818;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.track-orders .btn:hover {
+    background: #f3e7e5;
+}
+
+
+/* ========================================
+   HOME RESPONSIVE
+======================================== */
+
+@media (max-width: 1100px) {
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .hero {
+        width: 92%;
+    }
+
+    .hero-content {
+        padding: 50px 35px;
+    }
+
+    .benefits {
+        grid-template-columns: 1fr;
+    }
+
+    .popular-products,
+    .track-orders {
+        width: 92%;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .hero-content {
+        padding: 45px 25px;
+    }
+
+    .hero-content h1 {
+        font-size: 42px;
+    }
+
+    .hero-content h2 {
+        font-size: 24px;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .track-orders {
+        padding: 40px 25px;
+    }
+
+}
