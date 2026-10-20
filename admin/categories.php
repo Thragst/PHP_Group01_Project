@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/audit_helper.php';
 
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
@@ -12,7 +11,8 @@ if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['A
 }
 
 $flashError = $_SESSION['flash_error'] ?? '';
-unset($_SESSION['flash_error']);
+$flashSuccess = $_SESSION['flash_success'] ?? '';
+unset($_SESSION['flash_error'], $_SESSION['flash_success']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -23,23 +23,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = in_array($_POST['status'] ?? '', ['Active', 'Inactive'], true) ? $_POST['status'] : 'Active';
 
     if ($action === 'save') {
-        if (!empty($name)) {
-            if (empty($slug)) {
-                $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
-            }
+        if ($name === '') {
+            $_SESSION['flash_error'] = 'Category name is required.';
+        } else {
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slug !== '' ? $slug : $name), '-'));
 
-            if ($categoryId > 0) {
-                $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ?, description = ?, status = ? WHERE category_id = ?");
-                $stmt->execute([$name, $slug, $description, $status, $categoryId]);
-                $logDetails = "Updated category #$categoryId ($name)";
+            $dupStmt = $pdo->prepare("SELECT COUNT(*) FROM categories WHERE (LOWER(name) = LOWER(?) OR slug = ?) AND category_id <> ?");
+            $dupStmt->execute([$name, $slug, $categoryId]);
+
+            if ($slug === '') {
+                $_SESSION['flash_error'] = 'Slug is invalid. Use letters and numbers only.';
+            } elseif ((int)$dupStmt->fetchColumn() > 0) {
+                $_SESSION['flash_error'] = "A category named \"$name\" (or with the same slug) already exists.";
             } else {
-                $stmt = $pdo->prepare("INSERT INTO categories (name, slug, description, status) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$name, $slug, $description, $status]);
-                $newId = $pdo->lastInsertId();
-                $logDetails = "Created new category #$newId ($name)";
-            }
+                try {
+                    if ($categoryId > 0) {
+                        $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ?, description = ?, status = ? WHERE category_id = ?");
+                        $stmt->execute([$name, $slug, $description, $status, $categoryId]);
+                        $logDetails = "Updated category #$categoryId ($name)";
+                        $_SESSION['flash_success'] = "Category #$categoryId saved. The shop's category tab now shows \"$name\".";
+                    } else {
+                        $stmt = $pdo->prepare("INSERT INTO categories (name, slug, description, status) VALUES (?, ?, ?, ?)");
+                        $stmt->execute([$name, $slug, $description, $status]);
+                        $newId = $pdo->lastInsertId();
+                        $logDetails = "Created new category #$newId ($name)";
+                        $_SESSION['flash_success'] = "Category \"$name\" created. It appears in the shop tabs once it has an active product.";
+                    }
 
-            logAudit($pdo, $_SESSION['user_id'] ?? null, $logDetails);
+                    if (isset($_SESSION['user_id'])) {
+                        $logStmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_description, ip_address) VALUES (?, ?, ?)");
+                        $logStmt->execute([
+                            $_SESSION['user_id'],
+                            $logDetails,
+                            $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
+                        ]);
+                    }
+                } catch (PDOException $e) {
+                    $_SESSION['flash_error'] = 'Could not save the category. Please try again.';
+                }
+            }
         }
     } elseif ($action === 'delete' && $categoryId > 0) {
         $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id = ?");
@@ -51,8 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $delStmt = $pdo->prepare("DELETE FROM categories WHERE category_id = ?");
             $delStmt->execute([$categoryId]);
+            $_SESSION['flash_success'] = "Category #$categoryId ($name) deleted.";
 
-            logAudit($pdo, $_SESSION['user_id'] ?? null, "Deleted category #$categoryId ($name)");
+            if (isset($_SESSION['user_id'])) {
+                $logStmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_description, ip_address) VALUES (?, ?, ?)");
+                $logStmt->execute([
+                    $_SESSION['user_id'],
+                    "Deleted category #$categoryId ($name)",
+                    $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
+                ]);
+            }
         }
     }
 
@@ -84,6 +114,12 @@ include __DIR__ . '/includes/admin_header.php';
     </div>
     <button class="btn-primary" onclick="openAddCategoryModal()">+ Add New Category</button>
 </div>
+
+<?php if (!empty($flashSuccess)): ?>
+    <div class="alert-banner alert-success">
+        ✅ <?php echo htmlspecialchars($flashSuccess); ?>
+    </div>
+<?php endif; ?>
 
 <?php if (!empty($flashError)): ?>
     <div class="alert-banner alert-error">

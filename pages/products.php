@@ -1,5 +1,8 @@
 <?php
-$stmt = $pdo->query(" SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id  WHERE p.status = 'Active' AND c.status = 'Active' ORDER BY p.product_id ASC ");
+$catStmt = $pdo->query(" SELECT c.category_id, c.name FROM categories c WHERE c.status = 'Active' AND EXISTS ( SELECT 1 FROM products p WHERE p.category_id = c.category_id AND p.status = 'Active' ) ORDER BY c.category_id ASC ");
+$dbCategories = $catStmt->fetchAll();
+
+$stmt = $pdo->query(" SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id  WHERE p.status = 'Active' AND c.status = 'Active' ORDER BY p.product_id ASC ");
 $dbProducts = $stmt->fetchAll();
 ?>
 
@@ -12,10 +15,9 @@ $dbProducts = $stmt->fetchAll();
     <div class="filter-area">
         <div class="filter-group">
             <button class="filter-button active" data-category="All" > All </button>
-            <button class="filter-button" data-category="Basketball" > Basketball </button>
-            <button class="filter-button" data-category="Football" > Football </button>
-            <button class="filter-button" data-category="Running" > Running </button>
-            <button class="filter-button" data-category="Tennis" > Tennis </button>
+            <?php foreach ($dbCategories as $cat): ?>
+                <button class="filter-button" data-category="<?php echo (int)$cat['category_id']; ?>" > <?php echo htmlspecialchars($cat['name']); ?> </button>
+            <?php endforeach; ?>
         </div>
         <div class="sort-label"> Sort:
             <select id="sortProducts">
@@ -30,7 +32,7 @@ $dbProducts = $stmt->fetchAll();
         <?php foreach ($dbProducts as $index => $product): ?>
             <div class="product"
                 data-id="<?php echo (int)$product['product_id']; ?>"
-                data-category="<?php echo htmlspecialchars($product['category']); ?>"
+                data-category="<?php echo (int)$product['category_id']; ?>"
                 data-price="<?php echo htmlspecialchars($product['price']); ?>"
                 data-order="<?php echo $index + 1; ?>" >
                 <div class="product-image">
