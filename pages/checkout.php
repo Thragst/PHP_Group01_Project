@@ -24,6 +24,20 @@ if (isset($_GET['from']) && $_GET['from'] === 'cart') {
     unset($_SESSION['buy_now']);
 }
 
+/*
+| Checks if orders.order_id is AUTO_INCREMENT. If the database was set up wrongly
+| (no AUTO_INCREMENT), every order would get id 0 and all orders would merge into
+| "#ORD-0". We detect that and assign the next id ourselves so each order is unique.
+*/
+function ordersIdIsAutoIncrement(PDO $pdo)
+{
+    $stmt = $pdo->query(
+        "SELECT EXTRA FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'order_id'"
+    );
+    return stripos((string) $stmt->fetchColumn(), 'auto_increment') !== false;
+}
+
 function getBuyNowItems(PDO $pdo)
 {
     $items = [];
@@ -120,6 +134,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $columns = ['user_id', 'total_amount', 'payment_method', 'status', 'shipping_address'];
                 $values = [$userId, number_format($orderTotal, 2, '.', ''), 'COD', 'Pending', $address];
 
+                // Every checkout must get its OWN new order id (#1, #2, #3 ...)
+                $newOrderId = null;
+                if (!ordersIdIsAutoIncrement($pdo)) {
+                    $newOrderId = (int) $pdo->query('SELECT COALESCE(MAX(order_id), 0) + 1 FROM orders FOR UPDATE')->fetchColumn();
+                    array_unshift($columns, 'order_id');
+                    array_unshift($values, $newOrderId);
+                }
+
                 if ($hasContact) {
                     $columns[] = 'contact_number';
                     $values[] = $mobile;
@@ -136,7 +158,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 $stmt->execute($values);
 
-                $orderId = (int) $pdo->lastInsertId();
+                $orderId = $newOrderId !== null ? $newOrderId : (int) $pdo->lastInsertId();
+
+                if ($orderId <= 0) {
+                    throw new RuntimeException('Order id was not generated.');
+                }
 
                 $itemStmt = $pdo->prepare(
                     'INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)

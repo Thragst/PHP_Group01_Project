@@ -30,12 +30,13 @@ SET time_zone = "+00:00";
 
 DROP TABLE IF EXISTS `account_locks`;
 CREATE TABLE `account_locks` (
-  `lock_id` int(11) NOT NULL,
+  `lock_id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `failed_attempts` int(11) NOT NULL DEFAULT 3,
   `locked_at` datetime NOT NULL DEFAULT current_timestamp(),
   `unlocked_at` datetime DEFAULT NULL,
-  `status` enum('Locked','Unlocked') DEFAULT 'Locked'
+  `status` enum('Locked','Unlocked') DEFAULT 'Locked',
+  PRIMARY KEY (`lock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -46,12 +47,13 @@ CREATE TABLE `account_locks` (
 
 DROP TABLE IF EXISTS `audit_logs`;
 CREATE TABLE `audit_logs` (
-  `audit_log_id` int(10) UNSIGNED NOT NULL,
+  `audit_log_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED NOT NULL,
   `action_description` varchar(500) NOT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`audit_log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `audit_logs`
@@ -74,11 +76,12 @@ INSERT INTO `audit_logs` (`audit_log_id`, `user_id`, `action_description`, `ip_a
 
 DROP TABLE IF EXISTS `cart_items`;
 CREATE TABLE `cart_items` (
-  `cart_item_id` int(10) UNSIGNED NOT NULL,
+  `cart_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED NOT NULL,
   `product_id` int(10) UNSIGNED NOT NULL,
   `quantity` int(10) UNSIGNED NOT NULL DEFAULT 1 CHECK (`quantity` > 0),
-  `added_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `added_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`cart_item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -89,13 +92,14 @@ CREATE TABLE `cart_items` (
 
 DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
-  `category_id` int(10) UNSIGNED NOT NULL,
+  `category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `slug` varchar(120) NOT NULL,
   `description` text DEFAULT NULL,
   `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `categories`
@@ -115,13 +119,14 @@ INSERT INTO `categories` (`category_id`, `name`, `slug`, `description`, `status`
 
 DROP TABLE IF EXISTS `login_logs`;
 CREATE TABLE `login_logs` (
-  `log_id` int(11) NOT NULL,
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(50) DEFAULT NULL,
   `username` varchar(50) NOT NULL,
   `event_type` enum('LOGIN_SUCCESS','LOGIN_FAILED','LOGOUT','ACCOUNT_LOCKED') NOT NULL,
   `ip_address` varchar(45) NOT NULL,
   `user_agent` text DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -132,16 +137,19 @@ CREATE TABLE `login_logs` (
 
 DROP TABLE IF EXISTS `orders`;
 CREATE TABLE `orders` (
-  `order_id` int(10) UNSIGNED NOT NULL,
+  `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED NOT NULL,
   `driver_id` int(10) UNSIGNED DEFAULT NULL,
   `total_amount` decimal(10,2) NOT NULL,
   `payment_method` enum('COD','GCash','Credit Card','Bank Transfer') NOT NULL,
   `status` enum('Pending','Processing','Shipped','Out for Delivery','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
   `shipping_address` varchar(255) NOT NULL,
+  `contact_number` varchar(30) DEFAULT NULL,
+  `order_notes` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `orders`
@@ -158,12 +166,13 @@ INSERT INTO `orders` (`order_id`, `user_id`, `driver_id`, `total_amount`, `payme
 
 DROP TABLE IF EXISTS `order_items`;
 CREATE TABLE `order_items` (
-  `order_item_id` int(10) UNSIGNED NOT NULL,
+  `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` int(10) UNSIGNED NOT NULL,
   `product_id` int(10) UNSIGNED NOT NULL,
   `quantity` int(10) UNSIGNED NOT NULL CHECK (`quantity` > 0),
-  `price_at_purchase` decimal(10,2) NOT NULL CHECK (`price_at_purchase` >= 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `price_at_purchase` decimal(10,2) NOT NULL CHECK (`price_at_purchase` >= 0),
+  PRIMARY KEY (`order_item_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `order_items`
@@ -180,13 +189,14 @@ INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `quantity`
 
 DROP TABLE IF EXISTS `order_tracking`;
 CREATE TABLE `order_tracking` (
-  `tracking_id` int(11) UNSIGNED NOT NULL,
+  `tracking_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` int(10) UNSIGNED NOT NULL,
   `location_city` varchar(100) NOT NULL,
   `status_note` varchar(255) DEFAULT 'Package in transit',
   `updated_by` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`tracking_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_tracking`
@@ -209,7 +219,7 @@ INSERT INTO `order_tracking` (`tracking_id`, `order_id`, `location_city`, `statu
 
 DROP TABLE IF EXISTS `products`;
 CREATE TABLE `products` (
-  `product_id` int(10) UNSIGNED NOT NULL,
+  `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `category_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(150) NOT NULL,
   `brand` varchar(100) DEFAULT NULL,
@@ -219,8 +229,9 @@ CREATE TABLE `products` (
   `image_path` varchar(255) DEFAULT NULL,
   `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `products`
@@ -452,11 +463,12 @@ CREATE TABLE `search_analytics` (
 
 DROP TABLE IF EXISTS `system_settings`;
 CREATE TABLE `system_settings` (
-  `setting_id` int(11) NOT NULL,
+  `setting_id` int(11) NOT NULL AUTO_INCREMENT,
   `setting_key` varchar(50) NOT NULL,
   `setting_value` varchar(255) NOT NULL,
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`setting_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `system_settings`
@@ -481,7 +493,7 @@ INSERT INTO `system_settings` (`setting_id`, `setting_key`, `setting_value`, `up
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `user_id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `username` varchar(50) DEFAULT NULL,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -494,8 +506,9 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'Active',
-  `failed_attempts` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `failed_attempts` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
@@ -516,12 +529,13 @@ INSERT INTO `users` (`user_id`, `username`, `full_name`, `email`, `password_hash
 
 DROP TABLE IF EXISTS `user_profiles`;
 CREATE TABLE `user_profiles` (
-  `profile_id` int(11) NOT NULL,
+  `profile_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `phone_number` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
-  `postal_code` varchar(20) DEFAULT NULL
+  `postal_code` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`profile_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -529,22 +543,9 @@ CREATE TABLE `user_profiles` (
 --
 
 --
--- Indexes for table `account_locks`
---
-ALTER TABLE `account_locks`
-  ADD PRIMARY KEY (`lock_id`);
-
---
--- Indexes for table `audit_logs`
---
-ALTER TABLE `audit_logs`
-  ADD PRIMARY KEY (`audit_log_id`);
-
---
 -- Indexes for table `cart_items`
 --
 ALTER TABLE `cart_items`
-  ADD PRIMARY KEY (`cart_item_id`),
   ADD UNIQUE KEY `uq_cart_user_product` (`user_id`,`product_id`),
   ADD KEY `idx_cart_product` (`product_id`);
 
@@ -552,27 +553,18 @@ ALTER TABLE `cart_items`
 -- Indexes for table `categories`
 --
 ALTER TABLE `categories`
-  ADD PRIMARY KEY (`category_id`),
   ADD UNIQUE KEY `slug` (`slug`);
-
---
--- Indexes for table `login_logs`
---
-ALTER TABLE `login_logs`
-  ADD PRIMARY KEY (`log_id`);
 
 --
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
-  ADD PRIMARY KEY (`order_id`),
   ADD KEY `fk_orders_driver` (`driver_id`);
 
 --
 -- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
-  ADD PRIMARY KEY (`order_item_id`),
   ADD KEY `idx_order_items_order` (`order_id`),
   ADD KEY `idx_order_items_product` (`product_id`);
 
@@ -580,7 +572,6 @@ ALTER TABLE `order_items`
 -- Indexes for table `order_tracking`
 --
 ALTER TABLE `order_tracking`
-  ADD PRIMARY KEY (`tracking_id`),
   ADD KEY `idx_order_id` (`order_id`),
   ADD KEY `idx_updated_by` (`updated_by`);
 
@@ -588,105 +579,25 @@ ALTER TABLE `order_tracking`
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
-  ADD PRIMARY KEY (`product_id`),
   ADD KEY `idx_products_category` (`category_id`);
 
 --
 -- Indexes for table `system_settings`
 --
 ALTER TABLE `system_settings`
-  ADD PRIMARY KEY (`setting_id`),
   ADD UNIQUE KEY `setting_key` (`setting_key`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
 -- Indexes for table `user_profiles`
 --
 ALTER TABLE `user_profiles`
-  ADD PRIMARY KEY (`profile_id`),
   ADD KEY `idx_user_id` (`user_id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `account_locks`
---
-ALTER TABLE `account_locks`
-  MODIFY `lock_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `audit_logs`
---
-ALTER TABLE `audit_logs`
-  MODIFY `audit_log_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `cart_items`
---
-ALTER TABLE `cart_items`
-  MODIFY `cart_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `categories`
---
-ALTER TABLE `categories`
-  MODIFY `category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `login_logs`
---
-ALTER TABLE `login_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `orders`
---
-ALTER TABLE `orders`
-  MODIFY `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `order_items`
---
-ALTER TABLE `order_items`
-  MODIFY `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `order_tracking`
---
-ALTER TABLE `order_tracking`
-  MODIFY `tracking_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `products`
---
-ALTER TABLE `products`
-  MODIFY `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=201;
-
---
--- AUTO_INCREMENT for table `system_settings`
---
-ALTER TABLE `system_settings`
-  MODIFY `setting_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
-
---
--- AUTO_INCREMENT for table `user_profiles`
---
-ALTER TABLE `user_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
