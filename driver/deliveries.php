@@ -12,31 +12,17 @@ if (empty($_SESSION['logged_in']) || ($_SESSION['user_role'] ?? '') !== 'Driver'
 
 $driverId = $_SESSION['user_id'];
 
-$cities = [
-    'Caloocan City',
-    'Las Piñas City',
-    'Makati City',
-    'Malabon City',
-    'Mandaluyong City',
-    'Manila',
-    'Marikina City',
-    'Muntinlupa City',
-    'Navotas City',
-    'Parañaque City',
-    'Pasay City',
-    'Pasig City',
-    'Pateros',
-    'Quezon City',
-    'San Juan City',
-    'Taguig City',
-    'Valenzuela City'
-];
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_location') {
     $orderId = (int)$_POST['order_id'];
     $city = trim($_POST['location_city']);
 
-    if ($orderId >= 0 && !empty($city)) {
+    if ($orderId > 0 && $city !== '' && mb_strlen($city) <= 100) {
+        $allowedStmt = $pdo->prepare("SELECT order_id FROM orders WHERE order_id = ? AND driver_id = ? AND status = 'Out for Delivery'");
+        $allowedStmt->execute([$orderId, $driverId]);
+        if (!$allowedStmt->fetch()) {
+            header('Location: deliveries.php');
+            exit();
+        }
         $trackStmt = $pdo->prepare("INSERT INTO order_tracking (order_id, location_city, status_note, updated_by) VALUES (?, ?, 'Package processed at location', ?)");
         $trackStmt->execute([$orderId, $city, $driverId]);
 
@@ -51,10 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mark_delivered') {
     $orderId = (int)$_POST['order_id'];
 
-    if ($orderId >= 0) {
+    if ($orderId > 0) {
         $updateStmt = $pdo->prepare("UPDATE orders SET status = 'Delivered' WHERE order_id = ? AND driver_id = ?");
         $updateStmt->execute([$orderId, $driverId]);
 
+        if ($updateStmt->rowCount() === 0) {
+            header('Location: deliveries.php');
+            exit();
+        }
         $trackStmt = $pdo->prepare("INSERT INTO order_tracking (order_id, location_city, status_note, updated_by) VALUES (?, 'Destination Address', 'Package successfully delivered', ?)");
         $trackStmt->execute([$orderId, $driverId]);
 
@@ -145,12 +135,7 @@ $deliveries = $stmt->fetchAll();
                     <form action="deliveries.php" method="POST">
                         <input type="hidden" name="action" value="update_location">
                         <input type="hidden" name="order_id" value="<?php echo $item['order_id']; ?>">
-                        <select name="location_city" class="select-input" required>
-                            <option value="">-- Update Current Location / City --</option>
-                            <?php foreach ($cities as $city): ?>
-                                <option value="<?php echo $city; ?>"><?php echo $city; ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <input type="text" name="location_city" class="select-input" maxlength="100" placeholder="Enter current city or location" required>
                         <button type="submit" class="btn-update">Log Location Checkpoint</button>
                     </form>
 
