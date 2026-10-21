@@ -131,7 +131,7 @@ $orders = $isLoggedIn ? getMyOrdersDetailed($pdo, $_SESSION['user_id']) : [];
                     $statusClass = getOrderStatusClass($order['status']);
                     $itemCount = array_sum(array_column($order['items'], 'quantity'));
                     ?>
-                    <div class="order-card" data-status="<?php echo htmlspecialchars($order['status']); ?>" >
+                    <div class="order-card" role="link" tabindex="0" onclick="if (!event.target.closest('a, button, input, select')) window.location.href='track_order.php?order_id=<?php echo (int)$order['id']; ?>'" onkeydown="if (event.key === 'Enter') window.location.href='track_order.php?order_id=<?php echo (int)$order['id']; ?>'" style="cursor:pointer" data-status="<?php echo htmlspecialchars($order['status']); ?>" >
                         <div class="order-card-head">
                             <div>
                                 <span class="order-code">
@@ -200,6 +200,7 @@ $orders = $isLoggedIn ? getMyOrdersDetailed($pdo, $_SESSION['user_id']) : [];
                                 </strong>
                             </div>
                         </div>
+                        <a href="track_order.php?order_id=<?php echo (int)$order['id']; ?>" style="display:inline-block;margin:12px 20px 18px;font-weight:700;color:#1565c0">Track Order →</a>
                     </div>
                 <?php endforeach; ?>
             </div>

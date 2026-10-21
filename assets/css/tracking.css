@@ -1,0 +1,22 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f4f6f9; color: #202735; font-family: Arial, sans-serif; }
+.tracking-container { max-width: 900px; margin: 36px auto; padding: 0 20px 50px; }
+.back-link { color: #195ba5; text-decoration: none; font-weight: 600; }
+.tracking-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 24px 0; }
+h1 { margin: 6px 0; font-size: clamp(25px, 4vw, 36px); }
+.eyebrow { font-size: 12px; letter-spacing: 1.5px; color: #64748b; font-weight: bold; }
+.status { padding: 10px 16px; border-radius: 25px; background: #e0edff; color: #154d90; font-weight: bold; white-space: nowrap; }
+.summary, .history { background: white; border-radius: 16px; padding: 26px; box-shadow: 0 3px 18px #152a4810; }
+.summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 20px; }
+.summary div { display: flex; flex-direction: column; gap: 7px; overflow-wrap: anywhere; }
+.summary span, .subtitle, time { color: #66758a; font-size: 14px; }
+h2 { margin: 0 0 8px; }
+.timeline { padding: 8px 0 0 7px; list-style: none; }
+.checkpoint { position: relative; padding: 0 0 32px 32px; border-left: 2px solid #c9d9ed; }
+.checkpoint:last-child { border-left-color: transparent; padding-bottom: 0; }
+.dot { position: absolute; top: 0; left: -9px; width: 16px; height: 16px; border-radius: 50%; background: #1768b8; border: 3px solid white; box-shadow: 0 0 0 2px #1768b8; }
+.checkpoint:last-child .dot { background: #16a56c; box-shadow: 0 0 0 2px #16a56c; }
+.checkpoint-content strong { font-size: 17px; }
+.checkpoint-content p { margin: 7px 0; }
+.notice { padding: 13px; background: #f0f5fb; border-radius: 8px; color: #52657c; }
+@media (max-width: 600px) { .tracking-header { align-items: flex-start; flex-direction: column; } .summary { grid-template-columns: 1fr; } }
