@@ -24,7 +24,7 @@ $userName = $_SESSION['user_name'] ?? '';
 $userId = $_SESSION['user_id'] ?? '';
 $username = $_SESSION['username'] ?? '';
 $userRole = $_SESSION['user_role'] ?? '';
-$allowedPages = [ 'home', 'products', 'orders', 'cart', 'profile', 'settings' ];
+$allowedPages = [ 'home', 'products','productDetails', 'orders', 'cart', 'profile', 'settings'];
 if (!in_array($page, $allowedPages, true)) {
     $page = 'home';
 }
@@ -41,6 +41,8 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
         <meta name="viewport" content="width=device-width,initial-scale=1.0" >
         <link rel="stylesheet" href="assets/css/styles.css?v=<?php echo filemtime(__DIR__ . '/assets/css/styles.css'); ?>" >
         <link rel="stylesheet" href="assets/css/account.css?v=<?php echo filemtime(__DIR__ . '/assets/css/account.css'); ?>" >
+        <?php if ($page === 'products'): ?> <link rel="stylesheet" href="assets/css/products.css?v=<?php echo filemtime(__DIR__ . '/assets/css/products.css'); ?>"> <?php endif; ?>
+        <?php if ($page === 'productDetails'): ?> <link rel="stylesheet" href="assets/css/productDetails.css?v=<?php echo filemtime(__DIR__ . '/assets/css/productDetails.css'); ?>"> <?php endif; ?>
     <title>SportMart</title>
 </head>
 
@@ -51,6 +53,8 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
         include 'pages/home.php';
     } elseif ($page === 'products') {
         include 'pages/products.php';
+    } elseif ($page === 'productDetails') {
+        include 'pages/productDetails.php';   
     } elseif ($page === 'orders') {
         include 'pages/orders.php';
     } elseif ($page === 'cart') {

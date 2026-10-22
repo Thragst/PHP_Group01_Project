@@ -407,3 +407,5 @@ function getAccountStats(PDO $pdo, $userId)
         'total_spent' => $totalSpent
     ];
 }
+
+
