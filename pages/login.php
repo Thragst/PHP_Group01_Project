@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['action']) || isset($_GET['timeout']))) {
+    if (!empty($_SESSION['logged_in']) && !empty($_SESSION['user_id'])) {
+        logAudit($pdo, $_SESSION['user_id'], "Session timed out due to inactivity (" . ($_SESSION['user_role'] ?? 'User') . ")");
+    }
     session_unset();
     session_destroy();
     header('Location: ../index.php?login=timeout');
