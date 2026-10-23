@@ -2,6 +2,7 @@
 session_start();
 
 require_once '../includes/db.php';
+require_once '../includes/audit_helper.php';
 
 if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
     $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';
@@ -45,9 +46,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($productId) {
             $stmt = $pdo->prepare("UPDATE products SET category_id = ?, name = ?, brand = ?, description = ?, price = ?, stock_quantity = ?, image_path = ?, status = ? WHERE product_id = ?");
             $stmt->execute([$categoryId, $name, $brand, $description, $price, $stock, $imagePath, $status, $productId]);
+            if (isset($_SESSION['user_id'])) {
+                logAudit($pdo, $_SESSION['user_id'], "Updated product #{$productId} ({$name})");
+            }
         } else {
             $stmt = $pdo->prepare("INSERT INTO products (category_id, name, brand, description, price, stock_quantity, image_path, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$categoryId, $name, $brand, $description, $price, $stock, $imagePath, $status]);
+            $newProdId = $pdo->lastInsertId();
+            if (isset($_SESSION['user_id'])) {
+                logAudit($pdo, $_SESSION['user_id'], "Created product #{$newProdId} ({$name})");
+            }
         }
         
         header('Location: products.php');
@@ -56,9 +64,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
     if ($_POST['action'] === 'delete_product' && isset($_POST['product_id'])) {
         $productId = (int)$_POST['product_id'];
+        
+        $pStmt = $pdo->prepare("SELECT name FROM products WHERE product_id = ?");
+        $pStmt->execute([$productId]);
+        $prodName = $pStmt->fetchColumn() ?: 'Unknown';
+
         $stmt = $pdo->prepare("DELETE FROM products WHERE product_id = ?");
         $stmt->execute([$productId]);
         
+        if (isset($_SESSION['user_id'])) {
+            logAudit($pdo, $_SESSION['user_id'], "Deleted product #{$productId} ({$prodName})");
+        }
+
         header('Location: products.php');
         exit();
     }

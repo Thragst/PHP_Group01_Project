@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (password_verify($password, $user['password_hash'])) {
             session_regenerate_id(true);
-            if ((int)($user['mfa_enabled'] ?? 0) ===1) {
+            if ((int)($user['mfa_enabled'] ?? 0) === 1) {
                 $_SESSION['mfa_pending'] = true; $_SESSION['mfa_user_id'] = (int)$user['user_id'];
                 logAudit($pdo, $user['user_id'], "Password verified; MFA verification required");
                 header('location: ../mfa/verify.php'); exit();
@@ -76,9 +76,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resetStmt->execute([$user['user_id']]);
             $_SESSION['logged_in'] = true; $_SESSION['user_id'] = $user['user_id']; $_SESSION['user_name'] = $user['full_name']; $_SESSION['username'] = $user['username'] ?? $user['email']; $_SESSION['user_role'] = $user['role']; $_SESSION['last_activity'] = time();
             logAudit($pdo, $user['user_id'], "Successful login (" . $user['role'] . ")");
-            switch($user['role']) { case 'Admin': case 'Staff': case 'Developer': header('location: ../admin/index.php'); break; 
-            case 'Driver': header('location: ../driver/deliveries.php');
-            case 'Customer': header('location: ../index.php?login=success'); break;} exit();
+            switch($user['role']) { 
+                case 'Admin': 
+                case 'Staff': 
+                case 'Developer': 
+                    header('location: ../admin/index.php'); 
+                    break; 
+                case 'Driver': 
+                    header('location: ../driver/deliveries.php'); 
+                    break;
+                case 'Customer': 
+                    header('location: ../index.php?login=success'); 
+                    break;
+            } 
+            exit();
         } else {
             $newAttempts = $currentAttempts + 1;
 

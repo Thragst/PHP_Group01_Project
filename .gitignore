@@ -8,3 +8,6 @@ Thumbs.db
 image_tools/.env
 image_tools/original/
 image_tools/transparent/
+
+assets/images/*
+!assets/images/default.png
