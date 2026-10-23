@@ -2,6 +2,7 @@
 session_start();
 
 require_once '../includes/db.php';
+require_once __DIR__ . '/../includes/security.php';
 require_once '../includes/audit_helper.php';
 
 if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
@@ -10,6 +11,7 @@ if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    securityCheck();
     if ($_POST['action'] === 'save_product') {
         $productId = isset($_POST['product_id']) && !empty($_POST['product_id']) ? (int)$_POST['product_id'] : null;
         $name = trim($_POST['name']);
@@ -28,8 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (in_array($fileExtension, $allowedExtensions)) {
-                $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+            $allowedMime = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
+            $detectedMime = (new finfo(FILEINFO_MIME_TYPE))->file($fileTmpPath);
+            if (isset($allowedMime[$fileExtension]) && $detectedMime === $allowedMime[$fileExtension] && $_FILES['product_image']['size'] <= 5 * 1024 * 1024 && @getimagesize($fileTmpPath) !== false) {
+                $newFileName = bin2hex(random_bytes(16)) . '.' . $fileExtension;
                 $uploadFileDir = '../assets/images/';
                 
                 if (!is_dir($uploadFileDir)) {
