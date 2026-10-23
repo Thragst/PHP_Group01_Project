@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 function redirectSignup($status) {
     header('Location: ../index.php?signup=' . $status);
@@ -59,7 +60,7 @@ try {
     $policy = $defaultSettings;
 }
 
-$minLength       = (int)$policy['min_password_length'];
+$minLength      = (int)$policy['min_password_length'];
 $requireUpper   = $policy['require_uppercase'] === '1';
 $requireLower   = $policy['require_lowercase'] === '1';
 $requireNumber  = $policy['require_number'] === '1';
@@ -114,12 +115,20 @@ try {
         INSERT INTO users (
             user_id, username, full_name, email, password_hash, role, status, account_status, failed_attempts, login_attempts, created_at
         ) VALUES (
-            ?, ?, ?, ?, ?, 'Customer', 'Active', 'Active', 0, 0, NOW()
+            ?, ?, ?, ?, ?, 'Customer', 'Pending', 'Inactive', 0, 0, NOW()
         )
     ");
     $insertStmt->execute([$userId, $username, $fullname, $email, $passwordHash]);
-    
-    redirectSignup('success');
+
+    $token = createActivationToken($pdo, $email);
+    [$sent, $link] = sendActivationEmail($email, $fullname, $token);
+
+    $cfg = mailConfig();
+    if (!empty($cfg['dev_mode'])) {
+        $_SESSION['dev_activation_link'] = $link;
+    }
+
+    redirectSignup('verify');
 } catch (PDOException $e) {
     redirectSignup('error');
 }

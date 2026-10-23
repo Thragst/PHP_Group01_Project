@@ -5,3 +5,9 @@
 .DS_Store
 Thumbs.db
 .env
+image_tools/.env
+image_tools/original/
+image_tools/transparent/
+
+assets/images/*
+!assets/images/default.png

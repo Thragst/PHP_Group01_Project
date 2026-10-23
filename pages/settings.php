@@ -1,4 +1,7 @@
 <?php
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+$userRole = $_SESSION['user_role'] ?? '';
+if ($userId <= 0) { echo '<section class="account-page"> <p class="account-notice error">Account not found. Please login again.</p> </section>'; return;}
 $stmt = $pdo->prepare(
     "SELECT phone, physical_address
      FROM users
@@ -27,7 +30,7 @@ $flash = getFlash();
             <?php echo e($flash['message']); ?>
         </div>
     <?php endif; ?>
-
+<div class="settings-grid">
     <div class="account-card">
         <h2>Shipping Information</h2>
 
@@ -49,39 +52,63 @@ $flash = getFlash();
             <button type="submit" class="account-button">Save Shipping Info</button>
         </form>
     </div>
-
     <div class="account-card">
         <h2>Change Password</h2>
+            <form action="pages/account_actions.php" method="POST" class="account-form" id="changePasswordForm" novalidate>
+                <?php echo csrfField(); ?>
+                <input type="hidden" name="action" value="change_password">
+                <div class="form-row">
+                    <label for="currentPassword">Current password</label>
+                    <input type="password" id="currentPassword" name="current_password" autocomplete="current-password" required>
+                </div>
+                <div class="form-row">
+                    <label for="newPassword">New password</label>
+                    <input type="password" id="newPassword" name="new_password" autocomplete="new-password" required>
+                    <ul class="password-rules" id="newPasswordRules">
+                        <li data-rule="length">At least twelve (12) characters in length</li>
+                        <li data-rule="upper">At least one (1) CAPITAL letter</li>
+                        <li data-rule="lower">At least one (1) small letter</li>
+                        <li data-rule="number">At least one (1) number</li>
+                        <li data-rule="special">At least one (1) special character</li>
+                    </ul>
+                </div>
+                <div class="form-row">
+                    <label for="confirmNewPassword">Confirm new password</label>
+                    <input type="password" id="confirmNewPassword" name="confirm_password" autocomplete="new-password" required>
+                    <small id="confirmNewMessage" class="match-message"></small>
+                </div>
+                <button type="submit" class="account-button">Update Password</button>
+            </form>
+    </div>
 
-        <form action="pages/account_actions.php" method="POST" class="account-form" id="changePasswordForm" novalidate>
-            <?php echo csrfField(); ?>
-            <input type="hidden" name="action" value="change_password">
-
-            <div class="form-row">
-                <label for="currentPassword">Current password</label>
-                <input type="password" id="currentPassword" name="current_password" autocomplete="current-password" required>
+    <div class="account-card">
+        <h2>Two-Factor Authentication</h2>
+            <?php $mfaStmt = $pdo->prepare(" SELECT mfa_enabled FROM users WHERE user_id = ? LIMIT 1 ");
+            $mfaStmt->execute([$userId]);
+            $mfaEnabled = (int) $mfaStmt->fetchColumn() === 1;
+        ?>
+        <?php if ($mfaEnabled): ?>
+            <div class="mfa-status enabled">
+                <span class="mfa-status-dot"></span>
+                <div> <strong>MFA is enabled</strong>
+                    <p> Your account is protected with two-factor authentication. </p>
+                </div>
             </div>
-
-            <div class="form-row">
-                <label for="newPassword">New password</label>
-                <input type="password" id="newPassword" name="new_password" autocomplete="new-password" required>
-                <ul class="password-rules" id="newPasswordRules">
-                    <li data-rule="length">At least twelve (12) characters in length</li>
-                    <li data-rule="upper">At least one (1) CAPITAL letter</li>
-                    <li data-rule="lower">At least one (1) small letter</li>
-                    <li data-rule="number">At least one (1) number</li>
-                    <li data-rule="special">At least one (1) special character</li>
-                </ul>
+            <p> You will be asked for a verification code from your authenticator
+                app when you sign in.
+            </p>
+        <?php else: ?>
+            <div class="mfa-status disabled">
+                <span class="mfa-status-dot"></span>
+                <div> <strong>MFA is disabled</strong>
+                    <p>
+                        Add an extra layer of security to your SportMart account
+                        using an authenticator app.
+                    </p>
+                </div>
             </div>
-
-            <div class="form-row">
-                <label for="confirmNewPassword">Confirm new password</label>
-                <input type="password" id="confirmNewPassword" name="confirm_password" autocomplete="new-password" required>
-                <small id="confirmNewMessage" class="match-message"></small>
-            </div>
-
-            <button type="submit" class="account-button">Update Password</button>
-        </form>
+            <a href="mfa/setup.php" class="account-button mfa-button" > Enable MFA</a>
+        <?php endif; ?>
     </div>
 
     <div class="account-card danger-card">
@@ -97,6 +124,8 @@ $flash = getFlash();
             <p class="danger-text">Only customer accounts can be deleted from this page.</p>
         <?php endif; ?>
     </div>
+    </div>
+
 </section>
 
 <?php if ($userRole === 'Customer'): ?>

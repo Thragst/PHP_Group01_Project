@@ -1,6 +1,6 @@
 <?php
-$stmt = $pdo->query(" SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id WHERE p.status = 'Active' AND c.status = 'Active' ORDER BY p.product_id ASC LIMIT 4 ");
-$popularProducts = $stmt->fetchAll();
+$stmt = $pdo->query(" SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.name AS category, COALESCE(AVG(r.rating), 0) AS average_rating, COUNT(r.review_id) AS review_count FROM products p JOIN categories c ON c.category_id = p.category_id LEFT JOIN product_reviews r ON r.product_id = p.product_id WHERE p.status = 'Active' AND c.status = 'Active' GROUP BY p.product_id, p.name, p.brand, p.price, p.image_path, c.name ORDER BY average_rating DESC, p.product_id DESC LIMIT 4 ");
+$popularProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <section class="hero">
@@ -61,26 +61,25 @@ $popularProducts = $stmt->fetchAll();
 
     <div class="product-list">
         <?php foreach ($popularProducts as $product): ?>
-            <div class="product">
-                <div class="product-image">
-                    <?php $imgSrc = productImageSrc($product['image_path']); ?>
-                    <?php if ($imgSrc !== ''): ?>
-                        <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;" onerror="this.style.display='none'" >
-                    <?php endif; ?>
-                    <button class="heart">♡</button>
-                </div>
-                <div class="product-info">
-                    <p class="product-category"> <?php echo htmlspecialchars($product['category']); ?> </p>
-                    <h3 title="<?php echo htmlspecialchars($product['name']); ?>"> <?php echo htmlspecialchars($product['name']); ?> </h3>
-                    <p class="brand"> <?php echo htmlspecialchars($product['brand'] ?? ''); ?>
-                    </p>
-                    <div class="stars"> ★★★★★ </div>
-                    <strong> ₱<?php echo number_format($product['price'], 2); ?> </strong>
-                </div>
+        <article class="product home-product" onclick="window.location.href='index.php?page=productDetails&product_id=<?php echo (int)$product['product_id']; ?>'"
+            tabindex="0" onkeydown="if (event.key === 'Enter') window.location.href='index.php?page=productDetails&product_id=<?php echo (int)$product['product_id']; ?>'">
+            <div class="product-image">
+                <?php $imgSrc = productImageSrc($product['image_path']); ?>
+                <?php if($imgSrc !== ''): ?> 
+                    <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt"<?php echo htmlspecialchars($product['name']); ?>" loading="lazy" onerror="this.style.display='none'">
+                <?php endif; ?>
             </div>
+            <div class="product-info">
+                <p class="product-category"><?php echo htmlspecialchars($product['category']); ?></p>
+                <h3 title="<?php echo htmlspecialchars($product['name']); ?>"> <?php echo htmlspecialchars($product['name']); ?></h3>
+                <p class="brand"><?php echo htmlspecialchars($product['brand'] ?? ''); ?></p>
+                <div class="stars"><?php $rating = (float)$product['average_rating']; $fullStars = (int)floor($rating); ?> <?php for ($i = 1; $i <= 5; $i++): ?> <?php echo $i <= $fullStars ? '★' : '☆'; ?> <?php endfor; ?>
+                <span><?php echo number_format($rating, 1); ?> (<?php echo (int)$product['review_count']; ?>)</span></div>
+                <strong>₱<?php echo number_format($product['price'], 2); ?></strong>
+            </div>
+        </article>
         <?php endforeach; ?>
-        <?php if (empty($popularProducts)): ?> <p>No products available right now.</p>
-        <?php endif; ?>
+        <?php if(empty($popularProducts)): ?> <p>No products available right now.</p><?php endif; ?>
     </div>
 </section>
 

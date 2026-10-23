@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 
 if (!isLoggedIn()) {
     redirect('../index.php?login=required');
@@ -82,6 +83,7 @@ if ($action === 'update_profile') {
 
         $_SESSION['user_name'] = $fullname;
         $_SESSION['username'] = $username;
+        logAudit($pdo, $userId, "User updated profile details (Full Name: {$fullname}, Username: {$username})");
 
         setFlash('success', 'Profile updated successfully.');
     } catch (PDOException $e) {
@@ -118,6 +120,7 @@ if ($action === 'update_shipping') {
             $userId
         ]);
 
+        logAudit($pdo, $userId, "User updated default shipping address/contact info");
         setFlash('success', 'Shipping information saved.');
     } catch (PDOException $e) {
         setFlash('error', 'Unable to save your shipping information.');
@@ -164,6 +167,7 @@ if ($action === 'change_password') {
         $stmt = $pdo->prepare("UPDATE users SET password_hash = ?, login_attempts = 0 WHERE user_id = ?");
         $stmt->execute([password_hash($newPassword, PASSWORD_DEFAULT), $userId]);
 
+        logAudit($pdo, $userId, "User successfully changed their password");
         session_regenerate_id(true);
         setFlash('success', 'Password changed successfully.');
     } catch (PDOException $e) {
@@ -201,7 +205,7 @@ if ($action === 'delete_account') {
         $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$userId]);
         $pdo->prepare("DELETE FROM user_profiles WHERE user_id = ?")->execute([$userId]);
         $pdo->prepare("DELETE FROM users WHERE user_id = ? AND role = 'Customer'")->execute([$userId]);
-
+        logAudit($pdo, $userId, "Customer self-deleted their account");
         $pdo->commit();
     } catch (PDOException $e) {
         if ($pdo->inTransaction()) {

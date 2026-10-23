@@ -23,6 +23,10 @@ try {
 if (!empty($_SESSION['logged_in'])) {
     $timeoutSeconds = $timeoutMinutes * 60;
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeoutSeconds)) {
+        require_once __DIR__ . '/../../includes/audit_helper.php';
+        if (!empty($_SESSION['user_id'])) {
+            logAudit($pdo, $_SESSION['user_id'], "Session timed out due to inactivity (" . ($_SESSION['user_role'] ?? 'User') . ")");
+        }
         session_unset();
         session_destroy();
         header('Location: ../index.php?login=timeout');

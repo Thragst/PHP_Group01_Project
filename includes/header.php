@@ -22,37 +22,38 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
 
     <div class="nav-right">
         <?php if($isLoggedIn): ?>
-            <button type="button" class="profile-button" onclick="showProfileMenu()" aria-haspopup="true" aria-controls="profileSidebar">
-                <?php echo htmlspecialchars($userName); ?>
-            </button>
-        <?php else: ?>
-            <a href="<?php echo $basePath; ?>index.php?login=required" class="login-link">Login</a>
-            <a href="<?php echo $basePath; ?>index.php?signup=open" class="signup-link">Sign Up</a>
+            <div class="account-menu">
+                <button type="button" class="account-trigger" onclick="toggleAccountMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="accountDropdown">
+                    <span class="account-avatar"><?php echo htmlspecialchars($avatarLetter); ?></span>
+                    <span class="account-name"><?php echo htmlspecialchars($userName); ?></span>
+                    <span class="account-arrow">⌄</span>
+                </button>
+                <div class="account-dropdown" id="accountDropdown">
+                    <a href="<?php echo $basePath; ?>index.php?page=profile" class="account-item <?php echo $currentPage === 'profile' ? 'active' : ''; ?>">
+                        <span class="account-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="<?php echo $basePath; ?>index.php?page=settings" class="account-item <?php echo $currentPage === 'settings' ? 'active' : ''; ?>">
+                        <span class="account-icon">⚙</span>
+                        <span>Settings</span>
+                    </a>
+                    <a href="<?php echo $basePath; ?>index.php?page=orders" class="account-item <?php echo $currentPage === 'orders' ? 'active' : ''; ?>">
+                        <span class="account-icon">📋</span>
+                        <span>My Orders</span>
+                    </a>
+                    <a href="<?php echo $basePath; ?>index.php?page=cart" class="account-item <?php echo $currentPage === 'cart' ? 'active' : ''; ?>">
+                        <span class="account-icon">🛒</span>
+                        <span>Cart</span>
+                    </a>
+                    <div class="account-divider"></div>
+                    <a href="<?php echo $basePath; ?>pages/logout.php" class="account-item account-logout">
+                        <span class="account-icon">↪</span> <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+            <?php else: ?>
+                <a href="<?php echo $basePath; ?>index.php?login=required" class="login-link">Login</a>
+                <a href="<?php echo $basePath; ?>index.php?signup=required" class="signup-link">Signup</a>
         <?php endif; ?>
     </div>
 </nav>
-
-<?php if($isLoggedIn): ?>
-    <div class="profile-overlay" id="profileOverlay" onclick="closeProfileMenu()"></div>
-
-    <aside class="profile-sidebar" id="profileSidebar" aria-label="Account menu">
-        <div class="profile-sidebar-header">
-            <h2>My Account</h2>
-            <button type="button" class="profile-close" onclick="closeProfileMenu()" aria-label="Close menu">&times;</button>
-        </div>
-
-        <div class="profile-user">
-            <div class="profile-avatar"><?php echo htmlspecialchars($avatarLetter); ?></div>
-            <div>
-                <h3><?php echo htmlspecialchars($userName); ?></h3>
-                <p>@<?php echo htmlspecialchars($sidebarUsername); ?></p>
-            </div>
-        </div>
-
-        <nav class="profile-menu">
-            <a href="<?php echo $basePath; ?>index.php?page=profile" class="<?php echo $currentPage === 'profile' ? 'active' : ''; ?>">Profile</a>
-            <a href="<?php echo $basePath; ?>index.php?page=settings" class="<?php echo $currentPage === 'settings' ? 'active' : ''; ?>">Settings</a>
-            <a href="<?php echo $basePath; ?>pages/logout.php" class="logout-link">Logout</a>
-        </nav>
-    </aside>
-<?php endif; ?>

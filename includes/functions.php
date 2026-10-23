@@ -11,6 +11,21 @@ function isLoggedIn()
     return isset($_SESSION['logged_in'])
         && $_SESSION['logged_in'] === true;
 }
+// (MFA)
+function completeLogin(array $user)
+{
+    session_regenerate_id(true);
+
+    $_SESSION['logged_in'] = true;
+    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['user_name'] = $user['full_name'];
+    $_SESSION['username'] = $user['username'] ?? $user['email'];
+    $_SESSION['user_role'] = $user['role'];
+    $_SESSION['last_activity'] = time();
+
+    unset($_SESSION['mfa_pending']);
+    unset($_SESSION['mfa_user_id']);
+}
 // (if user is admin)
 function isAdmin()
 {
@@ -53,15 +68,8 @@ function productImageSrc($path, $base = '')
     if ($path === '') {
         return '';
     }
-    if ( str_starts_with($path, 'http://') || str_starts_with($path, 'https://')
-    ) {
-        return $path;
-    }
-    $clean = ltrim($path, '/');
-    if (str_starts_with(strtolower($clean), 'admin/')) {
-        $clean = substr($clean, 6);
-    }
-    return $base . $clean;
+    if(preg_match('#^https?://#i', $path)) {return $path; }
+    return ltrim($path, '/');
 }
 
 // (format the price)
@@ -407,3 +415,5 @@ function getAccountStats(PDO $pdo, $userId)
         'total_spent' => $totalSpent
     ];
 }
+
+

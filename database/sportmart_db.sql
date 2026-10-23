@@ -3,13 +3,12 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 20, 2026 at 12:00 PM
+-- Generation Time: Oct 23, 2026 at 04:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
-SET FOREIGN_KEY_CHECKS=0;
 SET time_zone = "+00:00";
 
 
@@ -30,13 +29,12 @@ SET time_zone = "+00:00";
 
 DROP TABLE IF EXISTS `account_locks`;
 CREATE TABLE `account_locks` (
-  `lock_id` int(11) NOT NULL AUTO_INCREMENT,
+  `lock_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
   `failed_attempts` int(11) NOT NULL DEFAULT 3,
   `locked_at` datetime NOT NULL DEFAULT current_timestamp(),
   `unlocked_at` datetime DEFAULT NULL,
-  `status` enum('Locked','Unlocked') DEFAULT 'Locked',
-  PRIMARY KEY (`lock_id`)
+  `status` enum('Locked','Unlocked') DEFAULT 'Locked'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -47,13 +45,12 @@ CREATE TABLE `account_locks` (
 
 DROP TABLE IF EXISTS `audit_logs`;
 CREATE TABLE `audit_logs` (
-  `audit_log_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) UNSIGNED NOT NULL,
+  `audit_log_id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED DEFAULT NULL,
   `action_description` varchar(500) NOT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`audit_log_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `audit_logs`
@@ -66,7 +63,98 @@ INSERT INTO `audit_logs` (`audit_log_id`, `user_id`, `action_description`, `ip_a
 (4, 5, 'Updated order #ORD-1 status to \'Processing\' (Assigned to Driver ID: #9)', '::1', '2026-10-20 09:33:16'),
 (5, 5, 'Updated order #ORD-1 status to \'Cancelled\' (Assigned to Driver ID: #9)', '::1', '2026-10-20 09:33:19'),
 (6, 5, 'Updated order #ORD-1 status to \'Out for Delivery\' (Assigned to Driver ID: #9)', '::1', '2026-10-20 09:38:47'),
-(7, 9, 'Driver marked order #ORD-1 as Delivered.', '::1', '2026-10-20 09:39:05');
+(7, 9, 'Driver marked order #ORD-1 as Delivered.', '::1', '2026-10-20 09:39:05'),
+(8, 9, 'Successful login (Driver)', '::1', '2026-10-22 06:56:08'),
+(9, 8, 'Successful login (Customer)', '::1', '2026-10-22 06:56:32'),
+(10, 8, 'Customer placed order #ORD-2 (Total: ₱11,105.49)', '::1', '2026-10-22 07:01:51'),
+(11, 9, 'Successful login (Driver)', '::1', '2026-10-22 07:02:30'),
+(12, 5, 'Successful login (Admin)', '::1', '2026-10-22 07:02:55'),
+(13, 5, 'Updated order #ORD-2: status \'Pending\' -> \'Delivered\'', '::1', '2026-10-22 07:03:07'),
+(14, 8, 'Successful login (Customer)', '::1', '2026-10-22 07:03:27'),
+(15, 5, 'Successful login (Admin)', '::1', '2026-10-23 09:23:13'),
+(16, 5, 'Successful login (Admin)', '::1', '2026-10-23 10:01:38'),
+(17, 5, 'Successful login (Admin)', '::1', '2026-10-23 10:07:27'),
+(18, 5, 'User logged out (Admin)', '::1', '2026-10-23 10:09:01'),
+(19, 5, 'Successful login (Admin)', '::1', '2026-10-23 10:09:15'),
+(20, 5, 'Successful login (Admin)', '::1', '2026-10-23 10:32:25'),
+(21, 5, 'Session timed out due to inactivity (Admin)', '::1', '2026-10-23 10:44:12'),
+(22, 5, 'Successful login (Admin)', '::1', '2026-10-23 10:44:21'),
+(23, 5, 'Session timed out due to inactivity (Admin)', '::1', '2026-10-23 10:57:53'),
+(24, 8, 'Successful login (Customer)', '::1', '2026-10-23 13:10:16'),
+(25, 8, 'Customer placed order #ORD-3 (Total: ₱1,856.37)', '::1', '2026-10-23 13:10:59'),
+(26, 8, 'User logged out (Customer)', '::1', '2026-10-23 13:11:16'),
+(27, 9, 'Successful login (Driver)', '::1', '2026-10-23 13:11:26'),
+(28, 9, 'User logged out (Driver)', '::1', '2026-10-23 13:11:29'),
+(29, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:11:38'),
+(30, 5, 'Updated order #ORD-3: status \'Pending\' -> \'Out for Delivery\', assigned to Driver ID #9', '::1', '2026-10-23 13:12:20'),
+(31, 5, 'User logged out (Admin)', '::1', '2026-10-23 13:12:31'),
+(32, 9, 'Successful login (Driver)', '::1', '2026-10-23 13:12:41'),
+(33, 9, 'Driver updated order #ORD-3 location to Manila', '::1', '2026-10-23 13:12:53'),
+(34, 9, 'Driver updated order #ORD-3 location to Pasig', '::1', '2026-10-23 13:12:58'),
+(35, 9, 'Driver marked order #ORD-3 as Delivered.', '::1', '2026-10-23 13:13:02'),
+(36, 9, 'User logged out (Driver)', '::1', '2026-10-23 13:13:08'),
+(37, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:13:17'),
+(38, 5, 'Updated product #200 (Lightspeed Ultraweave Men\'s Lightweight Running Pants)', '::1', '2026-10-23 13:14:43'),
+(39, 5, 'Created product #201 (Testing)', '::1', '2026-10-23 13:15:24'),
+(40, 5, 'Deleted product #201 (Testing)', '::1', '2026-10-23 13:15:39'),
+(41, 5, 'Created new category #5 (test)', '::1', '2026-10-23 13:18:16'),
+(42, 5, 'Created product #202 (test)', '::1', '2026-10-23 13:19:41'),
+(43, 5, 'User logged out (Admin)', '::1', '2026-10-23 13:20:07'),
+(44, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:20:34'),
+(45, 5, 'User logged out (Admin)', '::1', '2026-10-23 13:21:58'),
+(46, 8, 'Successful login (Customer)', '::1', '2026-10-23 13:22:06'),
+(47, 8, 'User updated profile details (Full Name: Jake taal, Username: Jaker)', '::1', '2026-10-23 13:22:22'),
+(48, 8, 'User updated default shipping address/contact info', '::1', '2026-10-23 13:22:43'),
+(49, 8, 'User logged out (Customer)', '::1', '2026-10-23 13:23:14'),
+(50, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:23:23'),
+(51, 5, 'Updated permissions/details for Staff account: Juan Dela Cruz (User ID #9)', '::1', '2026-10-23 13:24:53'),
+(52, 5, 'Updated permissions/details for Driver account: Juan Dela Cruz (User ID #9)', '::1', '2026-10-23 13:25:04'),
+(53, 5, 'User logged out (Admin)', '::1', '2026-10-23 13:25:25'),
+(54, 8, 'Successful login (Customer)', '::1', '2026-10-23 13:25:33'),
+(55, 8, 'User logged out (Customer)', '::1', '2026-10-23 13:25:38'),
+(56, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 13:25:43'),
+(57, 8, 'Successful login (Customer)', '::1', '2026-10-23 13:25:54'),
+(58, 8, 'User logged out (Customer)', '::1', '2026-10-23 13:25:59'),
+(59, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 13:26:06'),
+(60, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 13:26:09'),
+(61, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 13:26:11'),
+(62, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 13:26:13'),
+(63, 8, 'Account lockout triggered for \'Jaker\' after 5 failed attempts', '::1', '2026-10-23 13:26:14'),
+(64, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:26:22'),
+(65, 5, 'Admin unlocked customer account for User ID #8', '::1', '2026-10-23 13:26:41'),
+(66, 5, 'Created new Staff account for samillano@gmail.com (User ID #11)', '::1', '2026-10-23 13:28:22'),
+(67, 5, 'User logged out (Admin)', '::1', '2026-10-23 13:29:14'),
+(68, 11, 'Successful login (Staff)', '::1', '2026-10-23 13:29:22'),
+(69, 11, 'Deleted product #202 (test)', '::1', '2026-10-23 13:29:29'),
+(70, 11, 'Updated order #ORD-3: status \'Delivered\' -> \'Cancelled\'', '::1', '2026-10-23 13:29:42'),
+(71, 11, 'User logged out (Staff)', '::1', '2026-10-23 13:29:44'),
+(72, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:29:53'),
+(73, 5, 'Session timed out due to inactivity (Admin)', '::1', '2026-10-23 13:44:55'),
+(74, 5, 'Successful login (Admin)', '::1', '2026-10-23 13:54:11'),
+(75, 5, 'Created product #203 (test)', '::1', '2026-10-23 13:55:47'),
+(76, 5, 'Deleted product #203 (test)', '::1', '2026-10-23 13:55:59'),
+(77, 5, 'Successful login (Admin)', '::1', '2026-10-23 14:03:29'),
+(78, 5, 'Updated system security and password policies', '::1', '2026-10-23 14:03:50'),
+(79, 5, 'Successful login (Admin)', '::1', '2026-10-23 14:07:02'),
+(80, 5, 'Updated system security and password policies', '::1', '2026-10-23 14:07:37'),
+(81, 5, 'User logged out (Admin)', '::1', '2026-10-23 14:07:41'),
+(82, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 14:07:48'),
+(83, 8, 'Account lockout triggered for \'Jaker\' after 2 failed attempts', '::1', '2026-10-23 14:07:50'),
+(84, 5, 'Successful login (Admin)', '::1', '2026-10-23 14:08:16'),
+(85, 5, 'Session timed out due to inactivity (Admin)', '::1', '2026-10-23 14:14:43'),
+(86, 5, 'Successful login (Admin)', '::1', '2026-10-23 14:14:53'),
+(87, 5, 'User logged out (Admin)', '::1', '2026-10-23 14:15:10'),
+(88, 5, 'Successful login (Admin)', '::1', '2026-10-23 14:15:53'),
+(89, 5, 'Admin unlocked customer account for User ID #8', '::1', '2026-10-23 14:16:08'),
+(90, 5, 'User logged out (Admin)', '::1', '2026-10-23 14:16:12'),
+(91, 8, 'Failed login attempt for \'Jaker\'', '::1', '2026-10-23 14:16:18'),
+(92, 8, 'Account lockout triggered for \'Jaker\' after 2 failed attempts', '::1', '2026-10-23 14:16:21'),
+(93, 5, 'Failed login attempt for \'admin\'', '::1', '2026-10-23 14:18:32'),
+(94, 5, 'Successful login (Admin)', '::1', '2026-10-23 14:18:41'),
+(95, 5, 'Admin unlocked customer account for User ID #8', '::1', '2026-10-23 14:18:50'),
+(96, 5, 'User logged out (Admin)', '::1', '2026-10-23 14:18:56'),
+(97, 8, 'Successful login (Customer)', '::1', '2026-10-23 14:19:04'),
+(98, 8, 'User logged out (Customer)', '::1', '2026-10-23 14:19:08');
 
 -- --------------------------------------------------------
 
@@ -76,12 +164,11 @@ INSERT INTO `audit_logs` (`audit_log_id`, `user_id`, `action_description`, `ip_a
 
 DROP TABLE IF EXISTS `cart_items`;
 CREATE TABLE `cart_items` (
-  `cart_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `cart_item_id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
   `product_id` int(10) UNSIGNED NOT NULL,
   `quantity` int(10) UNSIGNED NOT NULL DEFAULT 1 CHECK (`quantity` > 0),
-  `added_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`cart_item_id`)
+  `added_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -92,14 +179,13 @@ CREATE TABLE `cart_items` (
 
 DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
-  `category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `category_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(100) NOT NULL,
   `slug` varchar(120) NOT NULL,
   `description` text DEFAULT NULL,
   `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `categories`
@@ -109,7 +195,23 @@ INSERT INTO `categories` (`category_id`, `name`, `slug`, `description`, `status`
 (1, 'Basketball', 'basketball', 'Basketball shoes, jerseys, apparel, and accessories.', 'Active', '2026-10-09 22:51:21'),
 (2, 'Football', 'football', 'Football shoes, jerseys, apparel, and accessories.', 'Active', '2026-10-09 22:51:21'),
 (3, 'Running', 'running', 'Running shoes, clothing, and accessories.', 'Active', '2026-10-09 22:51:21'),
-(4, 'Tennis', 'tennis', 'Tennis shoes, clothing, and accessories.', 'Active', '2026-10-09 22:51:21');
+(4, 'Tennis', 'tennis', 'Tennis shoes, clothing, and accessories.', 'Active', '2026-10-09 22:51:21'),
+(5, 'test', 'test', 'test', 'Active', '2026-10-23 13:18:16');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `email_verifications`
+--
+
+DROP TABLE IF EXISTS `email_verifications`;
+CREATE TABLE `email_verifications` (
+  `verification_id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -119,15 +221,38 @@ INSERT INTO `categories` (`category_id`, `name`, `slug`, `description`, `status`
 
 DROP TABLE IF EXISTS `login_logs`;
 CREATE TABLE `login_logs` (
-  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `log_id` int(11) NOT NULL,
   `user_id` varchar(50) DEFAULT NULL,
   `username` varchar(50) NOT NULL,
   `event_type` enum('LOGIN_SUCCESS','LOGIN_FAILED','LOGOUT','ACCOUNT_LOCKED') NOT NULL,
   `ip_address` varchar(45) NOT NULL,
   `user_agent` text DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`log_id`)
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `login_logs`
+--
+
+INSERT INTO `login_logs` (`log_id`, `user_id`, `username`, `event_type`, `ip_address`, `user_agent`, `created_at`) VALUES
+(1, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 18:09:01'),
+(2, '8', 'Jake', 'LOGOUT', '::1', NULL, '2026-10-23 21:11:16'),
+(3, '9', 'rider_juan', 'LOGOUT', '::1', NULL, '2026-10-23 21:11:29'),
+(4, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 21:12:31'),
+(5, '9', 'rider_juan', 'LOGOUT', '::1', NULL, '2026-10-23 21:13:08'),
+(6, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 21:20:07'),
+(7, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 21:21:58'),
+(8, '8', 'Jaker', 'LOGOUT', '::1', NULL, '2026-10-23 21:23:14'),
+(9, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 21:25:25'),
+(10, '8', 'Jaker', 'LOGOUT', '::1', NULL, '2026-10-23 21:25:38'),
+(11, '8', 'Jaker', 'LOGOUT', '::1', NULL, '2026-10-23 21:25:59'),
+(12, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 21:29:14'),
+(13, '11', 'samillano', 'LOGOUT', '::1', NULL, '2026-10-23 21:29:44'),
+(14, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 22:07:41'),
+(15, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 22:15:10'),
+(16, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 22:16:12'),
+(17, '5', 'admin', 'LOGOUT', '::1', NULL, '2026-10-23 22:18:56'),
+(18, '8', 'Jaker', 'LOGOUT', '::1', NULL, '2026-10-23 22:19:08');
 
 -- --------------------------------------------------------
 
@@ -137,7 +262,7 @@ CREATE TABLE `login_logs` (
 
 DROP TABLE IF EXISTS `orders`;
 CREATE TABLE `orders` (
-  `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
   `driver_id` int(10) UNSIGNED DEFAULT NULL,
   `total_amount` decimal(10,2) NOT NULL,
@@ -147,16 +272,17 @@ CREATE TABLE `orders` (
   `contact_number` varchar(30) DEFAULT NULL,
   `order_notes` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `user_id`, `driver_id`, `total_amount`, `payment_method`, `status`, `shipping_address`, `created_at`, `updated_at`) VALUES
-(1, 6, 9, 2196.25, 'COD', 'Delivered', '123 Maybunga St., Pasig City, Metro Manila', '2026-10-20 07:22:16', '2026-10-20 09:39:05');
+INSERT INTO `orders` (`order_id`, `user_id`, `driver_id`, `total_amount`, `payment_method`, `status`, `shipping_address`, `contact_number`, `order_notes`, `created_at`, `updated_at`) VALUES
+(1, 6, 9, 2196.25, 'COD', 'Delivered', '123 Maybunga St., Pasig City, Metro Manila', NULL, NULL, '2026-10-20 07:22:16', '2026-10-20 09:39:05'),
+(2, 8, NULL, 11105.49, 'COD', 'Delivered', '009 Metro Manila City', '09123456789', NULL, '2026-10-22 07:01:51', '2026-10-22 07:03:07'),
+(3, 8, 9, 1856.37, 'COD', 'Cancelled', '009 Metro Manila City', '09462068990', NULL, '2026-10-23 13:10:59', '2026-10-23 13:29:42');
 
 -- --------------------------------------------------------
 
@@ -166,20 +292,23 @@ INSERT INTO `orders` (`order_id`, `user_id`, `driver_id`, `total_amount`, `payme
 
 DROP TABLE IF EXISTS `order_items`;
 CREATE TABLE `order_items` (
-  `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_item_id` int(10) UNSIGNED NOT NULL,
   `order_id` int(10) UNSIGNED NOT NULL,
   `product_id` int(10) UNSIGNED NOT NULL,
   `quantity` int(10) UNSIGNED NOT NULL CHECK (`quantity` > 0),
-  `price_at_purchase` decimal(10,2) NOT NULL CHECK (`price_at_purchase` >= 0),
-  PRIMARY KEY (`order_item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `price_at_purchase` decimal(10,2) NOT NULL CHECK (`price_at_purchase` >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `order_items`
 --
 
 INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `quantity`, `price_at_purchase`) VALUES
-(1, 1, 1, 1, 2196.25);
+(1, 1, 1, 1, 2196.25),
+(2, 2, 200, 1, 4517.37),
+(3, 2, 199, 1, 2823.12),
+(4, 2, 198, 1, 3765.00),
+(5, 3, 162, 1, 1756.37);
 
 -- --------------------------------------------------------
 
@@ -189,14 +318,13 @@ INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `quantity`
 
 DROP TABLE IF EXISTS `order_tracking`;
 CREATE TABLE `order_tracking` (
-  `tracking_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tracking_id` int(11) UNSIGNED NOT NULL,
   `order_id` int(10) UNSIGNED NOT NULL,
   `location_city` varchar(100) NOT NULL,
   `status_note` varchar(255) DEFAULT 'Package in transit',
   `updated_by` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`tracking_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_tracking`
@@ -209,7 +337,10 @@ INSERT INTO `order_tracking` (`tracking_id`, `order_id`, `location_city`, `statu
 (4, 1, 'Pasig City', 'Package processed at location', 9, '2026-10-20 08:08:57'),
 (5, 1, 'Manila', 'Package processed at location', 9, '2026-10-20 08:09:04'),
 (6, 1, 'Destination Address', 'Package successfully delivered', 9, '2026-10-20 08:09:06'),
-(7, 1, 'Destination Address', 'Package successfully delivered', 9, '2026-10-20 09:39:05');
+(7, 1, 'Destination Address', 'Package successfully delivered', 9, '2026-10-20 09:39:05'),
+(8, 3, 'Manila', 'Package processed at location', 9, '2026-10-23 13:12:53'),
+(9, 3, 'Pasig', 'Package processed at location', 9, '2026-10-23 13:12:58'),
+(10, 3, 'Destination Address', 'Package successfully delivered', 9, '2026-10-23 13:13:02');
 
 -- --------------------------------------------------------
 
@@ -219,7 +350,7 @@ INSERT INTO `order_tracking` (`tracking_id`, `order_id`, `location_city`, `statu
 
 DROP TABLE IF EXISTS `products`;
 CREATE TABLE `products` (
-  `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `product_id` int(10) UNSIGNED NOT NULL,
   `category_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(150) NOT NULL,
   `brand` varchar(100) DEFAULT NULL,
@@ -229,9 +360,8 @@ CREATE TABLE `products` (
   `image_path` varchar(255) DEFAULT NULL,
   `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `products`
@@ -439,7 +569,31 @@ INSERT INTO `products` (`product_id`, `category_id`, `name`, `brand`, `descripti
 (197, 3, 'Lightspeed Women\'s Graphic Running Tee', 'Puma', 'Chasing a new personal record? The Lightspeed collection is designed with featherweight fabrics and nearly seamless construction to cut excess weight and drag. This moisture-wicking tee has a performance fit for streamlined movement.', 3765.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528771/35/mod01/fnd/PNA/fmt/png/Lightspeed-Women\'s-Graphic-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
 (198, 3, 'Lightspeed Men\'s Graphic Running Tee', 'Puma', 'Chasing a new personal record? The Lightspeed collection is built with featherweight fabrics and nearly seamless construction to cut excess weight. This tee has a performance fit for streamlined movement, and dryCELL tech helps wick away moisture.', 3765.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528772/55/mod01/fnd/PNA/fmt/png/Lightspeed-Men\'s-Graphic-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
 (199, 3, 'Everyday Cloudspun Ultra Soft Women\'s Running Tee', 'Puma', 'Feel free to run at your best with PUMA\'s softest fabric, CLOUDSPUN, featuring moisture-wicking dryCELL and 4-way stretch. Laser-cut perforations improve breathability, while bonded seams minimize friction. Thermoadapt technology helps keep you cool as you push your limits.', 2823.12, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/526652/01/mod01/fnd/PNA/fmt/png/Everyday-Cloudspun-Ultra-Soft-Women\'s-Running-Tee', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00'),
-(200, 3, 'Lightspeed Ultraweave Men\'s Lightweight Running Pants', 'Puma', 'Lightspeed running pants are built for pure pace. Lightweight, aerodynamic, and distraction-free, it moves with you—never against you. Ankle zips, moisture-wicking tech, and smart storage keep you focused on your finish.', 4517.37, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528776/65/mod01/fnd/PNA/fmt/png/Lightspeed-Ultraweave-Men\'s-Lightweight-Running-Pants', 'Active', '2026-10-09 22:59:00', '2026-10-09 22:59:00');
+(200, 3, 'Lightspeed Ultraweave Men\'s Lightweight Running Pants', 'Puma', 'Lightspeed running pants are built for pure pace. Lightweight, aerodynamic, and distraction-free, it moves with you—never against you. Ankle zips, moisture-wicking tech, and smart storage keep you focused on your finish.', 4517.00, 50, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/528776/65/mod01/fnd/PNA/fmt/png/Lightspeed-Ultraweave-Men\'s-Lightweight-Running-Pants', 'Active', '2026-10-09 22:59:00', '2026-10-23 13:14:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_reviews`
+--
+
+DROP TABLE IF EXISTS `product_reviews`;
+CREATE TABLE `product_reviews` (
+  `review_id` int(10) UNSIGNED NOT NULL,
+  `product_id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `rating` tinyint(3) UNSIGNED NOT NULL,
+  `review_text` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_reviews`
+--
+
+INSERT INTO `product_reviews` (`review_id`, `product_id`, `user_id`, `rating`, `review_text`, `created_at`, `updated_at`) VALUES
+(1, 200, 8, 5, 'Wow what a product!', '2026-10-22 07:03:52', '2026-10-22 07:03:52');
 
 -- --------------------------------------------------------
 
@@ -463,22 +617,21 @@ CREATE TABLE `search_analytics` (
 
 DROP TABLE IF EXISTS `system_settings`;
 CREATE TABLE `system_settings` (
-  `setting_id` int(11) NOT NULL AUTO_INCREMENT,
+  `setting_id` int(11) NOT NULL,
   `setting_key` varchar(50) NOT NULL,
   `setting_value` varchar(255) NOT NULL,
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`setting_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `system_settings`
 --
 
 INSERT INTO `system_settings` (`setting_id`, `setting_key`, `setting_value`, `updated_at`) VALUES
-(1, 'max_failed_attempts', '5', '2026-10-20 17:26:52'),
+(1, 'max_failed_attempts', '2', '2026-10-23 22:07:37'),
 (2, 'session_timeout_seconds', '900', '2026-10-17 12:05:59'),
 (3, 'password_min_length', '12', '2026-10-17 12:05:59'),
-(4, 'session_timeout_minutes', '5', '2026-10-19 22:16:36'),
+(4, 'session_timeout_minutes', '5', '2026-10-23 22:07:37'),
 (5, 'min_password_length', '12', '2026-10-19 22:16:36'),
 (6, 'require_uppercase', '1', '2026-10-19 22:16:36'),
 (7, 'require_lowercase', '1', '2026-10-19 22:16:36'),
@@ -493,7 +646,7 @@ INSERT INTO `system_settings` (`setting_id`, `setting_key`, `setting_value`, `up
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) UNSIGNED NOT NULL,
   `username` varchar(50) DEFAULT NULL,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -501,14 +654,13 @@ CREATE TABLE `users` (
   `role` enum('Customer','Admin','Staff','Driver') NOT NULL DEFAULT 'Customer',
   `phone` varchar(30) DEFAULT NULL,
   `physical_address` varchar(255) DEFAULT NULL,
-  `account_status` enum('Active','Suspended','Inactive') NOT NULL DEFAULT 'Active',
+  `account_status` enum('Active','Suspended','Inactive','Locked') NOT NULL DEFAULT 'Active',
   `login_attempts` int(11) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'Active',
-  `failed_attempts` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `failed_attempts` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
@@ -518,8 +670,10 @@ INSERT INTO `users` (`user_id`, `username`, `full_name`, `email`, `password_hash
 (5, 'admin', 'Bermudez Admin', 'bermudez_gabriel@plpasig.edu.ph', '$2y$10$09KRMEXC3sl./VrQnFng0OV3mVtvVLuQK1h.NRdD0Ypsf9BmciEua', 'Admin', NULL, NULL, 'Active', 0, '2026-10-18 03:07:47', NULL, 'Active', 0),
 (6, 'Anana', 'Clark Naduma', 'clark@plpasig.edu.ph', '$2y$10$.vmlYvF9xDEMsCPfFnxkQuwjwfpJqg.9CP5qNsPqAGdxE9mTx4TPW', 'Customer', NULL, NULL, 'Active', 0, '2026-10-18 03:25:15', NULL, 'Active', 0),
 (7, 'Jade', 'Jade Angelo', 'jade@gmail.com', '$2y$10$ajMiZsiUIWBwscQXzesP8uK03dgI7Um3J3K7sx74MJSaANSq0pJ0m', 'Customer', NULL, NULL, 'Active', 0, '2026-10-18 03:32:30', NULL, 'Active', 0),
-(8, 'Jake', 'Jake taal', 'jake@gmail.com', '$2y$10$mSphsN.oJ3RGIPZ0tHzMOOi.0cTcu9LAhVKVMjwLo3FO5jemXp2tK', 'Customer', NULL, '009 Metro Manila City', '', 5, '2026-10-18 03:47:43', NULL, 'Active', 0),
-(9, 'rider_juan', 'Juan Dela Cruz', 'rider_juan@sportmart.ph', '$2y$10$SRV.9kOAVz6b.BfzMLlI2.JZXMMTO2cHbzoGq0bXIjzFrEMoIoGt6', 'Driver', NULL, NULL, 'Active', 0, '2026-10-18 05:32:53', NULL, 'Active', 0);
+(8, 'Jaker', 'Jake taal', 'jake@gmail.com', '$2y$10$mSphsN.oJ3RGIPZ0tHzMOOi.0cTcu9LAhVKVMjwLo3FO5jemXp2tK', 'Customer', '09462068991', '009 Metro Manila Cities', '', 0, '2026-10-18 03:47:43', NULL, 'Active', 0),
+(9, 'rider_juan', 'Juan Dela Cruz', 'rider_juan@sportmart.ph', '$2y$10$SRV.9kOAVz6b.BfzMLlI2.JZXMMTO2cHbzoGq0bXIjzFrEMoIoGt6', 'Driver', NULL, NULL, 'Active', 0, '2026-10-18 05:32:53', NULL, 'Active', 0),
+(10, 'geraldvalente', 'gerald', 'geraldvalente1@gmail.com', '$2y$10$KvUuaNBm0d4VVOxqtQwcf.CE7zWWKrnvLGoG70JjRqLI3OJ03SuIe', 'Customer', NULL, NULL, 'Active', 0, '2026-10-22 06:54:18', NULL, 'Active', 0),
+(11, 'samillano', 'Johnrey Samillano', 'samillano@gmail.com', '$2y$10$buJojuPyQ/V2a69w/j.T8uPR6W1MYvlY2cwiOpwtWzRpf.8/KKOUK', 'Staff', NULL, NULL, 'Active', 0, '2026-10-23 13:28:22', NULL, 'Active', 0);
 
 -- --------------------------------------------------------
 
@@ -529,13 +683,12 @@ INSERT INTO `users` (`user_id`, `username`, `full_name`, `email`, `password_hash
 
 DROP TABLE IF EXISTS `user_profiles`;
 CREATE TABLE `user_profiles` (
-  `profile_id` int(11) NOT NULL AUTO_INCREMENT,
+  `profile_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `phone_number` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
-  `postal_code` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`profile_id`)
+  `postal_code` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -543,9 +696,22 @@ CREATE TABLE `user_profiles` (
 --
 
 --
+-- Indexes for table `account_locks`
+--
+ALTER TABLE `account_locks`
+  ADD PRIMARY KEY (`lock_id`);
+
+--
+-- Indexes for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`audit_log_id`);
+
+--
 -- Indexes for table `cart_items`
 --
 ALTER TABLE `cart_items`
+  ADD PRIMARY KEY (`cart_item_id`),
   ADD UNIQUE KEY `uq_cart_user_product` (`user_id`,`product_id`),
   ADD KEY `idx_cart_product` (`product_id`);
 
@@ -553,18 +719,35 @@ ALTER TABLE `cart_items`
 -- Indexes for table `categories`
 --
 ALTER TABLE `categories`
+  ADD PRIMARY KEY (`category_id`),
   ADD UNIQUE KEY `slug` (`slug`);
+
+--
+-- Indexes for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  ADD PRIMARY KEY (`verification_id`),
+  ADD UNIQUE KEY `token_hash` (`token_hash`),
+  ADD KEY `idx_email` (`email`);
+
+--
+-- Indexes for table `login_logs`
+--
+ALTER TABLE `login_logs`
+  ADD PRIMARY KEY (`log_id`);
 
 --
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
+  ADD PRIMARY KEY (`order_id`),
   ADD KEY `fk_orders_driver` (`driver_id`);
 
 --
 -- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`order_item_id`),
   ADD KEY `idx_order_items_order` (`order_id`),
   ADD KEY `idx_order_items_product` (`product_id`);
 
@@ -572,6 +755,7 @@ ALTER TABLE `order_items`
 -- Indexes for table `order_tracking`
 --
 ALTER TABLE `order_tracking`
+  ADD PRIMARY KEY (`tracking_id`),
   ADD KEY `idx_order_id` (`order_id`),
   ADD KEY `idx_updated_by` (`updated_by`);
 
@@ -579,25 +763,125 @@ ALTER TABLE `order_tracking`
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
+  ADD PRIMARY KEY (`product_id`),
   ADD KEY `idx_products_category` (`category_id`);
+
+--
+-- Indexes for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  ADD PRIMARY KEY (`review_id`),
+  ADD UNIQUE KEY `unique_user_product_review` (`user_id`,`product_id`),
+  ADD KEY `idx_reviews_product` (`product_id`);
 
 --
 -- Indexes for table `system_settings`
 --
 ALTER TABLE `system_settings`
+  ADD PRIMARY KEY (`setting_id`),
   ADD UNIQUE KEY `setting_key` (`setting_key`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
+  ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
 -- Indexes for table `user_profiles`
 --
 ALTER TABLE `user_profiles`
+  ADD PRIMARY KEY (`profile_id`),
   ADD KEY `idx_user_id` (`user_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `account_locks`
+--
+ALTER TABLE `account_locks`
+  MODIFY `lock_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `audit_log_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
+
+--
+-- AUTO_INCREMENT for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  MODIFY `cart_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `categories`
+--
+ALTER TABLE `categories`
+  MODIFY `category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  MODIFY `verification_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `login_logs`
+--
+ALTER TABLE `login_logs`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `order_tracking`
+--
+ALTER TABLE `order_tracking`
+  MODIFY `tracking_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=204;
+
+--
+-- AUTO_INCREMENT for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  MODIFY `review_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `system_settings`
+--
+ALTER TABLE `system_settings`
+  MODIFY `setting_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=158;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT for table `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -607,8 +891,8 @@ ALTER TABLE `user_profiles`
 -- Constraints for table `cart_items`
 --
 ALTER TABLE `cart_items`
-  ADD CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `orders`
@@ -626,8 +910,14 @@ ALTER TABLE `order_items`
 -- Constraints for table `products`
 --
 ALTER TABLE `products`
-  ADD CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-SET FOREIGN_KEY_CHECKS=1;
+  ADD CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+--
+-- Constraints for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  ADD CONSTRAINT `fk_reviews_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
