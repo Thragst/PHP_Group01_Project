@@ -1,0 +1,18 @@
+.login-message.login-success,
+.login-message.login-success a {
+    color: #1e7e34 !important;
+    font-weight: bold;
+}
+
+.login-message a {
+    text-decoration: underline;
+}
+
+.login-message.resend-note {
+    font-size: 13px;
+}
+
+.login-message.dev-note {
+    font-size: 12px;
+    word-break: break-all;
+}

@@ -53,6 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
+        if (strtolower($currentStatus) === 'pending') {
+            if (password_verify($password, $user['password_hash'])) {
+                header('Location: ../index.php?login=unverified');
+            } else {
+                header('Location: ../index.php?login=error');
+            }
+            exit();
+        }
+
         if (password_verify($password, $user['password_hash'])) {
             $resetStmt = $pdo->prepare("UPDATE users SET failed_attempts = 0, login_attempts = 0 WHERE user_id = ?");
             $resetStmt->execute([$user['user_id']]);
@@ -87,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         } else {
             $newAttempts = $currentAttempts + 1;
-            
+
             if ($newAttempts >= $maxAttempts) {
                 $updateStmt = $pdo->prepare("UPDATE users SET failed_attempts = ?, login_attempts = ?, status = 'Locked', account_status = 'Locked' WHERE user_id = ?");
                 $updateStmt->execute([$newAttempts, $newAttempts, $user['user_id']]);
