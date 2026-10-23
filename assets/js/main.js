@@ -497,3 +497,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     confirmPassword.addEventListener("input", updateConfirm);
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (!localStorage.getItem("cookieConsent")) {
+        const banner = document.getElementById("cookieConsentBanner");
+        if (banner) {
+            banner.style.display = "block";
+        }
+    }
+});
+
+function acceptCookieConsent() {
+    localStorage.setItem("cookieConsent", "accepted");
+    const banner = document.getElementById("cookieConsentBanner");
+    if (banner) {
+        banner.style.display = "none";
+    }
+}

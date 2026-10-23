@@ -2446,3 +2446,131 @@ select {
     font-size: 12px;
     color: #777;
 }
+
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1a0c0c;
+    color: #ffffff;
+    padding: 16px 6%;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+    z-index: 99999;
+}
+
+.cookie-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.cookie-content p {
+    font-size: 14px;
+    color: #ddd;
+    line-height: 1.5;
+}
+
+.cookie-content a {
+    color: #f3c9c9;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.cookie-content a:hover {
+    color: #ffffff;
+}
+
+.cookie-btn {
+    background: #8b2e2e;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.cookie-btn:hover {
+    background: #702323;
+}
+
+@media (max-width: 600px) {
+    .cookie-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .cookie-btn {
+        width: 100%;
+    }
+}
+
+.privacy-container {
+    max-width: 900px;
+    margin: 50px auto 80px;
+    padding: 40px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(53, 24, 24, 0.06);
+    color: #241111;
+}
+
+.privacy-container h1 {
+    font-size: 36px;
+    color: #351818;
+    margin-bottom: 10px;
+}
+
+.privacy-container .effective-date {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #f0e6e3;
+    padding-bottom: 15px;
+}
+
+.privacy-section {
+    margin-bottom: 25px;
+}
+
+.privacy-section h2 {
+    font-size: 20px;
+    color: #8b2e2e;
+    margin-bottom: 10px;
+}
+
+.privacy-section p, 
+.privacy-section ul {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.privacy-section ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.privacy-section li {
+    margin-bottom: 6px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #8b2e2e;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
