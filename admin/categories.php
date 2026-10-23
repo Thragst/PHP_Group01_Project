@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/security.php';
 
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
@@ -15,6 +16,7 @@ $flashSuccess = $_SESSION['flash_success'] ?? '';
 unset($_SESSION['flash_error'], $_SESSION['flash_success']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    securityCheck();
     $action = $_POST['action'] ?? '';
     $categoryId = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
     $name = trim($_POST['name'] ?? '');
@@ -159,9 +161,9 @@ include __DIR__ . '/includes/admin_header.php';
                         <td>
                             <button class="btn-action" onclick="openEditCategoryModal(
                                 '<?php echo $cat['category_id']; ?>', 
-                                '<?php echo htmlspecialchars(addslashes($cat['name'])); ?>', 
-                                '<?php echo htmlspecialchars(addslashes($cat['slug'])); ?>', 
-                                '<?php echo htmlspecialchars(addslashes($cat['description'] ?? '')); ?>', 
+                                <?php echo securityJs($cat['name']); ?>, 
+                                <?php echo securityJs($cat['slug']); ?>, 
+                                <?php echo securityJs($cat['description'] ?? ''); ?>, 
                                 '<?php echo $cat['status']; ?>'
                             )">Edit</button>
                         </td>
