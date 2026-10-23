@@ -30,7 +30,7 @@ $flash = getFlash();
             <?php echo e($flash['message']); ?>
         </div>
     <?php endif; ?>
-
+<div class="settings-grid">
     <div class="account-card">
         <h2>Shipping Information</h2>
 
@@ -124,6 +124,8 @@ $flash = getFlash();
             <p class="danger-text">Only customer accounts can be deleted from this page.</p>
         <?php endif; ?>
     </div>
+    </div>
+
 </section>
 
 <?php if ($userRole === 'Customer'): ?>
