@@ -1,5 +1,31 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . '/../includes/db.php';
+
+if (!empty($_SESSION['logged_in']) && !empty($_SESSION['user_id'])) {
+    $userId = (int) $_SESSION['user_id'];
+    $role   = $_SESSION['user_role'] ?? 'User';
+    $ip     = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+    $logStmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_description, ip_address) VALUES (?, ?, ?)");
+    $logStmt->execute([
+        $userId,
+        "User logged out (" . $role . ")",
+        $ip
+    ]);
+
+    if (!empty($_SESSION['username'])) {
+        $loginLogStmt = $pdo->prepare("INSERT INTO login_logs (user_id, username, event_type, ip_address) VALUES (?, ?, 'LOGOUT', ?)");
+        $loginLogStmt->execute([
+            $userId,
+            $_SESSION['username'],
+            $ip
+        ]);
+    }
+}
 
 $_SESSION = array();
 

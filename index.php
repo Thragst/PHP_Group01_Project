@@ -41,6 +41,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
         <meta name="viewport" content="width=device-width,initial-scale=1.0" >
         <link rel="stylesheet" href="assets/css/styles.css?v=<?php echo filemtime(__DIR__ . '/assets/css/styles.css'); ?>" >
         <link rel="stylesheet" href="assets/css/account.css?v=<?php echo filemtime(__DIR__ . '/assets/css/account.css'); ?>" >
+        <link rel="stylesheet" href="assets/css/activation.css?v=<?php echo filemtime(__DIR__ . '/assets/css/activation.css'); ?>" >
         <?php if ($page === 'products'): ?> <link rel="stylesheet" href="assets/css/products.css?v=<?php echo filemtime(__DIR__ . '/assets/css/products.css'); ?>"> <?php endif; ?>
         <?php if ($page === 'productDetails'): ?> <link rel="stylesheet" href="assets/css/productDetails.css?v=<?php echo filemtime(__DIR__ . '/assets/css/productDetails.css'); ?>"> <?php endif; ?>
     <title>SportMart</title>
@@ -81,6 +82,15 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                             <p class="login-message">Account locked after <?php echo $maxAtt; ?> failed login attempt<?php echo $maxAtt === 1 ? '' : 's'; ?>.</p>
                     <?php elseif ($_GET['login'] === 'timeout'): ?>
                             <p class="login-message">You have been logged out due to inactivity.</p>
+                    <?php elseif ($_GET['login'] === 'activated'): ?>
+                            <p class="login-message login-success">Account activated. You can now log in.</p>
+                    <?php elseif ($_GET['login'] === 'invalidlink'): ?>
+                            <p class="login-message">This activation link is invalid or has expired.</p>
+                    <?php elseif ($_GET['login'] === 'unverified'): ?>
+                            <p class="login-message">Please activate your account first. Check your email for the activation link.</p>
+                            <p class="login-message resend-note">No email? <a href="#" onclick="var e=prompt('Enter your email address'); if(e){var f=document.createElement('form');f.method='POST';f.action='pages/resend_activation.php';var i=document.createElement('input');i.type='hidden';i.name='email';i.value=e;f.appendChild(i);document.body.appendChild(f);f.submit();} return false;">Resend activation link</a></p>
+                    <?php elseif ($_GET['login'] === 'resent'): ?>
+                            <p class="login-message login-success">If that account is waiting for activation, a new link has been sent.</p>
                     <?php elseif ($_GET['login'] === 'required'): ?>
                             <p class="login-message">Please login to continue.</p>
                     <?php endif; ?>
@@ -126,9 +136,13 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 </ul>
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required >
                 <p class="signup-error" id="confirmMessage"> <?php echo $signupStatus === 'mismatch' ? $signupErrors['mismatch'] : ''; ?> </p>
-                <p class="login-message" id="signupMessage" <?php echo $signupStatus === 'success' ? 'style="color: #28a745; font-weight: bold;"' : ''; ?>>
-                    <?php echo $signupStatus === 'success' ? 'Account created successfully! Please login.' : (in_array( $signupStatus, ['empty', 'password', 'error', 'captcha'] ) ? $signupErrors[$signupStatus] : ''); ?>
+                <p class="login-message<?php echo in_array($signupStatus, ['success', 'verify'], true) ? ' login-success' : ''; ?>" id="signupMessage">
+                    <?php echo $signupStatus === 'verify' ? 'Account created! We sent an activation link to your email. Click it to activate your account.' : ($signupStatus === 'success' ? 'Account created successfully! Please login.' : (in_array( $signupStatus, ['empty', 'password', 'error', 'captcha'] ) ? $signupErrors[$signupStatus] : '')); ?>
                 </p>
+                <?php if ($signupStatus === 'verify' && !empty($_SESSION['dev_activation_link'])): ?>
+                    <p class="login-message dev-note">Dev mode (no mail server): <a href="<?php echo htmlspecialchars($_SESSION['dev_activation_link'], ENT_QUOTES, 'UTF-8'); ?>">open activation link</a></p>
+                    <?php unset($_SESSION['dev_activation_link']); ?>
+                <?php endif; ?>
                 <div class="g-recaptcha" data-sitekey="6LfM9fItAAAAANmJl31ryWpfPiOzSXCW4wj8Aa0j"></div>
                 <button type="submit" class="popup-button"> Create Account </button>
             </form>

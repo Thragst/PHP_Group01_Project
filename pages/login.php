@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['action']) || isset($_GET['timeout']))) {
+    if (!empty($_SESSION['logged_in']) && !empty($_SESSION['user_id'])) {
+        logAudit($pdo, $_SESSION['user_id'], "Session timed out due to inactivity (" . ($_SESSION['user_role'] ?? 'User') . ")");
+    }
     session_unset();
     session_destroy();
     header('Location: ../index.php?login=timeout');
@@ -53,6 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
+        if (strtolower($currentStatus) === 'pending') {
+            if (password_verify($password, $user['password_hash'])) {
+                header('Location: ../index.php?login=unverified');
+            } else {
+                header('Location: ../index.php?login=error');
+            }
+            exit();
+        }
+
         if (password_verify($password, $user['password_hash'])) {
             session_regenerate_id(true);
             if ((int)($user['mfa_enabled'] ?? 0) ===1) {
@@ -69,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'Customer': header('location: ../index.php?login=success'); break;} exit();
         } else {
             $newAttempts = $currentAttempts + 1;
-            
+
             if ($newAttempts >= $maxAttempts) {
                 $updateStmt = $pdo->prepare("UPDATE users SET failed_attempts = ?, login_attempts = ?, status = 'Locked', account_status = 'Locked' WHERE user_id = ?");
                 $updateStmt->execute([$newAttempts, $newAttempts, $user['user_id']]);
