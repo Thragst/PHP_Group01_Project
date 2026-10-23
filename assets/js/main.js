@@ -73,6 +73,25 @@ function showProfilePage() {
     }
 }
 
+function toggleAccountMenu() {
+    const accountMenu = document.querySelector('.account-menu');
+    if (!accountMenu) { return; }
+    accountMenu.classList.toggle('open');
+    const button = accountMenu.querySelector('.account-trigger');
+    if (button) { const isOpen = accountMenu.classList.contains('open');
+        button.setAttribute( 'aria-expanded', isOpen ? 'true' : 'false' );
+    }
+}
+document.addEventListener('click', function (event) {
+    const accountMenu = document.querySelector('.account-menu');
+    if (!accountMenu) { return; }
+    if (!accountMenu.contains(event.target)) {
+        accountMenu.classList.remove('open');
+        const button = accountMenu.querySelector('.account-trigger');
+        if (button) { button.setAttribute('aria-expanded', 'false'); }
+    }
+});
+
 function showSettingsPage() {
     closeProfileMenu();
 

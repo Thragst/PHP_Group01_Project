@@ -554,6 +554,22 @@
     text-align: center;
 }
 
+.products-page .product-image {
+    height: 360px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.products-page .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 1320px) {

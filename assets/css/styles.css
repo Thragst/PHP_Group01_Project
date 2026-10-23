@@ -12,6 +12,11 @@ body {
     font-family: Arial, sans-serif;
     background: #faf7f5;
     color: #222;
+
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
 }
 
 a {
@@ -115,17 +120,144 @@ select {
     background: #702323;
 }
 
-.profile-button {
-    border: none;
-    background: none;
-    color: #333;
-    font-size: 15px;
-    padding: 10px 5px;
-    cursor: pointer;
+.account-menu {
+    position: relative;
 }
 
-.profile-button:hover {
+.account-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    border: none;
+    background: #467bcc;
+
+    padding: 6px 12px 6px 6px;
+
+    border-radius: 30px;
+
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.account-trigger:hover {
+    background: #1a1716;
+}
+
+.account-avatar {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 50%;
+
+    background: #8b2e2e;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    flex-shrink: 0;
+}
+
+.account-name {
+    white-space: nowrap;
+}
+
+.account-arrow {
+    font-size: 17px;
+    line-height: 1;
+    margin-left: 2px;
+
+    transition: transform 0.2s ease;
+}
+
+.account-menu.open .account-arrow {
+    transform: rotate(180deg);
+}
+
+.account-dropdown {
+    position: absolute;
+
+    top: calc(100% + 12px);
+    right: 0;
+
+    width: 230px;
+
+    background: white;
+
+    border: 1px solid #eee;
+    border-radius: 12px;
+
+    padding: 8px;
+
+    box-shadow: 0 12px 35px rgba(53, 24, 24, 0.14);
+
+    display: none;
+
+    z-index: 5000;
+}
+
+.account-menu.open .account-dropdown {
+    display: block;
+}
+
+.account-item {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    padding: 12px 13px;
+
+    border-radius: 8px;
+
+    color: #333;
+
+    font-size: 14px;
+
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-item:hover,
+.account-item.active {
+    background: #f8edf1;
     color: #8b2e2e;
+}
+
+.account-icon {
+    width: 22px;
+    text-align: center;
+    font-size: 17px;
+}
+
+.account-divider {
+    height: 1px;
+    background: #eee;
+    margin: 7px 5px;
+}
+
+.account-logout {
+    color: #8b2e2e;
+}
+
+.account-logout:hover {
+    background: #fff1f1;
+    color: #701631;
 }
 
 .hero {
@@ -491,7 +623,7 @@ select {
 
 .orders-page {
     width: 88%;
-    margin: 50px auto 80px;
+    margin: 50px auto 0;
 }
 
 .orders-header {
@@ -673,6 +805,8 @@ select {
     background: #241111;
     color: white;
     padding: 55px 6% 20px;
+
+    margin-top: auto;
 }
 
 .footer-content {
@@ -728,25 +862,41 @@ select {
 
 .popup {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
+
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, .5);
+
+    background: rgba(0, 0, 0, 0.5);
+
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+
+    padding: 20px;
+
+    z-index: 5000;
+}
+
+.popup.show {
+    display: flex;
 }
 
 .popup-box {
     width: 400px;
     max-width: 90%;
-    background: white;
+
+    background: #ffffff;
+    color: #222;
+
     border-radius: 15px;
     padding: 35px;
+
     position: relative;
+
     text-align: center;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
 }
 
 .popup-box h2 {
@@ -898,31 +1048,6 @@ select {
     margin-top: 3px;
 }
 
-.profile-sidebar {
-    position: fixed;
-    top: 0;
-    right: -360px;
-    width: 340px;
-    height: 100vh;
-    background: white;
-    z-index: 3001;
-    box-shadow: -5px 0 20px rgba(0, 0, 0, .15);
-    padding: 25px;
-    transition: .3s;
-}
-
-.profile-sidebar.show {
-    right: 0;
-}
-
-.profile-sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 18px;
-}
-
 .profile-sidebar-header h2 {
     color: #351818;
     font-size: 24px;
@@ -936,27 +1061,6 @@ select {
     color: #333;
 }
 
-.profile-user {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 25px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.profile-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #8b2e2e;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
-}
-
 .profile-user h3 {
     color: #351818;
     font-size: 17px;
@@ -966,11 +1070,6 @@ select {
 .profile-user p {
     color: #888;
     font-size: 13px;
-}
-
-.profile-info {
-    padding: 20px 0;
-    border-bottom: 1px solid #eee;
 }
 
 .profile-info div {
@@ -992,12 +1091,6 @@ select {
 .profile-info strong {
     color: #333;
     font-size: 14px;
-}
-
-.profile-menu {
-    display: flex;
-    flex-direction: column;
-    margin-top: 15px;
 }
 
 .profile-menu button,
@@ -1022,41 +1115,8 @@ select {
     color: #8b2e2e;
 }
 
-.profile-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, .35);
-    z-index: 3000;
-    display: none;
-}
-
 .profile-overlay.show {
     display: block;
-}
-
-.account-page-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, .35);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 4000;
-}
-
-.account-page-box {
-    width: 640px;
-    height: 480px;
-    max-width: 90%;
-    background: white;
-    border-radius: 15px;
-    position: relative;
 }
 
 .account-page-box .close {
@@ -1286,7 +1346,7 @@ select {
 .checkout-page {
     background: #faf7f5;
     min-height: 70vh;
-    padding: 45px 6% 80px;
+    padding: 45px 6% 0;
     color: #241111;
 }
 

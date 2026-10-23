@@ -33,7 +33,7 @@
 .account-page {
     width: 88%;
     max-width: 860px;
-    margin: 40px auto 80px;
+    margin: 40px auto 0;
 }
 
 .account-header {
@@ -201,6 +201,72 @@
 
 .account-form .password-rules {
     margin: 6px 0 0;
+}
+
+.mfa-status {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    padding: 16px;
+
+    margin-bottom: 18px;
+
+    border-radius: 10px;
+}
+
+.mfa-status.enabled {
+    background: #edf9f2;
+    border: 1px solid #c8ead7;
+}
+
+.mfa-status.disabled {
+    background: #faf7f5;
+    border: 1px solid #eadfdb;
+}
+
+.mfa-status-dot {
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    margin-top: 6px;
+
+    flex-shrink: 0;
+}
+
+.mfa-status.enabled .mfa-status-dot {
+    background: #18794e;
+}
+
+.mfa-status.disabled .mfa-status-dot {
+    background: #999;
+}
+
+.mfa-status strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #351818;
+}
+
+.mfa-status p {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mfa-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
 }
 
 .danger-card {

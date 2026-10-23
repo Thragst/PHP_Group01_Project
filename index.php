@@ -71,7 +71,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 <h2>Login</h2>
                 <p>Enter your Sportmart Account.</p>
                 <form action="pages/login.php" method="POST">
-                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="text" name="username" placeholder="Email" required>
                     <input type="password" name="password" placeholder="Password" required>
                     <?php if(isset($_GET['login'])): ?>
                         <?php if($_GET['login'] === 'error'): ?>
