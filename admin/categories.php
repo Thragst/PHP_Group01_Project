@@ -186,6 +186,7 @@ include __DIR__ . '/includes/admin_header.php';
         </div>
         
         <form action="categories.php" method="POST" id="categoryForm">
+            <?php echo securityField(); ?>
             <input type="hidden" name="action" id="categoryAction" value="save">
             <input type="hidden" name="category_id" id="categoryId">
 

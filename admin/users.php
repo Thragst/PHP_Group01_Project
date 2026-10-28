@@ -203,6 +203,7 @@ include __DIR__ . '/includes/admin_header.php';
                                 <button type="button" class="btn-action" onclick="openCustomerProfileModal(<?php echo htmlspecialchars(json_encode($user, JSON_HEX_APOS | JSON_HEX_QUOT)); ?>)">View Profile</button>
                                 <?php if ($isLocked): ?>
                                     <form action="users.php" method="POST" class="inline-form">
+                                        <?php echo securityField(); ?>
                                         <input type="hidden" name="action" value="unlock_customer">
                                         <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
                                         <button type="submit" class="btn-action btn-unlock">Unlock Account</button>
@@ -228,6 +229,7 @@ include __DIR__ . '/includes/admin_header.php';
             <button class="modal-close" onclick="closeModal('staffModal')" type="button">&times;</button>
         </div>
         <form action="users.php" method="POST" id="staffForm">
+            <?php echo securityField(); ?>
             <input type="hidden" name="action" id="staffAction" value="create_staff">
             <input type="hidden" name="user_id" id="staffUserId">
 

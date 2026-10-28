@@ -1,10 +1,13 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-require_once __DIR__ . '/../db.php';
-require_once __DIR__ . '/../includes/tracking_config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/security.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 
-if (!canUpdateOrders()) {
+if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     http_response_code(403);
     exit('Access denied.');
 }
@@ -14,97 +17,60 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Invalid request.');
 }
 
-if (
-    !isset($_POST['csrf_token'], $_SESSION['csrf_token']) ||
-    !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
-) {
-    http_response_code(403);
-    exit('Invalid security token.');
-}
+securityCheck();
 
-$orderId = filter_input(INPUT_POST, 'order_id', FILTER_VALIDATE_INT);
-$newStatus = trim($_POST['status'] ?? '');
-$city = trim($_POST['current_location'] ?? '');
-$remarks = trim($_POST['remarks'] ?? '');
-$staffId = (int) $_SESSION['user_id'];
+$statuses = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
-if (!$orderId || !in_array($newStatus, $statuses, true)) {
+$orderId   = filter_input(INPUT_POST, 'order_id', FILTER_VALIDATE_INT);
+$newStatus = trim((string)($_POST['status'] ?? ''));
+$city      = trim((string)($_POST['current_location'] ?? ''));
+$remarks   = trim((string)($_POST['remarks'] ?? ''));
+$staffId   = (int)($_SESSION['user_id'] ?? 0);
+
+if (!$orderId || $orderId <= 0 || !in_array($newStatus, $statuses, true)) {
     exit('Invalid order or status.');
 }
-
-if ($city !== '' && !in_array($city, $ncrCities, true)) {
-    exit('Invalid NCR city.');
+if (mb_strlen($city) > 100) {
+    exit('Invalid location.');
 }
-
-if (
-    in_array($newStatus, ['In Transit', 'Out for Delivery'], true)
-    && $city === ''
-) {
-    exit('Please select an NCR city.');
+if (in_array($newStatus, ['Shipped', 'Out for Delivery'], true) && $city === '') {
+    exit('Please enter the current location.');
 }
-
 if (mb_strlen($remarks) > 255) {
     exit('Remarks are too long.');
 }
 
 try {
-    $conn->begin_transaction();
+    $pdo->beginTransaction();
 
-    $stmt = $conn->prepare(
-        "SELECT status FROM orders WHERE order_id = ? FOR UPDATE"
-    );
-    $stmt->bind_param('i', $orderId);
-    $stmt->execute();
-    $order = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
+    $stmt = $pdo->prepare("SELECT status FROM orders WHERE order_id = ? FOR UPDATE");
+    $stmt->execute([$orderId]);
+    $order = $stmt->fetch();
 
     if (!$order) {
         throw new RuntimeException('Order not found.');
     }
-
     $oldStatus = $order['status'];
 
-    if (!in_array(
-        $newStatus,
-        $allowedTransitions[$oldStatus] ?? [],
-        true
-    )) {
-        throw new RuntimeException('Invalid status transition.');
-    }
+    $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE order_id = ?");
+    $stmt->execute([$newStatus, $orderId]);
 
-    $stmt = $conn->prepare(
-        "UPDATE orders SET status = ? WHERE order_id = ?"
+    $note = $remarks !== '' ? $remarks : "Status changed from {$oldStatus} to {$newStatus}";
+    $stmt = $pdo->prepare(
+        "INSERT INTO order_tracking (order_id, location_city, status_note, updated_by) VALUES (?, ?, ?, ?)"
     );
-    $stmt->bind_param('si', $newStatus, $orderId);
-    $stmt->execute();
-    $stmt->close();
+    $stmt->execute([$orderId, $city !== '' ? $city : 'N/A', $note, $staffId]);
 
-    $stmt = $conn->prepare(
-        "INSERT INTO sportmart_tracking_events
-        (order_id, status_from, status_to, current_location, remarks, updated_by_id)
-        VALUES (?, ?, ?, ?, ?, ?)"
-    );
+    $pdo->commit();
 
-    $stmt->bind_param(
-        'issssi',
-        $orderId,
-        $oldStatus,
-        $newStatus,
-        $city,
-        $remarks,
-        $staffId
-    );
+    logAudit($pdo, $staffId, "Updated order #ORD-{$orderId} status '{$oldStatus}' -> '{$newStatus}'");
 
-    $stmt->execute();
-    $stmt->close();
-
-    $conn->commit();
-
-    header('Location: orders.php?updated=1');
+    header('Location: orders.php?updated=' . $orderId);
     exit;
-
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log($e->getMessage());
     http_response_code(500);
     exit('Unable to update order. Check the server logs.');

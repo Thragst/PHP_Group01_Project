@@ -178,9 +178,15 @@ $stmt = $pdo->prepare(
      LEFT JOIN users d ON o.driver_id = d.user_id
      {$whereSql}
      ORDER BY o.order_id DESC
-     LIMIT {$perPage} OFFSET {$offset}"
+     LIMIT ? OFFSET ?"
 );
-$stmt->execute($params);
+$pos = 1;
+foreach ($params as $p) {
+    $stmt->bindValue($pos++, $p, PDO::PARAM_STR);
+}
+$stmt->bindValue($pos++, (int) $perPage, PDO::PARAM_INT);
+$stmt->bindValue($pos, (int) $offset, PDO::PARAM_INT);
+$stmt->execute();
 $orders = $stmt->fetchAll();
 
 $itemsByOrder = [];

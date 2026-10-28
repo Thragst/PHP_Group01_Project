@@ -283,6 +283,7 @@ include 'includes/admin_header.php';
         </div>
         
         <form action="products.php" method="POST" enctype="multipart/form-data" id="productForm">
+            <?php echo securityField(); ?>
             <input type="hidden" name="action" value="save_product">
             <input type="hidden" name="product_id" id="productId">
             <input type="hidden" name="existing_image" id="existingImage">
@@ -340,6 +341,7 @@ include 'includes/admin_header.php';
         </form>
 
         <form action="products.php" method="POST" id="deleteForm" class="hidden-element">
+            <?php echo securityField(); ?>
             <input type="hidden" name="action" value="delete_product">
             <input type="hidden" name="product_id" id="deleteProductId">
         </form>

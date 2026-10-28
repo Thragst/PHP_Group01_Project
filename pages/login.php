@@ -42,8 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    $idValue = ctype_digit($inputIdentifier) ? (int) $inputIdentifier : -1;
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ? OR user_id = ? LIMIT 1");
-    $stmt->execute([$inputIdentifier, $inputIdentifier, $inputIdentifier]);
+    $stmt->execute([$inputIdentifier, $inputIdentifier, $idValue]);
     $user = $stmt->fetch();
 
     if ($user) {

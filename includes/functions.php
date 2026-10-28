@@ -397,7 +397,7 @@ function getAccountStats(PDO $pdo, $userId)
          FROM orders
          WHERE user_id = ? AND status <> 'Cancelled'"
     );
-    $stmt->execute([$userId]);
+    $stmt->execute([(int) $userId]);
 
     foreach ($stmt->fetchAll() as $row) {
         $amount = (float) $row['total_amount'];
@@ -415,5 +415,3 @@ function getAccountStats(PDO $pdo, $userId)
         'total_spent' => $totalSpent
     ];
 }
-
-

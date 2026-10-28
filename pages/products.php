@@ -23,9 +23,15 @@ $totalProducts = (int)$countStmt->fetchColumn();
 $totalPages = max(1,(int)ceil($totalProducts / $productsPerPage));
 if ($productPage > $totalPages) {$productPage = $totalPages;}
 $offset = ($productPage - 1) * $productsPerPage;
-$productSql = "SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql ORDER BY {$allowedSorts[$selectedSort]} LIMIT $productsPerPage OFFSET $offset";
+$productSql = "SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql ORDER BY {$allowedSorts[$selectedSort]} LIMIT ? OFFSET ?"; 
 $stmt = $pdo->prepare($productSql);
-$stmt->execute($params);
+$pos = 1;
+foreach ($params as $p) {
+    $stmt->bindValue($pos++, $p, PDO::PARAM_INT);
+}
+$stmt->bindValue($pos++, (int)$productsPerPage, PDO::PARAM_INT);
+$stmt->bindValue($pos, (int)$offset, PDO::PARAM_INT);
+$stmt->execute();
 $dbProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 function productPageUrl(int $page, string $category, string $sort, int $perPage): string { return 'index.php?' . http_build_query([ 'page' => 'products', 'category' => $category, 'sort' => $sort, 'per_page' => $perPage, 'product_page' => $page ]); }
 ?>

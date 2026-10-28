@@ -16,6 +16,10 @@ $currentPage = isset($_GET['p']) && (int)$_GET['p'] > 0 ? (int)$_GET['p'] : 1;
 $search = trim($_GET['search'] ?? '');
 $roleFilter = trim($_GET['role'] ?? '');
 
+if (!in_array($roleFilter, ['Admin', 'Staff', 'Developer', 'Driver', 'Customer'], true)) {
+    $roleFilter = '';
+}
+
 $whereClauses = [];
 $params = [];
 
@@ -61,10 +65,16 @@ $query = "SELECT
           LEFT JOIN users u ON al.user_id = u.user_id
           {$whereSql}
           ORDER BY al.audit_log_id DESC
-          LIMIT {$perPage} OFFSET {$offset}";
+          LIMIT ? OFFSET ?";
 
 $stmt = $pdo->prepare($query);
-$stmt->execute($params);
+$pos = 1;
+foreach ($params as $p) {
+    $stmt->bindValue($pos++, $p, PDO::PARAM_STR);
+}
+$stmt->bindValue($pos++, (int)$perPage, PDO::PARAM_INT);
+$stmt->bindValue($pos, (int)$offset, PDO::PARAM_INT);
+$stmt->execute();
 $logs = $stmt->fetchAll();
 
 include __DIR__ . '/includes/admin_header.php';
