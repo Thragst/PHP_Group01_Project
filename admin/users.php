@@ -146,12 +146,12 @@ include __DIR__ . '/includes/admin_header.php';
                         <td class="staff-email"><?php echo htmlspecialchars($staff['email']); ?></td>
                         <td class="staff-role"><span class="role-text"><?php echo htmlspecialchars($staff['role']); ?></span></td>
                         <td>
-                            <span class="badge badge-<?php echo strtolower($staff['status'] ?? 'active') === 'active' ? 'active' : 'locked'; ?>">
+                            <span class="badge badge-<?php echo strtolower((string) ($staff['status'] ?? 'active')) === 'active' ? 'active' : 'locked'; ?>">
                                 <?php echo htmlspecialchars($staff['status'] ?? 'Active'); ?>
                             </span>
                         </td>
                         <td>
-                            <button class="btn-action" onclick="openEditPermissionsModal(<?php echo htmlspecialchars(json_encode($staff, JSON_HEX_APOS | JSON_HEX_QUOT)); ?>)">Edit Permissions</button>
+                            <button class="btn-action" onclick="openEditPermissionsModal(<?php echo securityJs($staff); ?>)">Edit Permissions</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -205,7 +205,7 @@ include __DIR__ . '/includes/admin_header.php';
                                     <form action="users.php" method="POST" class="inline-form">
                                         <?php echo securityField(); ?>
                                         <input type="hidden" name="action" value="unlock_customer">
-                                        <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
+                                        <input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>">
                                         <button type="submit" class="btn-action btn-unlock">Unlock Account</button>
                                     </form>
                                 <?php endif; ?>

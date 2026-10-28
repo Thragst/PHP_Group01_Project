@@ -103,10 +103,10 @@ $deliveries = $stmt->fetchAll();
                 $historyStmt->execute([$item['order_id']]);
                 $logs = $historyStmt->fetchAll();
             ?>
-            <div class="card <?php echo strtolower(str_replace(' ', '-', $item['status'])); ?>">
+            <div class="card <?php echo htmlspecialchars(strtolower(str_replace(' ', '-', (string) $item['status'])), ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="card-header">
-                    <span>#ORD-<?php echo $item['order_id']; ?></span>
-                    <span class="badge badge-<?php echo strtolower(str_replace(' ', '-', $item['status'])); ?>">
+                    <span>#ORD-<?php echo (int) $item['order_id']; ?></span>
+                    <span class="badge badge-<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', (string) $item['status'])), ENT_QUOTES, 'UTF-8'); ?>">
                         <?php echo htmlspecialchars($item['status']); ?>
                     </span>
                 </div>
@@ -134,12 +134,12 @@ $deliveries = $stmt->fetchAll();
                 <?php if ($item['status'] === 'Out for Delivery'): ?>
                     <form action="deliveries.php" method="POST">
                         <input type="hidden" name="action" value="update_location">
-                        <input type="hidden" name="order_id" value="<?php echo $item['order_id']; ?>">
+                        <input type="hidden" name="order_id" value="<?php echo (int) $item['order_id']; ?>">
                         <input type="text" name="location_city" class="select-input" maxlength="100" placeholder="Enter current city or location" required>
                         <button type="submit" class="btn-update">Log Location Checkpoint</button>
                     </form>
 
-                    <button type="button" class="btn-deliver" onclick="openConfirmModal('<?php echo $item['order_id']; ?>')">
+                    <button type="button" class="btn-deliver" onclick="openConfirmModal(<?php echo (int) $item['order_id']; ?>)">
                         Mark as Delivered
                     </button>
                 <?php endif; ?>

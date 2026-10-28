@@ -330,7 +330,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <?php foreach ($orders as $order): ?>
                     <?php $d = $orderData[(int) $order['order_id']]; ?>
                     <tr class="order-row">
-                        <td class="order-id">#ORD-<?php echo $d['id']; ?></td>
+                        <td class="order-id">#ORD-<?php echo (int) $d['id']; ?></td>
                         <td class="customer-name"><?php echo htmlspecialchars($d['customer']); ?></td>
                         <td><?php echo htmlspecialchars($d['placed']); ?></td>
                         <td><?php echo (int) $d['qty']; ?></td>
@@ -338,7 +338,7 @@ include __DIR__ . '/includes/admin_header.php';
                         <td><?php echo htmlspecialchars($d['payment']); ?></td>
                         <td class="driver-name-text"><?php echo htmlspecialchars($order['driver_name']); ?></td>
                         <td class="order-status">
-                            <span class="badge badge-<?php echo strtolower(str_replace(' ', '-', $order['status'])); ?>">
+                            <span class="badge badge-<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', (string) $order['status'])), ENT_QUOTES, 'UTF-8'); ?>">
                                 <?php echo htmlspecialchars($order['status']); ?>
                             </span>
                         </td>
@@ -346,7 +346,7 @@ include __DIR__ . '/includes/admin_header.php';
                             <button
                                 type="button"
                                 class="btn-action"
-                                data-order-id="<?php echo $d['id']; ?>"
+                                data-order-id="<?php echo (int) $d['id']; ?>"
                                 onclick="smOpenOrder(this.dataset.orderId)"
                             >
                                 Manage Order

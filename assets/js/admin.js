@@ -50,6 +50,16 @@ function openAddModal() {
     openModal('productModal');
 }
 
+// Output-encode a value before inserting it into an HTML string (XSS protection)
+function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function openEditModal(product) {
     document.getElementById('modalTitle').textContent = 'Edit Product';
     document.getElementById('productId').value = product.product_id;
@@ -106,7 +116,7 @@ window.openOrderModal = function(btn) {
                 var listHtml = '<ul class="modal-item-list">';
                 items.forEach(function(item) {
                     var price = parseFloat(item.price_at_purchase).toFixed(2);
-                    listHtml += '<li><strong>' + item.product_name + '</strong> &times; ' + item.quantity + ' <span class="text-muted-sm">(₱' + price + ' each)</span></li>';
+                    listHtml += '<li><strong>' + escapeHtml(item.product_name) + '</strong> &times; ' + escapeHtml(parseInt(item.quantity, 10) || 0) + ' <span class="text-muted-sm">(₱' + escapeHtml(price) + ' each)</span></li>';
                 });
                 listHtml += '</ul>';
                 container.innerHTML = listHtml;

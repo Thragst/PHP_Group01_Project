@@ -72,7 +72,7 @@ include 'includes/admin_header.php';
                 <?php foreach ($topSearches as $index => $search): ?>
                     <li>
                         <span><?= ($index + 1) ?>. <?= htmlspecialchars($search['keyword_searched']) ?></span>
-                        <strong class="text-primary-red"><?= $search['search_count'] ?> searches</strong>
+                        <strong class="text-primary-red"><?= (int) $search['search_count'] ?> searches</strong>
                     </li>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -88,7 +88,7 @@ include 'includes/admin_header.php';
                 <?php foreach ($zeroResults as $zero): ?>
                     <li>
                         <span><?= htmlspecialchars($zero['keyword_searched']) ?></span>
-                        <span class="text-subtle-sm"><?= $zero['attempts'] ?> attempts</span>
+                        <span class="text-subtle-sm"><?= (int) $zero['attempts'] ?> attempts</span>
                     </li>
                 <?php endforeach; ?>
             <?php else: ?>

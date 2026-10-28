@@ -111,13 +111,13 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 <form action="pages/register.php" method="POST" id="signupForm" novalidate>
                     <input type="text" name="fullname" id="SignupFullname" placeholder="Full Name" required >
                     <p class="signup-error" id="fullnameError">
-                        <?php echo $signupStatus === 'name' ? $signupErrors['name'] : ''; ?> </p>
+                        <?php echo $signupStatus === 'name' ? e($signupErrors['name']) : ''; ?> </p>
                 <input type="text" name="username" id="signupUsername" placeholder="Username" required >
                 <p class="signup-error" id="usernameError">
-                    <?php echo in_array( $signupStatus, ['username', 'exists'] ) ? $signupErrors[$signupStatus] : ''; ?>
+                    <?php echo in_array( $signupStatus, ['username', 'exists'] ) ? e($signupErrors[$signupStatus]) : ''; ?>
                 </p>
                 <input type="text" name="email" id="signupEmail" placeholder="Email Address" required >
-                <p class="signup-error" id="emailError"> <?php echo in_array($signupStatus, ['email', 'email_taken']) ? $signupErrors[$signupStatus] : ''; ?> </p>
+                <p class="signup-error" id="emailError"> <?php echo in_array($signupStatus, ['email', 'email_taken']) ? e($signupErrors[$signupStatus]) : ''; ?> </p>
                 <input type="password" name="password" id="signupPassword" placeholder="Password" required >
                 <ul class="password-rules" id="passwordRules">
                     <li id="ruleLength"> At least <?php echo (int)($activePolicy['min_password_length'] ?? 12); ?> characters in length </li>
@@ -135,9 +135,9 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                     <?php endif; ?>
                 </ul>
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required >
-                <p class="signup-error" id="confirmMessage"> <?php echo $signupStatus === 'mismatch' ? $signupErrors['mismatch'] : ''; ?> </p>
+                <p class="signup-error" id="confirmMessage"> <?php echo $signupStatus === 'mismatch' ? e($signupErrors['mismatch']) : ''; ?> </p>
                 <p class="login-message<?php echo in_array($signupStatus, ['success', 'verify'], true) ? ' login-success' : ''; ?>" id="signupMessage">
-                    <?php echo $signupStatus === 'verify' ? 'Account created! We sent an activation link to your email. Click it to activate your account.' : ($signupStatus === 'success' ? 'Account created successfully! Please login.' : (in_array( $signupStatus, ['empty', 'password', 'error', 'captcha'] ) ? $signupErrors[$signupStatus] : '')); ?>
+                    <?php echo $signupStatus === 'verify' ? 'Account created! We sent an activation link to your email. Click it to activate your account.' : ($signupStatus === 'success' ? 'Account created successfully! Please login.' : (in_array( $signupStatus, ['empty', 'password', 'error', 'captcha'] ) ? e($signupErrors[$signupStatus]) : '')); ?>
                 </p>
                 <?php if ($signupStatus === 'verify' && !empty($_SESSION['dev_activation_link'])): ?>
                     <p class="login-message dev-note">Dev mode (no mail server): <a href="<?php echo htmlspecialchars($_SESSION['dev_activation_link'], ENT_QUOTES, 'UTF-8'); ?>">open activation link</a></p>

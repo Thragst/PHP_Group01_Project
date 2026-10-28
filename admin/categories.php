@@ -149,22 +149,22 @@ include __DIR__ . '/includes/admin_header.php';
             <?php if (!empty($categories)): ?>
                 <?php foreach ($categories as $cat): ?>
                     <tr class="category-row">
-                        <td><?php echo $cat['category_id']; ?></td>
+                        <td><?php echo (int) $cat['category_id']; ?></td>
                         <td class="cat-name font-semi-bold"><?php echo htmlspecialchars($cat['name']); ?></td>
                         <td class="cat-slug"><?php echo htmlspecialchars($cat['slug']); ?></td>
                         <td><?php echo (int)$cat['product_count']; ?> Product<?php echo $cat['product_count'] == 1 ? '' : 's'; ?></td>
                         <td>
-                            <span class="badge badge-<?php echo strtolower($cat['status']) === 'active' ? 'active' : 'locked'; ?>">
+                            <span class="badge badge-<?php echo strtolower((string) $cat['status']) === 'active' ? 'active' : 'locked'; ?>">
                                 <?php echo htmlspecialchars($cat['status']); ?>
                             </span>
                         </td>
                         <td>
                             <button class="btn-action" onclick="openEditCategoryModal(
-                                '<?php echo $cat['category_id']; ?>', 
+                                <?php echo securityJs((string) $cat['category_id']); ?>, 
                                 <?php echo securityJs($cat['name']); ?>, 
                                 <?php echo securityJs($cat['slug']); ?>, 
                                 <?php echo securityJs($cat['description'] ?? ''); ?>, 
-                                '<?php echo $cat['status']; ?>'
+                                <?php echo securityJs($cat['status']); ?>
                             )">Edit</button>
                         </td>
                     </tr>

@@ -219,13 +219,13 @@ include 'includes/admin_header.php';
                         <td class="font-semi-bold">₱<?= number_format($prod['price'], 2) ?></td>
                         <td>
                             <?php if ($prod['stock_quantity'] <= 5): ?>
-                                <span class="badge badge-locked"><?= $prod['stock_quantity'] ?> Low Stock</span>
+                                <span class="badge badge-locked"><?= (int) $prod['stock_quantity'] ?> Low Stock</span>
                             <?php else: ?>
-                                <span class="badge badge-active"><?= $prod['stock_quantity'] ?> In Stock</span>
+                                <span class="badge badge-active"><?= (int) $prod['stock_quantity'] ?> In Stock</span>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <button class="btn-action" onclick='openEditModal(<?= json_encode($prod, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>Edit</button>
+                            <button class="btn-action" onclick="openEditModal(<?= securityJs($prod) ?>)">Edit</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>

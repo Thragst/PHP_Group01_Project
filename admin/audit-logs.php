@@ -10,7 +10,7 @@ if (empty($_SESSION['logged_in'])) {
     exit();
 }
 
-$currentScript = htmlspecialchars($_SERVER['PHP_SELF']);
+$currentScript = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8');
 $perPage = isset($_GET['per_page']) && in_array((int)$_GET['per_page'], [10, 25, 50, 100], true) ? (int)$_GET['per_page'] : 10;
 $currentPage = isset($_GET['p']) && (int)$_GET['p'] > 0 ? (int)$_GET['p'] : 1;
 $search = trim($_GET['search'] ?? '');
@@ -135,10 +135,10 @@ include __DIR__ . '/includes/admin_header.php';
                 <?php foreach ($logs as $log): ?>
                     <?php 
                         $formattedDate = date('M j, Y - g:i:s A', strtotime($log['created_at']));
-                        $roleClass = strtolower($log['user_role']);
-                        $displayUser = htmlspecialchars($log['user_name']);
+                        $roleClass = htmlspecialchars(strtolower((string) $log['user_role']), ENT_QUOTES, 'UTF-8');
+                        $displayUser = htmlspecialchars((string) $log['user_name'], ENT_QUOTES, 'UTF-8');
                         if (!empty($log['email'])) {
-                            $displayUser .= ' <span class="text-muted-sm">(' . htmlspecialchars($log['email']) . ')</span>';
+                            $displayUser .= ' <span class="text-muted-sm">(' . htmlspecialchars((string) $log['email'], ENT_QUOTES, 'UTF-8') . ')</span>';
                         }
                     ?>
                     <tr>
