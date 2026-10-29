@@ -6,10 +6,26 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
     exit();
+}
+
+
+$defaultPolicy = [
+    'min_password_length' => '12',
+    'require_uppercase'   => '1',
+    'require_lowercase'   => '1',
+    'require_number'      => '1',
+    'require_special'     => '1'
+];
+try {
+    $rawSettings = $pdo->query("SELECT setting_key, setting_value FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+    $activePolicy = array_merge($defaultPolicy, $rawSettings ?: []);
+} catch (Exception $e) {
+    $activePolicy = $defaultPolicy;
 }
 
 $flashSuccess = $_SESSION['flash_success'] ?? '';
@@ -23,38 +39,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'create_staff' || $action === 'update_staff') {
         $userId = !empty($_POST['user_id']) ? (int)$_POST['user_id'] : null;
         $fullName = trim($_POST['staff_name'] ?? '');
-        $email = trim($_POST['staff_email'] ?? '');
+        $email = strtolower(trim($_POST['staff_email'] ?? ''));
         $role = in_array($_POST['staff_role'] ?? '', ['Admin', 'Staff', 'Driver'], true) ? $_POST['staff_role'] : 'Staff';
-        $status = in_array($_POST['staff_status'] ?? '', ['Active', 'Suspended'], true) ? $_POST['staff_status'] : 'Active';
+        $status = in_array($_POST['staff_status'] ?? '', ['Active', 'Suspended', 'Locked'], true) ? $_POST['staff_status'] : 'Active';
         $password = $_POST['staff_password'] ?? '';
 
-        if (!empty($fullName) && !empty($email)) {
-            if ($action === 'create_staff') {
-                $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
-                $checkStmt->execute([$email]);
-                if ($checkStmt->fetchColumn() > 0) {
-                    $_SESSION['flash_error'] = "Email address is already in use.";
-                } else {
-                    $username = explode('@', $email)[0];
-                    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $pdo->prepare("INSERT INTO users (username, full_name, email, role, password_hash, status) VALUES (?, ?, ?, ?, ?, 'Active')");
-                    $stmt->execute([$username, $fullName, $email, $role, $passwordHash]);
-                    $newUserId = $pdo->lastInsertId();
-                    logAudit($pdo, $_SESSION['user_id'], "Created new " . $role . " account for " . $email . " (User ID #" . $newUserId . ")");
-                    $_SESSION['flash_success'] = "New $role account created successfully.";
-                }
-            } else if ($action === 'update_staff' && $userId) {
-                if (!empty($password)) {
-                    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, status = ?, password_hash = ? WHERE user_id = ?");
-                    $stmt->execute([$fullName, $email, $role, $status, $passwordHash, $userId]);
-                } else {
-                    $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, status = ? WHERE user_id = ?");
-                    $stmt->execute([$fullName, $email, $role, $status, $userId]);
-                }
-                logAudit($pdo, $_SESSION['user_id'], "Updated permissions/details for " . $role . " account: " . $fullName . " (User ID #" . $userId . ")");
-                $_SESSION['flash_success'] = "Account permissions updated successfully.";
+        if (empty($fullName) || empty($email)) {
+            $_SESSION['flash_error'] = "All required fields must be filled out.";
+            header('Location: users.php');
+            exit();
+        }
+
+        if (strlen($email) > 255 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash_error'] = "Please provide a valid email address.";
+            header('Location: users.php');
+            exit();
+        }
+
+
+        $shouldValidatePassword = ($action === 'create_staff') || ($action === 'update_staff' && !empty($password));
+
+        if ($shouldValidatePassword) {
+            $minLen   = (int)($activePolicy['min_password_length'] ?? 12);
+            $reqUpper = (int)($activePolicy['require_uppercase'] ?? 1);
+            $reqLower = (int)($activePolicy['require_lowercase'] ?? 1);
+            $reqNum   = (int)($activePolicy['require_number'] ?? 1);
+            $reqSpec  = (int)($activePolicy['require_special'] ?? 1);
+
+            $upperCount = preg_match_all('/[A-Z]/', $password);
+            $lowerCount = preg_match_all('/[a-z]/', $password);
+            $numCount   = preg_match_all('/[0-9]/', $password);
+            $specCount  = preg_match_all('/[^A-Za-z0-9]/', $password);
+
+            if (
+                strlen($password) < $minLen ||
+                $upperCount < $reqUpper ||
+                $lowerCount < $reqLower ||
+                $numCount < $reqNum ||
+                $specCount < $reqSpec
+            ) {
+                $_SESSION['flash_error'] = "Password does not meet the specified security requirements.";
+                header('Location: users.php');
+                exit();
             }
+        }
+
+        if ($action === 'create_staff') {
+            $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+            $checkStmt->execute([$email]);
+            if ($checkStmt->fetchColumn() > 0) {
+                $_SESSION['flash_error'] = "Email address is already in use.";
+            } else {
+                $username = explode('@', $email)[0];
+                $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                
+                $stmt = $pdo->prepare("INSERT INTO users (username, full_name, email, role, password_hash, status, account_status) VALUES (?, ?, ?, ?, ?, 'Pending', 'Pending')");
+                $stmt->execute([$username, $fullName, $email, $role, $passwordHash]);
+                $newUserId = $pdo->lastInsertId();
+
+                if (function_exists('createActivationToken') && function_exists('sendActivationEmail')) {
+                    $token = createActivationToken($pdo, $email);
+                    sendActivationEmail($email, $fullName, $token);
+                }
+
+                logAudit($pdo, $_SESSION['user_id'], "Created new " . $role . " account for " . $email . " (User ID #" . $newUserId . ")");
+                $_SESSION['flash_success'] = "New $role account created successfully. An activation link has been sent to " . htmlspecialchars($email);
+            }
+        } else if ($action === 'update_staff' && $userId) {
+            $extraSql = ($status === 'Active') ? ", failed_attempts = 0" : "";
+            
+            if (!empty($password)) {
+                $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, status = ?, password_hash = ? {$extraSql} WHERE user_id = ?");
+                $stmt->execute([$fullName, $email, $role, $status, $passwordHash, $userId]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, status = ? {$extraSql} WHERE user_id = ?");
+                $stmt->execute([$fullName, $email, $role, $status, $userId]);
+            }
+            logAudit($pdo, $_SESSION['user_id'], "Updated permissions/details for " . $role . " account: " . $fullName . " (User ID #" . $userId . ")");
+            $_SESSION['flash_success'] = "Account permissions updated successfully.";
+        }
+    } elseif ($action === 'unlock_staff') {
+        $userId = (int)($_POST['user_id'] ?? 0);
+        if ($userId > 0) {
+            $stmt = $pdo->prepare("UPDATE users SET status = 'Active', failed_attempts = 0 WHERE user_id = ? AND role IN ('Admin', 'Staff', 'Driver')");
+            $stmt->execute([$userId]);
+            logAudit($pdo, $_SESSION['user_id'], "Admin unlocked staff/admin account for User ID #" . $userId);
+            $_SESSION['flash_success'] = "Account unlocked successfully.";
         }
     } elseif ($action === 'unlock_customer') {
         $userId = (int)($_POST['user_id'] ?? 0);
@@ -70,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-$staffStmt = $pdo->query("SELECT user_id, username, full_name, email, role, status FROM users WHERE role IN ('Admin', 'Staff', 'Driver') ORDER BY user_id ASC");
+$staffStmt = $pdo->query("SELECT user_id, username, full_name, email, role, status, failed_attempts FROM users WHERE role IN ('Admin', 'Staff', 'Driver') ORDER BY user_id ASC");
 $staffMembers = $staffStmt->fetchAll();
 
 $customerQuery = "SELECT 
@@ -141,17 +212,32 @@ include __DIR__ . '/includes/admin_header.php';
         <tbody>
             <?php if (!empty($staffMembers)): ?>
                 <?php foreach ($staffMembers as $staff): ?>
+                    <?php 
+                        $isStaffLocked = (strpos(strtolower($staff['status'] ?? ''), 'locked') !== false) || ((int)($staff['failed_attempts'] ?? 0) >= 3);
+                        $staffStatusBadgeClass = $isStaffLocked ? 'badge-locked' : 'badge-active';
+                        $staffStatusLabel = $isStaffLocked ? 'Locked' : htmlspecialchars($staff['status'] ?? 'Active');
+                    ?>
                     <tr class="staff-row">
                         <td class="staff-name"><strong><?php echo htmlspecialchars($staff['full_name']); ?></strong></td>
                         <td class="staff-email"><?php echo htmlspecialchars($staff['email']); ?></td>
                         <td class="staff-role"><span class="role-text"><?php echo htmlspecialchars($staff['role']); ?></span></td>
                         <td>
-                            <span class="badge badge-<?php echo strtolower((string) ($staff['status'] ?? 'active')) === 'active' ? 'active' : 'locked'; ?>">
-                                <?php echo htmlspecialchars($staff['status'] ?? 'Active'); ?>
+                            <span class="badge <?php echo $staffStatusBadgeClass; ?>">
+                                <?php echo $staffStatusLabel; ?>
                             </span>
                         </td>
                         <td>
-                            <button class="btn-action" onclick="openEditPermissionsModal(<?php echo securityJs($staff); ?>)">Edit Permissions</button>
+                            <div class="action-flex-group">
+                                <button class="btn-action" onclick="openEditPermissionsModal(<?php echo securityJs($staff); ?>)">Edit Permissions</button>
+                                <?php if ($isStaffLocked): ?>
+                                    <form action="users.php" method="POST" class="inline-form">
+                                        <?php echo securityField(); ?>
+                                        <input type="hidden" name="action" value="unlock_staff">
+                                        <input type="hidden" name="user_id" value="<?php echo (int) $staff['user_id']; ?>">
+                                        <button type="submit" class="btn-action btn-unlock">Unlock Account</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -228,7 +314,7 @@ include __DIR__ . '/includes/admin_header.php';
             <h3 id="staffModalTitle">Create Staff Account</h3>
             <button class="modal-close" onclick="closeModal('staffModal')" type="button">&times;</button>
         </div>
-        <form action="users.php" method="POST" id="staffForm">
+        <form action="users.php" method="POST" id="staffForm" novalidate>
             <?php echo securityField(); ?>
             <input type="hidden" name="action" id="staffAction" value="create_staff">
             <input type="hidden" name="user_id" id="staffUserId">
@@ -257,17 +343,37 @@ include __DIR__ . '/includes/admin_header.php';
                 <select name="staff_status" id="staffStatus">
                     <option value="Active">Active</option>
                     <option value="Suspended">Suspended</option>
+                    <option value="Locked">Locked</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label id="staffPasswordLabel">Password</label>
-                <input type="password" name="staff_password" id="staffPassword">
+                <input type="password" name="staff_password" id="staffPassword" required>
+
+                <ul class="password-rules" id="passwordRules">
+                    <li id="ruleLength"> At least <?php echo (int)($activePolicy['min_password_length'] ?? 12); ?> characters in length </li>
+                    <?php if ((int)($activePolicy['require_uppercase'] ?? 1) > 0): ?>
+                        <li id="ruleUpper"> At least <?php echo (int)$activePolicy['require_uppercase']; ?> CAPITAL letter(s) </li>
+                    <?php endif; ?>
+                    <?php if ((int)($activePolicy['require_lowercase'] ?? 1) > 0): ?>
+                        <li id="ruleLower"> At least <?php echo (int)$activePolicy['require_lowercase']; ?> small letter(s) </li>
+                    <?php endif; ?>
+                    <?php if ((int)($activePolicy['require_number'] ?? 1) > 0): ?>
+                        <li id="ruleNumber"> At least <?php echo (int)$activePolicy['require_number']; ?> number(s) </li>
+                    <?php endif; ?>
+                    <?php if ((int)($activePolicy['require_special'] ?? 1) > 0): ?>
+                        <li id="ruleSpecial"> At least <?php echo (int)$activePolicy['require_special']; ?> special character(s) </li>
+                    <?php endif; ?>
+                </ul>
+
+                <!-- Warning notice positioned directly underneath password rules checklist -->
+                <p class="signup-error" id="staffModalError" style="color: #dc3545; font-size: 0.88rem; margin-top: 10px; margin-bottom: 0; display: none;"></p>
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" onclick="closeModal('staffModal')">Cancel</button>
-                <button type="submit" class="btn-primary">Save Changes</button>
+                <button type="submit" class="btn-primary" id="staffSubmitBtn">Create Account</button>
             </div>
         </form>
     </div>
@@ -329,6 +435,26 @@ include __DIR__ . '/includes/admin_header.php';
     </div>
 </div>
 
+<script>
+window.passwordPolicy = {
+    minLen: <?php echo (int)($activePolicy['min_password_length'] ?? 12); ?>,
+    reqUpper: <?php echo (int)($activePolicy['require_uppercase'] ?? 1); ?>,
+    reqLower: <?php echo (int)($activePolicy['require_lowercase'] ?? 1); ?>,
+    reqNum: <?php echo (int)($activePolicy['require_number'] ?? 1); ?>,
+    reqSpec: <?php echo (int)($activePolicy['require_special'] ?? 1); ?>
+};
+
+<?php if (!empty($flashError)): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    const errBox = document.getElementById('staffModalError');
+    if (errBox) {
+        errBox.textContent = '⚠️ <?php echo htmlspecialchars($flashError); ?>';
+        errBox.style.display = 'block';
+    }
+    openStaffModal();
+});
+<?php endif; ?>
+</script>
 <script src="../assets/js/admin.js"></script>
 
 <?php echo '</main></div></div></body></html>'; ?>

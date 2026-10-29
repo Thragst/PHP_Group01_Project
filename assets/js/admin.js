@@ -211,8 +211,62 @@ function setElementText(id, value) {
     }
 }
 
+function updateStaffPasswordRules() {
+    const staffPassInput = document.getElementById('staffPassword');
+    const staffRulesContainer = document.getElementById('staffPasswordRules');
+
+    if (!staffPassInput || !staffRulesContainer) return;
+
+    const val = staffPassInput.value;
+
+    if (val === '' && !staffPassInput.required) {
+        staffRulesContainer.querySelectorAll('li').forEach(li => {
+            li.classList.remove('valid', 'invalid');
+        });
+        return;
+    }
+
+    const minLen   = parseInt(staffRulesContainer.dataset.minLength || 12, 10);
+    const minUpper = parseInt(staffRulesContainer.dataset.minUpper || 1, 10);
+    const minLower = parseInt(staffRulesContainer.dataset.minLower || 1, 10);
+    const minNum   = parseInt(staffRulesContainer.dataset.minNumber || 1, 10);
+    const minSpec  = parseInt(staffRulesContainer.dataset.minSpecial || 1, 10);
+
+    const upperCount = (val.match(/[A-Z]/g) || []).length;
+    const lowerCount = (val.match(/[a-z]/g) || []).length;
+    const numCount   = (val.match(/[0-9]/g) || []).length;
+    const specCount  = (val.match(/[^A-Za-z0-9]/g) || []).length;
+
+    const toggleRule = (selector, isValid) => {
+        const el = staffRulesContainer.querySelector(selector);
+        if (!el) return;
+        if (isValid) {
+            el.classList.add('valid');
+            el.classList.remove('invalid');
+        } else {
+            el.classList.remove('valid');
+        }
+    };
+
+    toggleRule('[data-rule="length"]', val.length >= minLen);
+    toggleRule('[data-rule="upper"]', upperCount >= minUpper);
+    toggleRule('[data-rule="lower"]', lowerCount >= minLower);
+    toggleRule('[data-rule="number"]', numCount >= minNum);
+    toggleRule('[data-rule="special"]', specCount >= minSpec);
+}
+
+function resetPasswordRules() {
+    const rulesContainer = document.getElementById('passwordRules');
+    if (rulesContainer) {
+        rulesContainer.querySelectorAll('li').forEach(li => {
+            li.classList.remove('valid', 'invalid');
+        });
+    }
+}
+
 function openStaffModal() {
     setElementText('staffModalTitle', 'Create Staff Account');
+    setElementText('staffSubmitBtn', 'Create Account');
     
     const actionEl = document.getElementById('staffAction');
     if (actionEl) actionEl.value = 'create_staff';
@@ -233,15 +287,24 @@ function openStaffModal() {
     if (statusGroupEl) statusGroupEl.style.display = 'none';
 
     const passEl = document.getElementById('staffPassword');
-    if (passEl) passEl.required = true;
+    if (passEl) {
+        passEl.value = '';
+        passEl.required = true;
+    }
+
+    const errBox = document.getElementById('staffModalError');
+    if (errBox) errBox.style.display = 'none';
 
     setElementText('staffPasswordLabel', 'Password');
     
+  
+    resetPasswordRules();
     openModal('staffModal');
 }
 
 function openEditPermissionsModal(user) {
     setElementText('staffModalTitle', 'Edit Account Permissions');
+    setElementText('staffSubmitBtn', 'Save Changes');
 
     const actionEl = document.getElementById('staffAction');
     if (actionEl) actionEl.value = 'update_staff';
@@ -265,10 +328,18 @@ function openEditPermissionsModal(user) {
     if (statusGroupEl) statusGroupEl.style.display = 'block';
 
     const passEl = document.getElementById('staffPassword');
-    if (passEl) passEl.required = false;
+    if (passEl) {
+        passEl.value = '';
+        passEl.required = false;
+    }
+
+    const errBox = document.getElementById('staffModalError');
+    if (errBox) errBox.style.display = 'none';
 
     setElementText('staffPasswordLabel', 'New Password (Leave blank to keep current)');
     
+    
+    resetPasswordRules();
     openModal('staffModal');
 }
 
@@ -405,3 +476,124 @@ if (typeof SESSION_TIMEOUT_MINUTES !== 'undefined' && SESSION_TIMEOUT_MINUTES > 
 
     resetIdleTimer();
 }
+
+// Live Password Policy Validation for Staff Modal
+document.addEventListener('DOMContentLoaded', function () {
+    const staffPassInput = document.getElementById('staffPassword');
+    if (staffPassInput) {
+        staffPassInput.addEventListener('input', updateStaffPasswordRules);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const staffPassInput = document.getElementById('staffPassword');
+    const rulesContainer = document.getElementById('passwordRules');
+
+    if (staffPassInput && rulesContainer) {
+        staffPassInput.addEventListener('input', function () {
+            const val = this.value;
+            const policy = window.passwordPolicy || {};
+
+            const minLen   = policy.minLen || 12;
+            const minUpper = policy.reqUpper || 1;
+            const minLower = policy.reqLower || 1;
+            const minNum   = policy.reqNum || 1;
+            const minSpec  = policy.reqSpec || 1;
+
+            const upperCount = (val.match(/[A-Z]/g) || []).length;
+            const lowerCount = (val.match(/[a-z]/g) || []).length;
+            const numCount   = (val.match(/[0-9]/g) || []).length;
+            const specCount  = (val.match(/[^A-Za-z0-9]/g) || []).length;
+
+            const toggleRule = (elementId, isValid) => {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                if (isValid) {
+                    el.classList.add('valid');
+                    el.classList.remove('invalid');
+                } else {
+                    el.classList.remove('valid');
+                }
+            };
+
+            toggleRule('ruleLength', val.length >= minLen);
+            toggleRule('ruleUpper', upperCount >= minUpper);
+            toggleRule('ruleLower', lowerCount >= minLower);
+            toggleRule('ruleNumber', numCount >= minNum);
+            toggleRule('ruleSpecial', specCount >= minSpec);
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const staffForm = document.getElementById('staffForm');
+    const staffNameInput = document.getElementById('staffName');
+    const staffEmailInput = document.getElementById('staffEmail');
+    const staffPassInput = document.getElementById('staffPassword');
+    const errBox = document.getElementById('staffModalError');
+
+    function showModalError(msg) {
+        if (errBox) {
+            errBox.textContent = '⚠️ ' + msg;
+            errBox.style.display = 'block';
+        }
+    }
+
+    if (staffForm) {
+        staffForm.addEventListener('submit', function (e) {
+            if (errBox) {
+                errBox.style.display = 'none';
+                errBox.textContent = '';
+            }
+
+            const nameVal  = staffNameInput ? staffNameInput.value.trim() : '';
+            const emailVal = staffEmailInput ? staffEmailInput.value.trim() : '';
+            const passVal  = staffPassInput ? staffPassInput.value : '';
+            const action   = document.getElementById('staffAction')?.value;
+
+            // 1. Full Name check
+            if (!nameVal) {
+                e.preventDefault();
+                showModalError('Please enter full name.');
+                return false;
+            }
+
+            // 2. Email format check
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailVal)) {
+                e.preventDefault();
+                showModalError('Please enter a valid email address.');
+                return false;
+            }
+
+            // 3. Password policy check
+            const mustCheckPassword = (action === 'create_staff') || (action === 'update_staff' && passVal.length > 0);
+
+            if (mustCheckPassword) {
+                const policy = window.passwordPolicy || {};
+                const minLen   = policy.minLen || 12;
+                const minUpper = policy.reqUpper || 1;
+                const minLower = policy.reqLower || 1;
+                const minNum   = policy.reqNum || 1;
+                const minSpec  = policy.reqSpec || 1;
+
+                const upperCount = (passVal.match(/[A-Z]/g) || []).length;
+                const lowerCount = (passVal.match(/[a-z]/g) || []).length;
+                const numCount   = (passVal.match(/[0-9]/g) || []).length;
+                const specCount  = (passVal.match(/[^A-Za-z0-9]/g) || []).length;
+
+                if (
+                    passVal.length < minLen ||
+                    upperCount < minUpper ||
+                    lowerCount < minLower ||
+                    numCount < minNum ||
+                    specCount < minSpec
+                ) {
+                    e.preventDefault();
+                    showModalError('Password does not meet the specified security requirements.');
+                    return false;
+                }
+            }
+        });
+    }
+});

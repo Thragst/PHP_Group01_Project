@@ -895,3 +895,32 @@
     display: flex !important;
     pointer-events: auto;
 }
+
+.password-rules {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.password-rules li {
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.password-rules li::before {
+    content: "○";
+}
+
+.password-rules li.valid {
+    color: #28a745 !important;
+    font-weight: 600;
+}
+
+.password-rules li.valid::before {
+    content: "✓";
+    color: #28a745;
+}
