@@ -715,3 +715,56 @@
         flex-wrap: wrap;
     }
 }
+
+
+/* ---------- smart search insight (what we understood) ---------- */
+
+.products-page .search-insight {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+}
+
+.products-page .search-insight-dym,
+.products-page .search-insight-note {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.products-page .search-insight-dym a {
+    color: var(--red);
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.products-page .search-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.products-page .search-chip {
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--red-soft);
+    color: var(--red-dark);
+    font-weight: bold;
+}
+
+.products-page .search-clear {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--red);
+    text-decoration: underline;
+}

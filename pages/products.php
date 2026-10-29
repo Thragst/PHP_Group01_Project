@@ -1,12 +1,16 @@
 <?php
+require_once __DIR__ . '/../includes/search_engine.php';
 $allowedPages = [10, 20, 30];
 $productPage = max(1,(int)($_GET['product_page'] ?? 1));
 $productsPerPage = (int)($_GET['per_page'] ?? 20);
 if (!in_array($productsPerPage, $allowedPages, true)) {$productsPerPage = 20;}
 $selectedCategory = $_GET['category'] ?? 'All';
-$allowedSorts = ['newest' => 'p.product_id DESC', 'oldest' => 'p.product_id ASC', 'lowest' => 'p.price ASC', 'highest' => 'p.price DESC'];
-$selectedSort = $_GET['sort'] ?? 'newest';
-if (!isset($allowedSorts[$selectedSort])) {$selectedSort = 'newest';}
+$searchQuery = sanitizeSearchQuery($_GET['q'] ?? '');
+$isSearching = $searchQuery !== '';
+$allowedSorts = ['relevance' => 'p.product_id DESC', 'newest' => 'p.product_id DESC', 'oldest' => 'p.product_id ASC', 'lowest' => 'p.price ASC', 'highest' => 'p.price DESC'];
+$defaultSort = $isSearching ? 'relevance' : 'newest';
+$selectedSort = $_GET['sort'] ?? $defaultSort;
+if (!isset($allowedSorts[$selectedSort])) {$selectedSort = $defaultSort;}
 $catStmt = $pdo->query("SELECT c.category_id, c.name, COUNT(p.product_id) AS product_count FROM categories c LEFT JOIN products p ON p.category_id = c.category_id AND p.status = 'Active' WHERE c.status = 'Active' GROUP BY c.category_id, c.name HAVING COUNT(p.product_id) > 0 ORDER BY c.category_id ASC");
 $dbCategories = $catStmt->fetchAll(PDO::FETCH_ASSOC);
 $where = ["p.status = 'Active'", "c.status = 'Active'"];
@@ -16,6 +20,24 @@ if ($categoryId === false || $categoryId <= 0) {$selectedCategory = 'All';} else
     $where[] = "p.category_id = ?";
     $params[] = $categoryId;}}
 $whereSql = implode(' AND ', $where);
+$searchInfo = null;
+if ($isSearching) {
+    $categoryFilterId = ($selectedCategory !== 'All') ? (int)$selectedCategory : null;
+    $searchInfo = smartSearch($pdo, $searchQuery, ['category_id' => $categoryFilterId]);
+    $matches = $searchInfo['results'];
+    if ($selectedSort === 'lowest') { usort($matches, function ($a, $b) { return $a['price'] <=> $b['price']; }); }
+    elseif ($selectedSort === 'highest') { usort($matches, function ($a, $b) { return $b['price'] <=> $a['price']; }); }
+    elseif ($selectedSort === 'newest') { usort($matches, function ($a, $b) { return $b['product_id'] <=> $a['product_id']; }); }
+    elseif ($selectedSort === 'oldest') { usort($matches, function ($a, $b) { return $a['product_id'] <=> $b['product_id']; }); }
+    $totalProducts = count($matches);
+    $totalPages = max(1,(int)ceil($totalProducts / $productsPerPage));
+    if ($productPage > $totalPages) {$productPage = $totalPages;}
+    $offset = ($productPage - 1) * $productsPerPage;
+    $dbProducts = array_slice($matches, $offset, $productsPerPage);
+    foreach ($dbCategories as &$catRow) { $catRow['product_count'] = (int)($searchInfo['categoryCounts'][$catRow['category_id']] ?? 0); }
+    unset($catRow);
+    logSearchQuery($pdo, $searchQuery, $totalProducts);
+} else {
 $countSql = "SELECT COUNT(*) FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql";
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($params);
@@ -23,7 +45,7 @@ $totalProducts = (int)$countStmt->fetchColumn();
 $totalPages = max(1,(int)ceil($totalProducts / $productsPerPage));
 if ($productPage > $totalPages) {$productPage = $totalPages;}
 $offset = ($productPage - 1) * $productsPerPage;
-$productSql = "SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql ORDER BY {$allowedSorts[$selectedSort]} LIMIT ? OFFSET ?"; 
+$productSql = "SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql ORDER BY {$allowedSorts[$selectedSort]} LIMIT ? OFFSET ?";
 $stmt = $pdo->prepare($productSql);
 $pos = 1;
 foreach ($params as $p) {
@@ -33,14 +55,20 @@ $stmt->bindValue($pos++, (int)$productsPerPage, PDO::PARAM_INT);
 $stmt->bindValue($pos, (int)$offset, PDO::PARAM_INT);
 $stmt->execute();
 $dbProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-function productPageUrl(int $page, string $category, string $sort, int $perPage): string { return 'index.php?' . http_build_query([ 'page' => 'products', 'category' => $category, 'sort' => $sort, 'per_page' => $perPage, 'product_page' => $page ]); }
+}
+function productPageUrl(int $page, string $category, string $sort, int $perPage): string { global $searchQuery; $args = [ 'page' => 'products', 'category' => $category, 'sort' => $sort, 'per_page' => $perPage, 'product_page' => $page ]; if (!empty($searchQuery)) { $args['q'] = $searchQuery; } return 'index.php?' . http_build_query($args); }
 ?>
 
 <section class="products-page">
     <div class="products-heading">
         <p class="small-title">SPORTMART SHOP</p>
-        <h1>Sports Products</h1>
-        <p>Find the sports equipment you need for your game.</p>
+        <?php if ($isSearching): ?>
+            <h1>Search results</h1>
+            <p><?php echo (int)$totalProducts; ?> result<?php echo $totalProducts === 1 ? '' : 's'; ?> for “<?php echo htmlspecialchars($searchQuery); ?>”</p>
+        <?php else: ?>
+            <h1>Sports Products</h1>
+            <p>Find the sports equipment you need for your game.</p>
+        <?php endif; ?>
     </div>
 
     <div class="products-layout">
@@ -68,6 +96,27 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
         </aside>
 
         <div class="products-content">
+            <?php if ($isSearching && $searchInfo): ?>
+                <div class="search-insight">
+                    <?php if (!empty($searchInfo['didYouMean'])): ?>
+                        <p class="search-insight-dym">Did you mean
+                            <a href="<?php echo htmlspecialchars('index.php?' . http_build_query(['page' => 'products', 'q' => $searchInfo['didYouMean']])); ?>"><?php echo htmlspecialchars($searchInfo['didYouMean']); ?></a>?
+                        </p>
+                    <?php endif; ?>
+                    <?php if ($searchInfo['relaxed'] > 0): ?>
+                        <p class="search-insight-note">No exact match for everything you asked, so these are the closest results.</p>
+                    <?php endif; ?>
+                    <?php if (!empty($searchInfo['chips'])): ?>
+                        <div class="search-chips">
+                            <span>We understood:</span>
+                            <?php foreach ($searchInfo['chips'] as $chip): ?>
+                                <span class="search-chip"><?php echo htmlspecialchars($chip); ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    <a class="search-clear" href="index.php?page=products">Clear search</a>
+                </div>
+            <?php endif; ?>
             <div class="filter-area">
                 <div class="filter-main">
                     <div class="filter-heading">
@@ -94,10 +143,12 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
                         <input type="hidden" name="page" value="products">
                         <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCategory); ?>">
                         <input type="hidden" name="product_page" value="1">
+                        <?php if ($isSearching): ?><input type="hidden" name="q" value="<?php echo htmlspecialchars($searchQuery); ?>"><?php endif; ?>
 
                         <label class="sort-label">
                             <span>Sort</span>
                             <select name="sort" onchange="this.form.submit()">
+                                <?php if ($isSearching): ?><option value="relevance" <?php echo $selectedSort === 'relevance' ? 'selected' : ''; ?>>Best match</option><?php endif; ?>
                                 <option value="newest" <?php echo $selectedSort === 'newest' ? 'selected' : ''; ?>>Newest</option>
                                 <option value="oldest" <?php echo $selectedSort === 'oldest' ? 'selected' : ''; ?>>Oldest</option>
                                 <option value="lowest" <?php echo $selectedSort === 'lowest' ? 'selected' : ''; ?>>Lowest Price</option>
@@ -162,7 +213,7 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
                 <?php endforeach; ?>
 
                 <?php if (empty($dbProducts)): ?>
-                    <div class="no-products">No products available right now.</div>
+                    <div class="no-products"><?php echo $isSearching ? 'No products found for “' . htmlspecialchars($searchQuery) . '”. Try a different word, a brand, or a category like running or basketball.' : 'No products available right now.'; ?></div>
                 <?php endif; ?>
             </div>
 

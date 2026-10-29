@@ -20,6 +20,18 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
         <a href="<?php echo $basePath; ?>index.php?page=cart" class="<?php echo $currentPage === 'cart' ? 'active' : ''; ?>">Cart</a>
     </div>
 
+    <form class="nav-search" action="<?php echo $basePath; ?>index.php" method="GET" role="search" autocomplete="off">
+        <input type="hidden" name="page" value="products">
+        <input type="search" name="q" id="navSearchInput" maxlength="100"
+               placeholder="Search, e.g. nike running shoes under 6000"
+               aria-label="Search products"
+               value="<?php echo htmlspecialchars((isset($_GET['q']) && is_string($_GET['q']) && $currentPage === 'products') ? mb_substr(trim($_GET['q']), 0, 100) : '', ENT_QUOTES, 'UTF-8'); ?>"
+               data-endpoint="<?php echo $basePath; ?>pages/search_suggest.php"
+               data-base="<?php echo htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8'); ?>">
+        <button type="submit" class="nav-search-button" aria-label="Search">&#128269;</button>
+        <div class="search-suggestions" id="searchSuggestions" hidden></div>
+    </form>
+
     <div class="nav-right">
         <?php if($isLoggedIn): ?>
             <div class="account-menu">
@@ -57,3 +69,4 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
         <?php endif; ?>
     </div>
 </nav>
+<script src="<?php echo $basePath; ?>assets/js/search.js" defer></script>
