@@ -90,6 +90,56 @@ if ($isSearching) {
 function productPageUrl(int $page, string $category, string $sort, int $perPage): string { global $searchQuery; $args = [ 'page' => 'products', 'category' => $category, 'sort' => $sort, 'per_page' => $perPage, 'product_page' => $page ]; if (!empty($searchQuery)) { $args['q'] = $searchQuery; } return 'index.php?' . http_build_query($args); }
 ?>
 
+<style>
+.products-layout {
+    display: block !important;
+    width: 100% !important;
+}
+.products-content {
+    width: 100% !important;
+}
+.filter-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+.filter-group::-webkit-scrollbar {
+    display: none !important;
+}
+.filter-button {
+    flex-shrink: 0 !important;
+}
+.products-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 20px !important;
+    width: 100% !important;
+}
+@media (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: repeat(1, 1fr) !important;
+    }
+}
+</style>
+
 <section class="products-page">
     <div class="products-heading">
         <p class="small-title">SPORTMART SHOP</p>
@@ -103,29 +153,6 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
     </div>
 
     <div class="products-layout">
-        <aside class="category-sidebar">
-            <div class="category-sidebar-title">
-                <span class="category-icon">☷</span>
-                <span>Categories</span>
-            </div>
-
-            <div class="category-list">
-                <a href="<?php echo htmlspecialchars(productPageUrl(1, 'All', $selectedSort, $productsPerPage)); ?>"
-                   class="category-item <?php echo $selectedCategory === 'All' ? 'active' : ''; ?>">
-                    <span>All Products</span>
-                    <small><?php echo $totalProducts; ?></small>
-                </a>
-
-                <?php foreach ($dbCategories as $cat): ?>
-                    <a href="<?php echo htmlspecialchars(productPageUrl(1, (string)$cat['category_id'], $selectedSort, $productsPerPage)); ?>"
-                       class="category-item <?php echo (string)$cat['category_id'] === (string)$selectedCategory ? 'active' : ''; ?>">
-                        <span><?php echo htmlspecialchars($cat['name']); ?></span>
-                        <small><?php echo (int)$cat['product_count']; ?></small>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        </aside>
-
         <div class="products-content">
             <?php if ($isSearching && $searchInfo): ?>
                 <div class="search-insight">
@@ -148,6 +175,7 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
                     <a class="search-clear" href="index.php?page=products">Clear search</a>
                 </div>
             <?php endif; ?>
+
             <div class="filter-area">
                 <div class="filter-main">
                     <div class="filter-heading">
