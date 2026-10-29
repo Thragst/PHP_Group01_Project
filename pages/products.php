@@ -21,6 +21,25 @@ if ($categoryId === false || $categoryId <= 0) {$selectedCategory = 'All';} else
     $params[] = $categoryId;}}
 $whereSql = implode(' AND ', $where);
 $searchInfo = null;
+
+function renderStars($rating, $reviewsCount = 0) {
+    $rating = round((float)$rating, 1);
+    $fullStars = (int)floor($rating);
+    $hasHalf = ($rating - $fullStars) >= 0.5;
+    $out = '<div class="stars">';
+    for ($i = 1; $i <= 5; $i++) {
+        if ($i <= $fullStars) {
+            $out .= '★';
+        } elseif ($i === $fullStars + 1 && $hasHalf) {
+            $out .= '★';
+        } else {
+            $out .= '☆';
+        }
+    }
+    $out .= ' <span class="rating-num">' . number_format($rating, 1) . ' (' . (int)$reviewsCount . ')</span></div>';
+    return $out;
+}
+
 if ($isSearching) {
     $categoryFilterId = ($selectedCategory !== 'All') ? (int)$selectedCategory : null;
     $searchInfo = smartSearch($pdo, $searchQuery, ['category_id' => $categoryFilterId]);
@@ -38,24 +57,36 @@ if ($isSearching) {
     unset($catRow);
     logSearchQuery($pdo, $searchQuery, $totalProducts);
 } else {
-$countSql = "SELECT COUNT(*) FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql";
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalProducts = (int)$countStmt->fetchColumn();
-$totalPages = max(1,(int)ceil($totalProducts / $productsPerPage));
-if ($productPage > $totalPages) {$productPage = $totalPages;}
-$offset = ($productPage - 1) * $productsPerPage;
-$productSql = "SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql ORDER BY {$allowedSorts[$selectedSort]} LIMIT ? OFFSET ?";
-$stmt = $pdo->prepare($productSql);
-$pos = 1;
-foreach ($params as $p) {
-    $stmt->bindValue($pos++, $p, PDO::PARAM_INT);
+    $countSql = "SELECT COUNT(*) FROM products p JOIN categories c ON c.category_id = p.category_id WHERE $whereSql";
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($params);
+    $totalProducts = (int)$countStmt->fetchColumn();
+    $totalPages = max(1,(int)ceil($totalProducts / $productsPerPage));
+    if ($productPage > $totalPages) {$productPage = $totalPages;}
+    $offset = ($productPage - 1) * $productsPerPage;
+
+    $productSql = "SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name AS category,
+                          COALESCE(AVG(r.rating), 0) AS avg_rating,
+                          COUNT(r.review_id) AS total_reviews
+                   FROM products p
+                   JOIN categories c ON c.category_id = p.category_id
+                   LEFT JOIN product_reviews r ON r.product_id = p.product_id
+                   WHERE $whereSql
+                   GROUP BY p.product_id, p.name, p.brand, p.price, p.image_path, c.category_id, c.name
+                   ORDER BY {$allowedSorts[$selectedSort]}
+                   LIMIT ? OFFSET ?";
+
+    $stmt = $pdo->prepare($productSql);
+    $pos = 1;
+    foreach ($params as $p) {
+        $stmt->bindValue($pos++, $p, PDO::PARAM_INT);
+    }
+    $stmt->bindValue($pos++, (int)$productsPerPage, PDO::PARAM_INT);
+    $stmt->bindValue($pos, (int)$offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $dbProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-$stmt->bindValue($pos++, (int)$productsPerPage, PDO::PARAM_INT);
-$stmt->bindValue($pos, (int)$offset, PDO::PARAM_INT);
-$stmt->execute();
-$dbProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+
 function productPageUrl(int $page, string $category, string $sort, int $perPage): string { global $searchQuery; $args = [ 'page' => 'products', 'category' => $category, 'sort' => $sort, 'per_page' => $perPage, 'product_page' => $page ]; if (!empty($searchQuery)) { $args['q'] = $searchQuery; } return 'index.php?' . http_build_query($args); }
 ?>
 
@@ -199,7 +230,7 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
                             <p class="product-category"><?php echo htmlspecialchars($product['category']); ?></p>
                             <h3 title="<?php echo htmlspecialchars($product['name']); ?>"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="brand"><?php echo htmlspecialchars($product['brand'] ?? ''); ?></p>
-                            <div class="stars">★★★★★</div>
+                            <?php echo renderStars($product['avg_rating'] ?? 0, $product['total_reviews'] ?? 0); ?>
 
                             <div class="product-bottom">
                                 <strong>₱<?php echo number_format($product['price'], 2); ?></strong>
