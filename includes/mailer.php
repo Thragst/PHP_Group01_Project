@@ -31,7 +31,15 @@ function smtpCmd($fp, $cmd, $expect) {
 
 function smtpSend($cfg, $to, $subject, $htmlBody, $textBody) {
     $ctx = stream_context_create([
-        'ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]
+        // Verify the SMTP server certificate (prevents man-in-the-middle on STARTTLS).
+        'ssl' => [
+            'verify_peer'       => true,
+            'verify_peer_name'  => true,
+            'allow_self_signed' => false,
+            'peer_name'         => $cfg['smtp_host'],
+            'SNI_enabled'       => true,
+            'disable_compression' => true,
+        ]
     ]);
     $fp = @stream_socket_client('tcp://' . $cfg['smtp_host'] . ':' . $cfg['smtp_port'], $errno, $errstr, 20, STREAM_CLIENT_CONNECT, $ctx);
     if (!$fp) {
@@ -43,8 +51,8 @@ function smtpSend($cfg, $to, $subject, $htmlBody, $textBody) {
         smtpCmd($fp, null, 220);
         smtpCmd($fp, 'EHLO localhost', 250);
         smtpCmd($fp, 'STARTTLS', 220);
-        if (!stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-            throw new Exception('Could not start TLS. Check that openssl is enabled in php.ini.');
+        if (!stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | (defined('STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT') ? STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT : 0))) {
+            throw new Exception('Could not start TLS. Check that openssl is enabled and openssl.cafile/curl.cainfo points to a CA bundle (cacert.pem) in php.ini.');
         }
         smtpCmd($fp, 'EHLO localhost', 250);
         smtpCmd($fp, 'AUTH LOGIN', 334);

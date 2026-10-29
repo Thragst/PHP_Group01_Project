@@ -3,7 +3,7 @@ return [
     'app_name'     => 'SportMart',
     'from_email'   => 'eizukaiser@gmail.com',
     'from_name'    => 'Eizu Kaiser',
-    'base_url'     => 'http://localhost/PHP_Group01_Project',
+    'base_url'     => 'https://localhost/PHP_Group01_Project',
     'token_hours'  => 24,
     'dev_mode'     => false,
     'smtp_enabled' => true,

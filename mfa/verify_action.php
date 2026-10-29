@@ -1,5 +1,6 @@
 <?php
 use PragmaRX\Google2FA\Google2FA;
+require_once __DIR__ . '/../includes/ssl.php';
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';

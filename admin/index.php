@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/ssl.php';
 session_start();
 
 require_once '../includes/db.php';

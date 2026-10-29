@@ -1,0 +1,7 @@
+# SportMart - force HTTPS at the Apache level (runs before any PHP file).
+# Needs mod_rewrite enabled (default in XAMPP) and AllowOverride All for htdocs.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [L,R=308]
+</IfModule>
