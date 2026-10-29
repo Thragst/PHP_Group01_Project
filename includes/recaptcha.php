@@ -1,12 +1,12 @@
 <?php
 if (!defined('RECAPTCHA_ENABLED')) {
-    define('RECAPTCHA_ENABLED', false);
+    define('RECAPTCHA_ENABLED', true);
 }
 if (!defined('RECAPTCHA_SITE_KEY')) {
-    define('RECAPTCHA_SITE_KEY', '6LfM9fItAAAAANmJl31ryWpfPiOzSXCW4wj8Aa0j');
+    define('RECAPTCHA_SITE_KEY', '6Lf9qQYuAAAAAHB-kZLmtgs75fROZt_1_Rd_e16E');
 }
 if (!defined('RECAPTCHA_SECRET_KEY')) {
-    define('RECAPTCHA_SECRET_KEY', 'PUT_YOUR_SECRET_KEY_HERE');
+    define('RECAPTCHA_SECRET_KEY', '6Lf9qQYuAAAAACOHWCJceNnN4fZTkztcsr3LQQXa');
 }
 
 function verifyRecaptcha($response): bool
@@ -17,7 +17,7 @@ function verifyRecaptcha($response): bool
     if (!is_string($response) || $response === '' || strlen($response) > 4096) {
         return false;
     }
-    if (RECAPTCHA_SECRET_KEY === '' || RECAPTCHA_SECRET_KEY === 'PUT_YOUR_SECRET_KEY_HERE') {
+    if (RECAPTCHA_SECRET_KEY === '') {
         error_log('reCAPTCHA is enabled but RECAPTCHA_SECRET_KEY is not set.');
         return false;
     }
