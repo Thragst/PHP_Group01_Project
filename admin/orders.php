@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
-
+require_once __DIR__ . '/../includes/security.php';
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
     exit();
@@ -18,6 +18,9 @@ $allStatuses = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Deliver
 |--------------------------------------------------------------------------
 */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
+       
+    securityCheck();
+
     $orderId   = (int) preg_replace('/\D+/', '', (string) $_POST['order_id']);
     $newStatus = trim($_POST['new_status']);
     $driverId  = !empty($_POST['driver_id']) ? (int) $_POST['driver_id'] : null;
@@ -392,6 +395,9 @@ include __DIR__ . '/includes/admin_header.php';
         </div>
 
         <form action="orders.php" method="POST">
+
+            <?php echo securityField(); ?> 
+                        
             <input type="hidden" id="modalOrderId" name="order_id" value="">
             <?php foreach ($returnParams as $rk => $rv): ?>
                 <?php if ($rv !== '' && $rv !== null): ?>
