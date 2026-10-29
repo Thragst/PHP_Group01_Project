@@ -659,7 +659,10 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'Active',
-  `failed_attempts` int(11) NOT NULL DEFAULT 0
+  `failed_attempts` int(11) NOT NULL DEFAULT 0,
+  `mfa_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `mfa_secret` varchar(255) DEFAULT NULL,
+  `mfa_confirmed_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
