@@ -13,6 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Content-Type: application/json');
             echo json_encode([ 'success' => false, 'login_required' => true, 'message' => 'Please login to add items to your cart.' ]); exit;
         }
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+            http_response_code(403);
+            header('Content-Type: application/json');
+            echo json_encode([ 'success' => false, 'message' => 'Invalid request. Refresh the page and try again.' ]); exit;
+        }
         $productId = (int) ($_POST['product_id'] ?? 0);
         if ($productId <= 0) {
             header('Content-Type: application/json');

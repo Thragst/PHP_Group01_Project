@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/security.php';
 
 if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
     header('Location: ../pages/login.php');
@@ -13,6 +14,7 @@ if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['A
 $flashSuccess = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_security_settings'])) {
+    securityCheck();
     $settingsToSave = [
         'max_failed_attempts'     => max(1, (int)($_POST['max_failed_attempts'] ?? 3)),
         'min_password_length'     => max(8, (int)($_POST['min_password_length'] ?? 12)),
@@ -75,6 +77,7 @@ include __DIR__ . '/includes/admin_header.php';
 <?php endif; ?>
 
 <form action="security-settings.php" method="POST">
+    <?php echo securityField(); ?>
     <div class="security-grid">
         
         <div class="admin-card">

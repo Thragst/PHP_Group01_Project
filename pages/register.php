@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/security.php';
 
 function redirectSignup($status) {
     header('Location: ../index.php?signup=' . $status);
@@ -16,6 +17,12 @@ function postString($key) {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../index.php');
     exit();
+}
+
+securityCheck();
+require_once __DIR__ . '/../includes/recaptcha.php';
+if (!verifyRecaptcha($_POST['g-recaptcha-response'] ?? '')) {
+    redirectSignup('captcha');
 }
 
 $fullname = preg_replace('/\s+/', ' ', postString('fullname'));

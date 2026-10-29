@@ -2,8 +2,10 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/security.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    securityCheck();
     $email = strtolower(trim(is_string($_POST['email'] ?? null) ? $_POST['email'] : ''));
     if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $stmt = $pdo->prepare("SELECT full_name FROM users WHERE email = ? AND status = 'Pending' LIMIT 1");

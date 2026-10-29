@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
+require_once __DIR__ . '/../includes/security.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['action']) || isset($_GET['timeout']) || isset($_GET['reason']))) {
     $userId = $_SESSION['user_id'] ?? $_SESSION['mfa_user_id'] ?? null;
@@ -34,6 +35,7 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    securityCheck();
     $inputIdentifier = postString('username');
     $password = postString('password');
 

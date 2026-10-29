@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const formData = new FormData();
             formData.append("add_to_cart", "1");
             formData.append("product_id", productId);
+            formData.append("csrf_token", (document.querySelector('meta[name="csrf-token"]') || {}).content || "");
 
             button.disabled = true;
 
@@ -244,7 +245,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const fields = {
                 add_to_cart: "1",
                 buy_now: "1",
-                product_id: productId
+                product_id: productId,
+                csrf_token: (document.querySelector('meta[name="csrf-token"]') || {}).content || ""
             };
 
             Object.keys(fields).forEach(function (key) {

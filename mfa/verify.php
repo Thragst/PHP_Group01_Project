@@ -33,6 +33,7 @@ if (!$user || (int) $user['mfa_enabled'] !== 1) { unset($_SESSION['mfa_pending']
                 </div> 
             <?php endif; ?>
             <form method="POST" action="verify_action.php" class="auth-form">
+                <?php echo csrfField(); ?>
                 <div class="auth-form-group">
                     <label for="otp" class="auth-label">Authenticaion Code</label>
                     <input type="text" id="otp" name="otp" class="auth-otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required autofocus>

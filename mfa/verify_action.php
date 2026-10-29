@@ -8,6 +8,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 if ( empty($_SESSION['mfa_pending']) || empty($_SESSION['mfa_user_id']) ) { header('Location: ../index.php?login=required'); exit(); }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: verify.php'); exit(); }
+if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) { http_response_code(403); exit('Invalid request. Refresh the page and try again.'); }
 $userId = (int) $_SESSION['mfa_user_id'];
 $stmt = $pdo->prepare(" SELECT user_id, full_name, email, username, role, mfa_enabled, mfa_secret FROM users WHERE user_id = ? LIMIT 1 ");
 $stmt->execute([$userId]);

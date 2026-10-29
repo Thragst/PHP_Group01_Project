@@ -53,6 +53,7 @@ $qrCodeDataUri = $result->getDataUri();
                 <div class="auth-message auth-message-error"> <strong>Invalid authentication code. </strong> Please check your authentication app and try again. </div>
             <?php endif; ?>
             <form method="POST" action="setup_action.php" class="auth-form">
+                <?php echo csrfField(); ?>
                 <div class="auth-form-group"> <label for="otp" class="auth-label">Authentication Code</label> <input type="text" id="otp" name="otp" class="auth-otp-input" inputmode="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required> </div>
                 <button type="submit" class="auth-button">Verify %amp; Enable MFA</button>
             </form>

@@ -2,6 +2,7 @@
 session_start();
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
+require_once 'includes/recaptcha.php';
 
 $defaultPolicy = [
     'max_failed_attempts' => '3',
@@ -39,6 +40,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1.0" >
+        <meta name="csrf-token" content="<?php echo e(getCsrfToken()); ?>">
         <link rel="stylesheet" href="assets/css/styles.css?v=<?php echo filemtime(__DIR__ . '/assets/css/styles.css'); ?>" >
         <link rel="stylesheet" href="assets/css/account.css?v=<?php echo filemtime(__DIR__ . '/assets/css/account.css'); ?>" >
         <link rel="stylesheet" href="assets/css/activation.css?v=<?php echo filemtime(__DIR__ . '/assets/css/activation.css'); ?>" >
@@ -72,6 +74,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 <h2>Login</h2>
                 <p>Enter your Sportmart Account.</p>
                 <form action="pages/login.php" method="POST">
+                    <?php echo csrfField(); ?>
                     <input type="text" name="username" placeholder="Email" required>
                     <input type="password" name="password" placeholder="Password" required>
                     <?php if(isset($_GET['login'])): ?>
@@ -87,7 +90,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                             <p class="login-message">This activation link is invalid or has expired.</p>
                     <?php elseif ($_GET['login'] === 'unverified'): ?>
                             <p class="login-message">Please activate your account first. Check your email for the activation link.</p>
-                            <p class="login-message resend-note">No email? <a href="#" onclick="var e=prompt('Enter your email address'); if(e){var f=document.createElement('form');f.method='POST';f.action='pages/resend_activation.php';var i=document.createElement('input');i.type='hidden';i.name='email';i.value=e;f.appendChild(i);document.body.appendChild(f);f.submit();} return false;">Resend activation link</a></p>
+                            <p class="login-message resend-note">No email? <a href="#" onclick="var e=prompt('Enter your email address'); if(e){var f=document.createElement('form');f.method='POST';f.action='pages/resend_activation.php';var i=document.createElement('input');i.type='hidden';i.name='email';i.value=e;f.appendChild(i);var t=document.createElement('input');t.type='hidden';t.name='csrf_token';t.value=document.querySelector('meta[name=csrf-token]').content;f.appendChild(t);document.body.appendChild(f);f.submit();} return false;">Resend activation link</a></p>
                     <?php elseif ($_GET['login'] === 'resent'): ?>
                             <p class="login-message login-success">If that account is waiting for activation, a new link has been sent.</p>
                     <?php elseif ($_GET['login'] === 'required'): ?>
@@ -106,8 +109,9 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 <h2>Sign Up</h2>
                 <p>Create your SportMart Account.</p>
                 <?php $signupStatus = $_GET['signup'] ?? '';
-                $signupErrors = ['empty' => 'Please fill in all fields.', 'name' => 'Full name cannot contain numbers.', 'username' => 'Username can only contain letters and numbers, and cannot be numbers only.', 'exists' => 'Username already exists.', 'email' => 'Please use valid email', 'email_taken' => 'Email is already registered.', 'mismatch' => 'Passwords do not match. Please re-enter your password.', 'password' => 'Password does not meet the requirments.', 'error' => 'Unable to create account.', 'captcha' => 'Please complete the CAPTCHA.'];?>
+                $signupErrors = ['captcha' => 'Please complete the CAPTCHA to confirm you are not a robot.', 'empty' => 'Please fill in all fields.', 'name' => 'Full name cannot contain numbers.', 'username' => 'Username can only contain letters and numbers, and cannot be numbers only.', 'exists' => 'Username already exists.', 'email' => 'Please use valid email', 'email_taken' => 'Email is already registered.', 'mismatch' => 'Passwords do not match. Please re-enter your password.', 'password' => 'Password does not meet the requirments.', 'error' => 'Unable to create account.', 'captcha' => 'Please complete the CAPTCHA.'];?>
                 <form action="pages/register.php" method="POST" id="signupForm" novalidate>
+                    <?php echo csrfField(); ?>
                     <input type="text" name="fullname" id="SignupFullname" placeholder="Full Name" required >
                     <p class="signup-error" id="fullnameError">
                         <?php echo $signupStatus === 'name' ? e($signupErrors['name']) : ''; ?> </p>
@@ -142,7 +146,10 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                     <p class="login-message dev-note">Dev mode (no mail server): <a href="<?php echo htmlspecialchars($_SESSION['dev_activation_link'], ENT_QUOTES, 'UTF-8'); ?>">open activation link</a></p>
                     <?php unset($_SESSION['dev_activation_link']); ?>
                 <?php endif; ?>
-                <div class="g-recaptcha" data-sitekey="6LfM9fItAAAAANmJl31ryWpfPiOzSXCW4wj8Aa0j"></div>
+                <?php if (RECAPTCHA_ENABLED): ?>
+                    <div class="g-recaptcha" data-sitekey="<?php echo e(RECAPTCHA_SITE_KEY); ?>"></div>
+                    <p class="signup-error" id="captchaError"><?php echo $signupStatus === 'captcha' ? e($signupErrors['captcha']) : ''; ?></p>
+                <?php endif; ?>
                 <button type="submit" class="popup-button"> Create Account </button>
             </form>
             <p class="popup-disclaimer"> Already have an account? <a href="index.php?login=required"> Login here </a>. </p>
@@ -167,7 +174,9 @@ window.passwordPolicy = {
 <?php if (($_GET['account'] ?? '') === 'deleted'): ?>
 <script>document.addEventListener("DOMContentLoaded", function () { showToast("Your account has been deleted."); });</script>
 <?php endif; ?>
+<?php if (RECAPTCHA_ENABLED): ?>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<?php endif; ?>
 </body>
 
 </html>

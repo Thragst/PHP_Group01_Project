@@ -31,6 +31,9 @@ if ($isLoggedIn) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        exit('Invalid request. Refresh the page and try again.');
+    }
     if (!$isLoggedIn) {
         $reviewError = 'Please login to leave a review.';
     } elseif (!$canReview) {
@@ -143,6 +146,7 @@ $imgSrc = productImageSrc($product['image_path']);
 
         <?php if ($isLoggedIn && $canReview && !$alreadyReviewed): ?>
             <form method="POST" class="review-form">
+                <?php echo csrfField(); ?>
                 <h3>Review this product</h3>
                 <label>Rating</label>
                 <select name="rating" required>

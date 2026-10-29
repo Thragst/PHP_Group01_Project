@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/security.php';
 
 if (empty($_SESSION['logged_in']) || ($_SESSION['user_role'] ?? '') !== 'Driver') {
     header('Location: ../pages/login.php');
@@ -11,6 +12,10 @@ if (empty($_SESSION['logged_in']) || ($_SESSION['user_role'] ?? '') !== 'Driver'
 }
 
 $driverId = $_SESSION['user_id'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    securityCheck();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_location') {
     $orderId = (int)$_POST['order_id'];
@@ -133,6 +138,7 @@ $deliveries = $stmt->fetchAll();
 
                 <?php if ($item['status'] === 'Out for Delivery'): ?>
                     <form action="deliveries.php" method="POST">
+                    <?php echo securityField(); ?>
                         <input type="hidden" name="action" value="update_location">
                         <input type="hidden" name="order_id" value="<?php echo (int) $item['order_id']; ?>">
                         <input type="text" name="location_city" class="select-input" maxlength="100" placeholder="Enter current city or location" required>
@@ -157,6 +163,7 @@ $deliveries = $stmt->fetchAll();
         <h3>Confirm Delivery</h3>
         <p id="confirmModalText">Are you sure you want to mark this order as delivered?</p>
         <form action="deliveries.php" method="POST">
+                    <?php echo securityField(); ?>
             <input type="hidden" name="action" value="mark_delivered">
             <input type="hidden" name="order_id" id="confirmModalOrderId" value="">
             <div class="custom-modal-actions">
