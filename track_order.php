@@ -16,6 +16,9 @@ if (!$orderId || $orderId < 1) {
 $stmt = $pdo->prepare("SELECT o.*, u.full_name AS rider_name FROM orders o LEFT JOIN users u ON u.user_id = o.driver_id WHERE o.order_id = ? AND o.user_id = ?");
 $stmt->execute([$orderId, $_SESSION['user_id']]);
 $order = $stmt->fetch();
+if ($order) {
+    $order = decryptRow($order, ['shipping_address', 'contact_number']);
+}
 if (!$order) {
     http_response_code(404);
     exit('Order not found.');

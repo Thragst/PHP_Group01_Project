@@ -268,8 +268,8 @@ CREATE TABLE `orders` (
   `total_amount` decimal(10,2) NOT NULL,
   `payment_method` enum('COD','GCash','Credit Card','Bank Transfer') NOT NULL,
   `status` enum('Pending','Processing','Shipped','Out for Delivery','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
-  `shipping_address` varchar(255) NOT NULL,
-  `contact_number` varchar(30) DEFAULT NULL,
+  `shipping_address` text NOT NULL, -- stored AES-256-GCM encrypted
+  `contact_number` text DEFAULT NULL, -- stored AES-256-GCM encrypted
   `order_notes` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -652,8 +652,8 @@ CREATE TABLE `users` (
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `role` enum('Customer','Admin','Staff','Driver') NOT NULL DEFAULT 'Customer',
-  `phone` varchar(30) DEFAULT NULL,
-  `physical_address` varchar(255) DEFAULT NULL,
+  `phone` text DEFAULT NULL, -- stored AES-256-GCM encrypted
+  `physical_address` text DEFAULT NULL, -- stored AES-256-GCM encrypted
   `account_status` enum('Active','Suspended','Inactive','Locked') NOT NULL DEFAULT 'Active',
   `login_attempts` int(11) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),

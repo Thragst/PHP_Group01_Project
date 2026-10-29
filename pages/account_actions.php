@@ -115,8 +115,8 @@ if ($action === 'update_shipping') {
     try {
         $stmt = $pdo->prepare("UPDATE users SET physical_address = ?, phone = ? WHERE user_id = ?");
         $stmt->execute([
-            $address === '' ? null : $address,
-            $phone === '' ? null : $phone,
+            $address === '' ? null : encryptField($address),
+            $phone === '' ? null : encryptField($phone),
             $userId
         ]);
 

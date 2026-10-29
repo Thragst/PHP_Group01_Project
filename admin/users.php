@@ -160,7 +160,7 @@ $customerQuery = "SELECT
                   WHERE u.role = 'Customer'
                   GROUP BY u.user_id
                   ORDER BY u.user_id DESC";
-$customers = $pdo->query($customerQuery)->fetchAll();
+$customers = decryptRows($pdo->query($customerQuery)->fetchAll(), ['phone', 'physical_address']);
 
 include __DIR__ . '/includes/admin_header.php';
 ?>

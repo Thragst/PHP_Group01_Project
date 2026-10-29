@@ -19,7 +19,7 @@ if (!function_exists('getMyOrdersDetailed')) {
              ORDER BY o.created_at DESC, o.order_id DESC"
         );
         $stmt->execute([(int) $userId]);
-        $rows = $stmt->fetchAll();
+        $rows = decryptRows($stmt->fetchAll(), ['shipping_address', 'contact_number', 'user_phone']);
 
         if (!$rows) {
             return [];

@@ -12,3 +12,5 @@ try {
 } catch (PDOException $e) {
     die("Database connection failed.");
 }
+
+require_once __DIR__ . '/encryption.php';

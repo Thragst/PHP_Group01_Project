@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     if ($error === '') {
         $oldStmt = $pdo->prepare("SELECT status, driver_id, shipping_address FROM orders WHERE order_id = ?");
         $oldStmt->execute([$orderId]);
-        $old = $oldStmt->fetch();
+        $old = decryptRow($oldStmt->fetch(), ['shipping_address']);
 
         if (!$old) {
             $error = 'invalid_order';
@@ -66,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
             $hasContact = tableHasColumnLocal($pdo, 'orders', 'contact_number');
 
             $sql = "UPDATE orders SET status = ?, driver_id = ?, shipping_address = ?";
-            $params = [$newStatus, $driverId, $address];
+            $params = [$newStatus, $driverId, encryptField($address)];
 
             if ($hasContact) {
                 $sql .= ", contact_number = ?";
-                $params[] = $contact === '' ? null : $contact;
+                $params[] = $contact === '' ? null : encryptField($contact);
             }
 
             $sql .= " WHERE order_id = ?";
@@ -190,7 +190,7 @@ foreach ($params as $p) {
 $stmt->bindValue($pos++, (int) $perPage, PDO::PARAM_INT);
 $stmt->bindValue($pos, (int) $offset, PDO::PARAM_INT);
 $stmt->execute();
-$orders = $stmt->fetchAll();
+$orders = decryptRows($stmt->fetchAll(), ['shipping_address', 'contact_number', 'customer_phone']);
 
 $itemsByOrder = [];
 $orderIds = array_map('intval', array_column($orders, 'order_id'));

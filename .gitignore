@@ -11,3 +11,5 @@ image_tools/transparent/
 
 assets/images/*
 !assets/images/default.png
+# Data-encryption key (never commit)
+includes/encryption_key.php

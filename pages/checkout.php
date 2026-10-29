@@ -60,7 +60,7 @@ function getCheckoutCart(PDO $pdo, $userId)
 
 $stmt = $pdo->prepare("SELECT phone, physical_address FROM users WHERE user_id = ? LIMIT 1");
 $stmt->execute([$userId]);
-$profile = $stmt->fetch() ?: [];
+$profile = decryptRow($stmt->fetch() ?: [], ['phone', 'physical_address']);
 
 $mobile = $profile['phone'] ?? '';
 $address = $profile['physical_address'] ?? '';
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $orderTotal = $orderSubtotal + $orderShipping;
 
                 $columns = ['user_id', 'total_amount', 'payment_method', 'status', 'shipping_address'];
-                $values = [$userId, number_format($orderTotal, 2, '.', ''), 'COD', 'Pending', $address];
+                $values = [$userId, number_format($orderTotal, 2, '.', ''), 'COD', 'Pending', encryptField($address)];
 
                 // Every checkout must get its OWN new order id (#1, #2, #3 ...)
                 $newOrderId = null;
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($hasContact) {
                     $columns[] = 'contact_number';
-                    $values[] = $mobile;
+                    $values[] = encryptField($mobile);
                 }
 
                 if ($hasNotes) {

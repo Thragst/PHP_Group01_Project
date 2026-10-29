@@ -15,6 +15,9 @@ $stmt = $pdo->prepare(
 );
 $stmt->execute([$userId]);
 $account = $stmt->fetch();
+if ($account) {
+    $account = decryptRow($account, ['phone', 'physical_address']);
+}
 
 if (!$account) {
     echo '<section class="account-page"><p class="account-notice error">Account not found. Please login again.</p></section>';

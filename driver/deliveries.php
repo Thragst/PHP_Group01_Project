@@ -77,7 +77,7 @@ $query = "SELECT
 
 $stmt = $pdo->prepare($query);
 $stmt->execute([$driverId]);
-$deliveries = $stmt->fetchAll();
+$deliveries = decryptRows($stmt->fetchAll(), ['shipping_address', 'customer_phone']);
 ?>
 
 <!DOCTYPE html>
