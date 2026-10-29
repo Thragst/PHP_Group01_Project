@@ -78,8 +78,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                         <?php if($_GET['login'] === 'error'): ?>
                             <p class="login-message">Incorrect username or password.</p>
                     <?php elseif ($_GET['login'] === 'locked'): ?>
-                            <?php $maxAtt = (int)($activePolicy['max_failed_attempts'] ?? 3); ?>
-                            <p class="login-message">Account locked after <?php echo $maxAtt; ?> failed login attempt<?php echo $maxAtt === 1 ? '' : 's'; ?>.</p>
+                            <p class="login-message">Account locked due to multiple failed login attempts. Please contact support.</p>
                     <?php elseif ($_GET['login'] === 'timeout'): ?>
                             <p class="login-message">You have been logged out due to inactivity.</p>
                     <?php elseif ($_GET['login'] === 'activated'): ?>
@@ -121,17 +120,17 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
                 <input type="password" name="password" id="signupPassword" placeholder="Password" required >
                 <ul class="password-rules" id="passwordRules">
                     <li id="ruleLength"> At least <?php echo (int)($activePolicy['min_password_length'] ?? 12); ?> characters in length </li>
-                    <?php if (($activePolicy['require_uppercase'] ?? '1') === '1'): ?>
-                        <li id="ruleUpper"> At least one (1) CAPITAL letter </li>
+                    <?php if ((int)($activePolicy['require_uppercase'] ?? 1) > 0): ?>
+                        <li id="ruleUpper"> At least <?php echo (int)$activePolicy['require_uppercase']; ?> CAPITAL letter(s) </li>
                     <?php endif; ?>
-                    <?php if (($activePolicy['require_lowercase'] ?? '1') === '1'): ?>
-                        <li id="ruleLower"> At least one (1) small letter </li>
+                    <?php if ((int)($activePolicy['require_lowercase'] ?? 1) > 0): ?>
+                        <li id="ruleLower"> At least <?php echo (int)$activePolicy['require_lowercase']; ?> small letter(s) </li>
                     <?php endif; ?>
-                    <?php if (($activePolicy['require_number'] ?? '1') === '1'): ?>
-                        <li id="ruleNumber"> At least one (1) number </li>
+                    <?php if ((int)($activePolicy['require_number'] ?? 1) > 0): ?>
+                        <li id="ruleNumber"> At least <?php echo (int)$activePolicy['require_number']; ?> number(s) </li>
                     <?php endif; ?>
-                    <?php if (($activePolicy['require_special'] ?? '1') === '1'): ?>
-                        <li id="ruleSpecial"> At least one (1) special character </li>
+                    <?php if ((int)($activePolicy['require_special'] ?? 1) > 0): ?>
+                        <li id="ruleSpecial"> At least <?php echo (int)$activePolicy['require_special']; ?> special character(s) </li>
                     <?php endif; ?>
                 </ul>
                 <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required >
@@ -155,6 +154,15 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
     <?php endif; ?>
     
     <?php include 'includes/footer.php'; ?>
+<script>
+window.passwordPolicy = {
+    minLen: <?php echo (int)($activePolicy['min_password_length'] ?? 12); ?>,
+    reqUpper: <?php echo (int)($activePolicy['require_uppercase'] ?? 1); ?>,
+    reqLower: <?php echo (int)($activePolicy['require_lowercase'] ?? 1); ?>,
+    reqNum: <?php echo (int)($activePolicy['require_number'] ?? 1); ?>,
+    reqSpec: <?php echo (int)($activePolicy['require_special'] ?? 1); ?>
+};
+</script>
 <script src="assets/js/main.js"></script>
 <?php if (($_GET['account'] ?? '') === 'deleted'): ?>
 <script>document.addEventListener("DOMContentLoaded", function () { showToast("Your account has been deleted."); });</script>

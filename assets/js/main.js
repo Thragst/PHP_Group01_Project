@@ -267,35 +267,37 @@ document.addEventListener("DOMContentLoaded", function () {
         const confirm = document.getElementById("confirmPassword");
         const confirmMessage = document.getElementById("confirmMessage");
 
+        const policy = window.passwordPolicy || { minLen: 12, reqUpper: 1, reqLower: 1, reqNum: 1, reqSpec: 1 };
+
         const rules = [
             {
                 element: document.getElementById("ruleLength"),
                 test: function (value) {
-                    return value.length >= 12;
+                    return value.length >= policy.minLen;
                 }
             },
             {
                 element: document.getElementById("ruleUpper"),
                 test: function (value) {
-                    return /[A-Z]/.test(value);
+                    return (value.match(/[A-Z]/g) || []).length >= policy.reqUpper;
                 }
             },
             {
                 element: document.getElementById("ruleLower"),
                 test: function (value) {
-                    return /[a-z]/.test(value);
+                    return (value.match(/[a-z]/g) || []).length >= policy.reqLower;
                 }
             },
             {
                 element: document.getElementById("ruleNumber"),
                 test: function (value) {
-                    return /[0-9]/.test(value);
+                    return (value.match(/[0-9]/g) || []).length >= policy.reqNum;
                 }
             },
             {
                 element: document.getElementById("ruleSpecial"),
                 test: function (value) {
-                    return /[^A-Za-z0-9]/.test(value);
+                    return (value.match(/[^A-Za-z0-9]/g) || []).length >= policy.reqSpec;
                 }
             }
         ];

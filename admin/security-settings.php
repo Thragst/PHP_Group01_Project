@@ -17,10 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_security_setting
         'max_failed_attempts'     => max(1, (int)($_POST['max_failed_attempts'] ?? 3)),
         'min_password_length'     => max(8, (int)($_POST['min_password_length'] ?? 12)),
         'session_timeout_minutes' => max(1, (int)($_POST['session_timeout_min'] ?? 2)),
-        'require_uppercase'       => isset($_POST['require_uppercase']) ? '1' : '0',
-        'require_lowercase'       => isset($_POST['require_lowercase']) ? '1' : '0',
-        'require_number'          => isset($_POST['require_number']) ? '1' : '0',
-        'require_special'         => isset($_POST['require_special']) ? '1' : '0'
+        'require_uppercase'       => max(0, (int)($_POST['require_uppercase'] ?? 1)),
+        'require_lowercase'       => max(0, (int)($_POST['require_lowercase'] ?? 1)),
+        'require_number'          => max(0, (int)($_POST['require_number'] ?? 1)),
+        'require_special'         => max(0, (int)($_POST['require_special'] ?? 1))
     ];
 
     $upsertStmt = $pdo->prepare("
@@ -64,13 +64,13 @@ include __DIR__ . '/includes/admin_header.php';
 <div class="page-header">
     <div>
         <h2>Security & Policy Configuration</h2>
-        <p class="text-muted-sm">Customize dynamic authentication rules, lockout thresholds, and session timeouts.</p>
+        <p class="text-muted-sm">Customize dynamic authentication rules, lockout thresholds, and password character counts.</p>
     </div>
 </div>
 
 <?php if (!empty($flashSuccess)): ?>
     <div class="alert-banner alert-success">
-        ✓ <?php echo htmlspecialchars($flashSuccess); ?>
+        ✓ <?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8'); ?>
     </div>
 <?php endif; ?>
 
@@ -86,45 +86,45 @@ include __DIR__ . '/includes/admin_header.php';
             <div class="form-group mb-20">
                 <label>Max Failed Login Attempts</label>
                 <p class="form-field-note">Locks account after consecutive failures</p>
-                <input type="number" name="max_failed_attempts" value="<?php echo htmlspecialchars($settings['max_failed_attempts']); ?>" min="1" max="10" required>
+                <input type="number" name="max_failed_attempts" value="<?php echo htmlspecialchars($settings['max_failed_attempts'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="10" required>
             </div>
 
             <div class="form-group mb-20">
                 <label>Session Inactivity Timeout (Minutes)</label>
                 <p class="form-field-note">Auto-logout duration for idle administrative users</p>
-                <input type="number" name="session_timeout_min" value="<?php echo htmlspecialchars($settings['session_timeout_minutes']); ?>" min="1" max="60" required>
+                <input type="number" name="session_timeout_min" value="<?php echo htmlspecialchars($settings['session_timeout_minutes'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="60" required>
             </div>
         </div>
 
         <div class="admin-card">
             <div class="card-title-bar">
                 <div class="card-title-icon-dark">🔒</div>
-                <h3>Password Integrity Rules</h3>
+                <h3>Password Complexity Requirements</h3>
             </div>
 
             <div class="form-group mb-20">
-                <label>Minimum Password Length</label>
-                <input type="number" name="min_password_length" value="<?php echo htmlspecialchars($settings['min_password_length']); ?>" min="8" max="32" required>
+                <label>Minimum Total Password Length</label>
+                <input type="number" name="min_password_length" value="<?php echo htmlspecialchars($settings['min_password_length'], ENT_QUOTES, 'UTF-8'); ?>" min="8" max="32" required>
             </div>
 
-            <label class="label-bold">Required Characters</label>
-            <div class="checkbox-group-container">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="require_uppercase" value="1" <?php echo $settings['require_uppercase'] === '1' ? 'checked' : ''; ?>>
-                    <span>Uppercase Letter (A-Z)</span>
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" name="require_lowercase" value="1" <?php echo $settings['require_lowercase'] === '1' ? 'checked' : ''; ?>>
-                    <span>Lowercase Letter (a-z)</span>
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" name="require_number" value="1" <?php echo $settings['require_number'] === '1' ? 'checked' : ''; ?>>
-                    <span>Numeric Digit (0-9)</span>
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" name="require_special" value="1" <?php echo $settings['require_special'] === '1' ? 'checked' : ''; ?>>
-                    <span>Special Character (!@#$%)</span>
-                </label>
+            <div class="form-group mb-15">
+                <label>Required Uppercase Letters (A-Z)</label>
+                <input type="number" name="require_uppercase" value="<?php echo htmlspecialchars($settings['require_uppercase'], ENT_QUOTES, 'UTF-8'); ?>" min="0" max="10" required>
+            </div>
+
+            <div class="form-group mb-15">
+                <label>Required Lowercase Letters (a-z)</label>
+                <input type="number" name="require_lowercase" value="<?php echo htmlspecialchars($settings['require_lowercase'], ENT_QUOTES, 'UTF-8'); ?>" min="0" max="10" required>
+            </div>
+
+            <div class="form-group mb-15">
+                <label>Required Numbers (0-9)</label>
+                <input type="number" name="require_number" value="<?php echo htmlspecialchars($settings['require_number'], ENT_QUOTES, 'UTF-8'); ?>" min="0" max="10" required>
+            </div>
+
+            <div class="form-group mb-15">
+                <label>Required Special Characters (!@#$%^&*...)</label>
+                <input type="number" name="require_special" value="<?php echo htmlspecialchars($settings['require_special'], ENT_QUOTES, 'UTF-8'); ?>" min="0" max="10" required>
             </div>
         </div>
     </div>

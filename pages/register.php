@@ -60,25 +60,33 @@ try {
     $policy = $defaultSettings;
 }
 
-$minLength      = (int)$policy['min_password_length'];
-$requireUpper   = $policy['require_uppercase'] === '1';
-$requireLower   = $policy['require_lowercase'] === '1';
-$requireNumber  = $policy['require_number'] === '1';
-$requireSpecial = $policy['require_special'] === '1';
+$minLength    = (int)$policy['min_password_length'];
+$reqUppercase = (int)$policy['require_uppercase'];
+$reqLowercase = (int)$policy['require_lowercase'];
+$reqNumber    = (int)$policy['require_number'];
+$reqSpecial   = (int)$policy['require_special'];
 
 if (strlen($password) < $minLength || strlen($password) > 64) {
     redirectSignup('password');
 }
-if ($requireUpper && !preg_match('/[A-Z]/', $password)) {
+
+preg_match_all('/[A-Z]/', $password, $upperMatches);
+if (count($upperMatches[0]) < $reqUppercase) {
     redirectSignup('password');
 }
-if ($requireLower && !preg_match('/[a-z]/', $password)) {
+
+preg_match_all('/[a-z]/', $password, $lowerMatches);
+if (count($lowerMatches[0]) < $reqLowercase) {
     redirectSignup('password');
 }
-if ($requireNumber && !preg_match('/[0-9]/', $password)) {
+
+preg_match_all('/[0-9]/', $password, $numMatches);
+if (count($numMatches[0]) < $reqNumber) {
     redirectSignup('password');
 }
-if ($requireSpecial && !preg_match('/[^A-Za-z0-9]/', $password)) {
+
+preg_match_all('/[^A-Za-z0-9]/', $password, $specialMatches);
+if (count($specialMatches[0]) < $reqSpecial) {
     redirectSignup('password');
 }
 
