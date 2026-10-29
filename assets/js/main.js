@@ -482,12 +482,21 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    const readInt = function (key, fallback) {
+        const n = parseInt(rulesList.dataset[key], 10);
+        return isNaN(n) ? fallback : n;
+    };
+    const countMatches = function (value, regex) {
+        const m = value.match(regex);
+        return m ? m.length : 0;
+    };
+
     const tests = {
-        length: function (value) { return value.length >= 12 && value.length <= 64; },
-        upper: function (value) { return /[A-Z]/.test(value); },
-        lower: function (value) { return /[a-z]/.test(value); },
-        number: function (value) { return /[0-9]/.test(value); },
-        special: function (value) { return /[^A-Za-z0-9]/.test(value); }
+        length: function (value) { return value.length >= readInt("minLength", 12) && value.length <= 64; },
+        upper: function (value) { return countMatches(value, /[A-Z]/g) >= readInt("minUpper", 1); },
+        lower: function (value) { return countMatches(value, /[a-z]/g) >= readInt("minLower", 1); },
+        number: function (value) { return countMatches(value, /[0-9]/g) >= readInt("minNumber", 1); },
+        special: function (value) { return countMatches(value, /[^A-Za-z0-9]/g) >= readInt("minSpecial", 1); }
     };
 
     const updateRules = function () {

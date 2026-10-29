@@ -148,7 +148,7 @@ if ($action === 'change_password') {
         redirect($backUrl);
     }
 
-    if (!meetsPasswordPolicy($newPassword)) {
+    if (!meetsPasswordPolicy($newPassword, $pdo)) {
         setFlash('error', 'New password does not meet the requirements.');
         redirect($backUrl);
     }

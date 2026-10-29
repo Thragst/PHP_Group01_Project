@@ -377,12 +377,40 @@ function isValidPhMobile($mobile)
     return preg_match('/^(09|\+639)\d{9}$/', $mobile) === 1;
 }
 
-function meetsPasswordPolicy($password)
+function meetsPasswordPolicy($password, ?PDO $pdo = null)
 {
+    $rules = [
+        'min_password_length' => 12,
+        'require_uppercase'   => 1,
+        'require_lowercase'   => 1,
+        'require_number'      => 1,
+        'require_special'     => 1,
+    ];
+
+    if ($pdo === null && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
+        $pdo = $GLOBALS['pdo'];
+    }
+
+    if ($pdo !== null) {
+        try {
+            $rows = $pdo->query("SELECT setting_key, setting_value FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+            foreach ($rules as $key => $default) {
+                if (isset($rows[$key]) && is_numeric($rows[$key])) {
+                    $rules[$key] = (int) $rows[$key];
+                }
+            }
+        } catch (PDOException $e) {
+        }
+    }
+
     $length = strlen($password);
-    return $length >= 12
+
+    return $length >= $rules['min_password_length']
         && $length <= 64
-        && isStrongPassword($password);
+        && preg_match_all('/[A-Z]/', $password) >= $rules['require_uppercase']
+        && preg_match_all('/[a-z]/', $password) >= $rules['require_lowercase']
+        && preg_match_all('/[0-9]/', $password) >= $rules['require_number']
+        && preg_match_all('/[^A-Za-z0-9]/', $password) >= $rules['require_special'];
 }
 
 function getAccountStats(PDO $pdo, $userId)
