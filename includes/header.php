@@ -10,7 +10,7 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
 
 <nav class="navbar">
     <a href="<?php echo $basePath; ?>index.php" class="logo">
-        <span>S</span> SportMart
+        <img src="<?php echo $basePath; ?>assets/images/sportmart.png" alt="SportMart" class="logo-img"> SportMart
     </a>
 
     <div class="nav-links">

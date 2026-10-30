@@ -1,27 +1,56 @@
 <?php
 $stmt = $pdo->query(" SELECT p.product_id, p.name, p.brand, p.price, p.image_path, c.name AS category, COALESCE(AVG(r.rating), 0) AS average_rating, COUNT(r.review_id) AS review_count FROM products p JOIN categories c ON c.category_id = p.category_id LEFT JOIN product_reviews r ON r.product_id = p.product_id WHERE p.status = 'Active' AND c.status = 'Active' GROUP BY p.product_id, p.name, p.brand, p.price, p.image_path, c.name ORDER BY average_rating DESC, p.product_id DESC LIMIT 4 ");
 $popularProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$featuredStmt = $pdo->query(" SELECT p.product_id, p.name, p.brand, p.price, p.image_path FROM products p JOIN categories c ON c.category_id = p.category_id LEFT JOIN product_reviews r ON r.product_id = p.product_id WHERE p.status = 'Active' AND c.status = 'Active' AND p.image_path IS NOT NULL AND p.image_path <> '' GROUP BY p.product_id, p.name, p.brand, p.price, p.image_path ORDER BY COALESCE(AVG(r.rating), 0) DESC, p.product_id DESC LIMIT 5 ");
+$featuredProducts = $featuredStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <section class="hero">
     <div class="hero-text">
-        <p class="small-title">SPORTS EQUIPMENT & GEAR</p>
-        <h1> Gear up.<br> <span>Game on.</span>
-        </h1>
-        <p class="hero-description">
-            Find the sports equipment you need
-            for training, exercise, and your
-            favorite sports.
-        </p>
-        <div class="hero-buttons">
-            <a href="index.php?page=products" class="main-button"> Shop Now </a>
+        <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="auto">
+            <source src="assets/videos/sportmart.mp4" type="video/mp4">
+        </video>
+        <script src="assets/js/hero-video.js" defer></script>
+        <div class="hero-overlay"></div>
+        <div class="hero-text-content">
+            <p class="small-title">SPORTS EQUIPMENT & GEAR</p>
+            <h1> Gear up.<br> <span>Game on.</span>
+            </h1>
+            <p class="hero-description">
+                Find the sports equipment you need
+                for training, exercise, and your
+                favorite sports.
+            </p>
+            <div class="hero-buttons">
+                <a href="index.php?page=products" class="main-button"> Shop Now </a>
+            </div>
         </div>
     </div>
     <div class="hero-picture">
+        <?php if (!empty($featuredProducts)): ?>
+        <div class="hero-slider" id="heroSlider">
+            <div class="hero-track" id="heroTrack">
+                <?php foreach ($featuredProducts as $fp): ?>
+                <a class="hero-slide" href="index.php?page=productDetails&product_id=<?php echo (int)$fp['product_id']; ?>" draggable="false">
+                    <span class="hero-slide-frame">
+                        <img src="<?php echo htmlspecialchars(productImageSrc($fp['image_path'])); ?>" alt="<?php echo htmlspecialchars($fp['name']); ?>" draggable="false">
+                        <span class="hero-slide-info">
+                            <span class="hero-slide-name"><?php echo htmlspecialchars($fp['name']); ?></span>
+                            <span class="hero-slide-price">₱<?php echo number_format($fp['price'], 2); ?></span>
+                        </span>
+                    </span>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <div class="hero-dots" id="heroDots"></div>
+        </div>
+        <script src="assets/js/hero-slider.js" defer></script>
+        <?php else: ?>
         <div class="circle">
             SPORT<br>
             <b>MART</b>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 <section class="benefits">
