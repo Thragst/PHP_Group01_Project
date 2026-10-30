@@ -840,6 +840,7 @@ select {
 
 .footer-column h3 {
     margin-bottom: 5px;
+    font-size: 26px;
 }
 
 .footer-column a {
@@ -2777,4 +2778,102 @@ select {
     .search-suggestions {
         min-width: 0;
     }
+}
+
+/* ---------- Footer: contact details & social links ---------- */
+.footer-social {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.footer-column .footer-social a {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #351818;
+    color: #f3c9c9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.footer-column .footer-social a:hover {
+    background: #8b2e2e;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* ---------- Contact Us popup ---------- */
+.contact-modal-box {
+    width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: left;
+    padding: 38px 36px 32px;
+}
+
+.contact-modal-box h2 {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.contact-modal-box .contact-modal-sub {
+    margin-bottom: 22px;
+    font-size: 14px;
+}
+
+.contact-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.contact-modal-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.contact-modal-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #f6eeec;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: #8b2e2e;
+}
+
+.contact-modal-item > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.contact-modal-item strong {
+    color: #351818;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.contact-modal-item address {
+    font-style: normal;
+}
+
+.contact-modal-item a {
+    color: #8b2e2e;
+    font-weight: bold;
+}
+
+.contact-modal-item a:hover {
+    text-decoration: underline;
 }
