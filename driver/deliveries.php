@@ -9,6 +9,7 @@ requireRole(['Driver']);
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
+enforceIdleTimeout($pdo);
 
 if (empty($_SESSION['logged_in']) || ($_SESSION['user_role'] ?? '') !== 'Driver') {
     header('Location: ../pages/login.php');

@@ -10,6 +10,7 @@ requireRole(['Driver']);
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
+enforceIdleTimeout($pdo);
 
 $driverId = (int) ($_SESSION['user_id'] ?? 0);
 $userRole = $_SESSION['user_role'] ?? '';

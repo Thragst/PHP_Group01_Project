@@ -6,6 +6,7 @@ keepStaffOut();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
+enforceIdleTimeout($pdo);
 date_default_timezone_set('Asia/Manila');
 
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;

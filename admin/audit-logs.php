@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/auth_guard.php';
-requireRole(['Admin', 'Staff', 'Developer']);
+requireRole(['Admin', 'Developer']);
 
 require_once __DIR__ . '/../includes/db.php';
 

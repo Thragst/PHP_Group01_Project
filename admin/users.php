@@ -5,14 +5,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/auth_guard.php';
-requireRole(['Admin', 'Staff', 'Developer']);
+requireRole(['Admin', 'Developer']);
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
 require_once __DIR__ . '/../includes/mailer.php';
 
-if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
+if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Developer'], true)) {
     header('Location: ../pages/login.php');
     exit();
 }

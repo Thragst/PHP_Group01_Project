@@ -5,12 +5,12 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/auth_guard.php';
-requireRole(['Admin', 'Staff', 'Developer']);
+requireRole(['Admin', 'Developer']);
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
 
-if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer'], true)) {
+if (empty($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Developer'], true)) {
     header('Location: ../pages/login.php');
     exit();
 }
@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_security_setting
         'max_failed_attempts'     => max(1, (int)($_POST['max_failed_attempts'] ?? 3)),
         'min_password_length'     => max(8, (int)($_POST['min_password_length'] ?? 12)),
         'session_timeout_minutes' => max(1, (int)($_POST['session_timeout_min'] ?? 2)),
+        'customer_timeout_minutes' => min(1440, max(1, (int)($_POST['customer_timeout_min'] ?? 30))),
+        'driver_timeout_minutes'  => min(1440, max(1, (int)($_POST['driver_timeout_min'] ?? 60))),
         'require_uppercase'       => max(0, (int)($_POST['require_uppercase'] ?? 1)),
         'require_lowercase'       => max(0, (int)($_POST['require_lowercase'] ?? 1)),
         'require_number'          => max(0, (int)($_POST['require_number'] ?? 1)),
@@ -55,6 +57,8 @@ $defaultSettings = [
     'max_failed_attempts'     => '3',
     'min_password_length'     => '12',
     'session_timeout_minutes' => '2',
+    'customer_timeout_minutes' => '30',
+    'driver_timeout_minutes'  => '60',
     'require_uppercase'       => '1',
     'require_lowercase'       => '1',
     'require_number'          => '1',
@@ -100,6 +104,18 @@ include __DIR__ . '/includes/admin_header.php';
                 <label>Session Inactivity Timeout (Minutes)</label>
                 <p class="form-field-note">Auto-logout duration for idle administrative users</p>
                 <input type="number" name="session_timeout_min" value="<?php echo htmlspecialchars($settings['session_timeout_minutes'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="60" required>
+            </div>
+
+            <div class="form-group mb-20">
+                <label>Customer Inactivity Timeout (Minutes)</label>
+                <p class="form-field-note">Auto-logout duration for idle customers (default 30)</p>
+                <input type="number" name="customer_timeout_min" value="<?php echo htmlspecialchars($settings['customer_timeout_minutes'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="1440" required>
+            </div>
+
+            <div class="form-group mb-20">
+                <label>Driver Inactivity Timeout (Minutes)</label>
+                <p class="form-field-note">Auto-logout duration for idle drivers (default 60)</p>
+                <input type="number" name="driver_timeout_min" value="<?php echo htmlspecialchars($settings['driver_timeout_minutes'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="1440" required>
             </div>
         </div>
 

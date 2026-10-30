@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/auth_guard.php';
 keepStaffOut();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+enforceIdleTimeout($pdo);
 
 $cartIsLoggedIn = isLoggedIn();
 $cartUserId = $cartIsLoggedIn ? (int) $_SESSION['user_id'] : 0;

@@ -5,6 +5,7 @@ require_once 'includes/db.php';
 require_once 'includes/functions.php';
 require_once 'includes/recaptcha.php';
 require_once __DIR__ . '/includes/auth_guard.php';
+enforceIdleTimeout($pdo);
 
 noCacheHeaders();
 if (!empty($_SESSION['logged_in']) && in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer', 'Driver'], true)) {

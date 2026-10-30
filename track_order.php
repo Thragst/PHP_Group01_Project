@@ -4,6 +4,7 @@ session_start();
 require_once __DIR__ . '/includes/auth_guard.php';
 keepStaffOut();
 require_once __DIR__ . '/includes/db.php';
+enforceIdleTimeout($pdo);
 
 if (empty($_SESSION['logged_in']) || empty($_SESSION['user_id'])) {
     header('Location: index.php?login=required');

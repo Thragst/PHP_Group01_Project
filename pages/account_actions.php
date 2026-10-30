@@ -6,6 +6,7 @@ keepStaffOut();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/audit_helper.php';
+enforceIdleTimeout($pdo);
 
 if (!isLoggedIn()) {
     redirect('../index.php?login=required');
