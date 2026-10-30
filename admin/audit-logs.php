@@ -70,9 +70,9 @@ $sessionQuery = "SELECT
             al.action_description, 
             al.ip_address, 
             al.created_at,
-            COALESCE(u.full_name, 'System / Guest') AS user_name,
+            u.full_name AS user_name,
             u.email,
-            COALESCE(u.role, 'System') AS user_role
+            u.role AS user_role
           FROM audit_logs al
           LEFT JOIN users u ON al.user_id = u.user_id
           {$sessionWhereSql}
@@ -114,9 +114,9 @@ $crudQuery = "SELECT
             al.action_description, 
             al.ip_address, 
             al.created_at,
-            COALESCE(u.full_name, 'System / Guest') AS user_name,
+            u.full_name AS user_name,
             u.email,
-            COALESCE(u.role, 'System') AS user_role
+            u.role AS user_role
           FROM audit_logs al
           LEFT JOIN users u ON al.user_id = u.user_id
           {$crudWhereSql}
@@ -195,7 +195,7 @@ include __DIR__ . '/includes/admin_header.php';
                     <?php 
                         $formattedDate = date('M j, Y - g:i:s A', strtotime($log['created_at']));
                         $roleClass = htmlspecialchars(strtolower((string) $log['user_role']), ENT_QUOTES, 'UTF-8');
-                        $displayUser = htmlspecialchars((string) $log['user_name'], ENT_QUOTES, 'UTF-8');
+                        $displayUser = $log['user_name'] !== null ? htmlspecialchars((string) $log['user_name'], ENT_QUOTES, 'UTF-8') : '&mdash;';
                         if (!empty($log['email'])) {
                             $displayUser .= ' <span class="text-muted-sm">(' . htmlspecialchars((string) $log['email'], ENT_QUOTES, 'UTF-8') . ')</span>';
                         }
@@ -205,9 +205,13 @@ include __DIR__ . '/includes/admin_header.php';
                         <td><?php echo $formattedDate; ?></td>
                         <td><?php echo $displayUser; ?></td>
                         <td>
-                            <span class="badge badge-<?php echo $roleClass; ?>">
-                                <?php echo htmlspecialchars($log['user_role'], ENT_QUOTES, 'UTF-8'); ?>
-                            </span>
+                            <?php if (!empty($log['user_role'])): ?>
+                                <span class="badge badge-<?php echo $roleClass; ?>">
+                                    <?php echo htmlspecialchars($log['user_role'], ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                            <?php else: ?>
+                                &mdash;
+                            <?php endif; ?>
                         </td>
                         <td><?php echo htmlspecialchars($log['action_description'], ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><code style="font-family: monospace; color: #555;"><?php echo htmlspecialchars($log['ip_address'], ENT_QUOTES, 'UTF-8'); ?></code></td>
@@ -244,7 +248,7 @@ include __DIR__ . '/includes/admin_header.php';
                     <?php 
                         $formattedDate = date('M j, Y - g:i:s A', strtotime($log['created_at']));
                         $roleClass = htmlspecialchars(strtolower((string) $log['user_role']), ENT_QUOTES, 'UTF-8');
-                        $displayUser = htmlspecialchars((string) $log['user_name'], ENT_QUOTES, 'UTF-8');
+                        $displayUser = $log['user_name'] !== null ? htmlspecialchars((string) $log['user_name'], ENT_QUOTES, 'UTF-8') : '&mdash;';
                         if (!empty($log['email'])) {
                             $displayUser .= ' <span class="text-muted-sm">(' . htmlspecialchars((string) $log['email'], ENT_QUOTES, 'UTF-8') . ')</span>';
                         }
@@ -254,9 +258,13 @@ include __DIR__ . '/includes/admin_header.php';
                         <td><?php echo $formattedDate; ?></td>
                         <td><?php echo $displayUser; ?></td>
                         <td>
-                            <span class="badge badge-<?php echo $roleClass; ?>">
-                                <?php echo htmlspecialchars($log['user_role'], ENT_QUOTES, 'UTF-8'); ?>
-                            </span>
+                            <?php if (!empty($log['user_role'])): ?>
+                                <span class="badge badge-<?php echo $roleClass; ?>">
+                                    <?php echo htmlspecialchars($log['user_role'], ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                            <?php else: ?>
+                                &mdash;
+                            <?php endif; ?>
                         </td>
                         <td><?php echo htmlspecialchars($log['action_description'], ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><code style="font-family: monospace; color: #555;"><?php echo htmlspecialchars($log['ip_address'], ENT_QUOTES, 'UTF-8'); ?></code></td>

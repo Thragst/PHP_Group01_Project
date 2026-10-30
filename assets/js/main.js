@@ -453,7 +453,6 @@ function openPopup(id) {
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
         closeProfileMenu();
-        closePopup("deleteAccountPopup");
     }
 });
 

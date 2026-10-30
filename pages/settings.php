@@ -132,42 +132,5 @@ $csrfTokenHtml = csrfField();
                 <a href="mfa/setup.php" class="account-button mfa-button">Enable MFA</a>
             <?php endif; ?>
         </div>
-
-        <div class="account-card danger-card">
-            <h2>Delete Account</h2>
-            <?php if ($userRole === 'Customer'): ?>
-                <p class="danger-text">
-                    This will permanently remove your account and saved cart.
-                    This action cannot be undone.
-                </p>
-                <button type="button" class="account-button danger" onclick="openPopup('deleteAccountPopup')">Delete My Account</button>
-            <?php else: ?>
-                <p class="danger-text">Only customer accounts can be deleted from this page.</p>
-            <?php endif; ?>
-        </div>
     </div>
 </section>
-
-<?php if ($userRole === 'Customer'): ?>
-    <div class="popup" id="deleteAccountPopup">
-        <div class="popup-box delete-box">
-            <button type="button" class="close" onclick="closePopup('deleteAccountPopup')">&times;</button>
-            <h2>Delete account?</h2>
-            <p>Enter your password to confirm. This cannot be undone.</p>
-
-            <form action="pages/account_actions.php" method="POST" class="account-form" novalidate>
-                <?php echo $csrfTokenHtml; ?>
-                <input type="hidden" name="action" value="delete_account">
-
-                <div class="form-row">
-                    <input type="password" id="deletePassword" name="password" placeholder="Your password" autocomplete="current-password" required>
-                </div>
-
-                <div class="delete-actions">
-                    <button type="button" class="account-button secondary" onclick="closePopup('deleteAccountPopup')">Cancel</button>
-                    <button type="submit" class="account-button danger">Delete Account</button>
-                </div>
-            </form>
-        </div>
-    </div>
-<?php endif; ?>

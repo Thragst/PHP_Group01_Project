@@ -183,10 +183,6 @@
     margin-bottom: 0;
 }
 
-.settings-grid .danger-card {
-    grid-column: 1 / -1;
-}
-
 
 
 .account-button:hover {
@@ -200,14 +196,6 @@
 
 .account-button.secondary:hover {
     background: #ddd;
-}
-
-.account-button.danger {
-    background: #c62828;
-}
-
-.account-button.danger:hover {
-    background: #a71e1e;
 }
 
 .form-row .password-field {
@@ -284,35 +272,6 @@
     text-decoration: none;
 }
 
-.danger-card {
-    border: 1px solid #f3cccc;
-}
-
-.danger-card h2 {
-    color: #c62828;
-}
-
-.danger-text {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 18px;
-}
-
-.delete-box {
-    text-align: left;
-}
-
-.delete-box h2,
-.delete-box > p {
-    text-align: center;
-}
-
-.delete-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-}
-
 @media (max-width: 700px) {
     .stat-boxes {
         grid-template-columns: 1fr;
@@ -330,9 +289,5 @@
 
     .settings-grid {
         grid-template-columns: 1fr;
-    }
-
-    .settings-grid .danger-card {
-        grid-column: auto;
     }
 }

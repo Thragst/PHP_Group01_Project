@@ -181,9 +181,6 @@ window.passwordPolicy = {
 };
 </script>
 <script src="assets/js/main.js"></script>
-<?php if (($_GET['account'] ?? '') === 'deleted'): ?>
-<script>document.addEventListener("DOMContentLoaded", function () { showToast("Your account has been deleted."); });</script>
-<?php endif; ?>
 <?php if (RECAPTCHA_ENABLED): ?>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <?php endif; ?>

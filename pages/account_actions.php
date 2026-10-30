@@ -181,46 +181,4 @@ if ($action === 'change_password') {
     redirect($backUrl);
 }
 
-if ($action === 'delete_account') {
-    if (($_SESSION['user_role'] ?? '') !== 'Customer') {
-        setFlash('error', 'Only customer accounts can be deleted here.');
-        redirect($backUrl);
-    }
-
-    $password = $_POST['password'] ?? '';
-
-    if ($password === '') {
-        setFlash('error', 'Please enter your password to delete your account.');
-        redirect($backUrl);
-    }
-
-    $stmt = $pdo->prepare("SELECT password_hash, role FROM users WHERE user_id = ? LIMIT 1");
-    $stmt->execute([$userId]);
-    $row = $stmt->fetch();
-
-    if (!$row || $row['role'] !== 'Customer' || !password_verify($password, $row['password_hash'])) {
-        setFlash('error', 'Incorrect password. Your account was not deleted.');
-        redirect($backUrl);
-    }
-
-    try {
-        $pdo->beginTransaction();
-
-        $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$userId]);
-        $pdo->prepare("DELETE FROM user_profiles WHERE user_id = ?")->execute([$userId]);
-        $pdo->prepare("DELETE FROM users WHERE user_id = ? AND role = 'Customer'")->execute([$userId]);
-        logAudit($pdo, $userId, "Customer self-deleted their account");
-        $pdo->commit();
-    } catch (PDOException $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        setFlash('error', 'Unable to delete your account. Please try again.');
-        redirect($backUrl);
-    }
-
-    logoutUser();
-    redirect('../index.php?account=deleted');
-}
-
 redirect('../index.php?page=profile');

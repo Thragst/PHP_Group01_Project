@@ -678,22 +678,6 @@ INSERT INTO `users` (`user_id`, `username`, `full_name`, `email`, `password_hash
 (10, 'geraldvalente', 'gerald', 'geraldvalente1@gmail.com', '$2y$10$KvUuaNBm0d4VVOxqtQwcf.CE7zWWKrnvLGoG70JjRqLI3OJ03SuIe', 'Customer', NULL, NULL, 'Active', 0, '2026-10-22 06:54:18', NULL, 'Active', 0),
 (11, 'samillano', 'Johnrey Samillano', 'samillano@gmail.com', '$2y$10$buJojuPyQ/V2a69w/j.T8uPR6W1MYvlY2cwiOpwtWzRpf.8/KKOUK', 'Staff', NULL, NULL, 'Active', 0, '2026-10-23 13:28:22', NULL, 'Active', 0);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `user_profiles`
---
-
-DROP TABLE IF EXISTS `user_profiles`;
-CREATE TABLE `user_profiles` (
-  `profile_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `phone_number` varchar(20) DEFAULT NULL,
-  `address` text DEFAULT NULL,
-  `city` varchar(100) DEFAULT NULL,
-  `postal_code` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 --
 -- Indexes for dumped tables
 --
@@ -792,13 +776,6 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Indexes for table `user_profiles`
---
-ALTER TABLE `user_profiles`
-  ADD PRIMARY KEY (`profile_id`),
-  ADD KEY `idx_user_id` (`user_id`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -879,12 +856,6 @@ ALTER TABLE `system_settings`
 --
 ALTER TABLE `users`
   MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT for table `user_profiles`
---
-ALTER TABLE `user_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
