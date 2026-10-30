@@ -54,6 +54,12 @@ $userRole = $_SESSION['user_role'] ?? 'Developer';
         <li class="sidebar-divider"></li>
 
         <li>
+            <a href="settings.php" class="<?php echo ($currentPage == 'settings.php') ? 'active' : ''; ?>">
+                Account Settings
+            </a>
+        </li>
+
+        <li>
             <a href="../pages/logout.php">
                 Logout
             </a>

@@ -218,3 +218,58 @@ body {
     cursor: pointer;
     font-weight: 600;
 }
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-btn {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.settings-btn:hover {
+    text-decoration: underline;
+}
+
+.driver-alert {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.form-group-mobile {
+    margin-top: 10px;
+}
+
+.form-group-mobile label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.password-rules {
+    list-style: none;
+    padding-left: 0;
+    margin: 8px 0;
+    font-size: 0.8rem;
+    color: #666;
+}

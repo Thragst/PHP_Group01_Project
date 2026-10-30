@@ -97,7 +97,10 @@ $deliveries = decryptRows($stmt->fetchAll(), ['shipping_address', 'customer_phon
             <h2>📦 Driver Portal</h2>
             <span class="driver-name">Driver: <?php echo htmlspecialchars($_SESSION['username'] ?? 'Rider'); ?></span>
         </div>
-        <a href="../pages/logout.php" class="logout-btn">Logout</a>
+        <div class="header-actions">
+            <a href="driver_settings.php" class="settings-btn">Settings</a>
+            <a href="../pages/logout.php" class="logout-btn">Logout</a>
+        </div>
     </div>
 
     <h3 class="section-title">Assigned Deliveries</h3>
@@ -129,7 +132,8 @@ $deliveries = decryptRows($stmt->fetchAll(), ['shipping_address', 'customer_phon
                     <?php if (!empty($logs)): ?>
                         <ul>
                             <?php foreach ($logs as $log): ?>
-                                <li><strong><?php echo htmlspecialchars($log['location_city']); ?></strong> - <?php echo htmlspecialchars($log['status_note']); ?> (<?php echo date('M j, g:i a', strtotime($log['created_at'])); ?>)</li>
+                                <li><strong><?php echo htmlspecialchars($log['location_city']); ?></strong>
+                                <?php echo htmlspecialchars($log['status_note']); ?> (<?php echo date('M j, g:i a', strtotime($log['created_at'])); ?>)</li>
                             <?php endforeach; ?>
                         </ul>
                     <?php else: ?>
@@ -164,7 +168,7 @@ $deliveries = decryptRows($stmt->fetchAll(), ['shipping_address', 'customer_phon
         <h3>Confirm Delivery</h3>
         <p id="confirmModalText">Are you sure you want to mark this order as delivered?</p>
         <form action="deliveries.php" method="POST">
-                    <?php echo securityField(); ?>
+            <?php echo securityField(); ?>
             <input type="hidden" name="action" value="mark_delivered">
             <input type="hidden" name="order_id" id="confirmModalOrderId" value="">
             <div class="custom-modal-actions">
