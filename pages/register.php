@@ -3,6 +3,7 @@ require_once __DIR__ . '/../includes/ssl.php';
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/audit_helper.php';
 require_once __DIR__ . '/../includes/security.php';
 
 function redirectSignup($status) {
@@ -119,22 +120,19 @@ if ($stmt->fetch()) {
     redirectSignup('email_taken');
 }
 
-$stmt = $pdo->query("SELECT COUNT(*) AS total FROM users");
-$row = $stmt->fetch();
-$nextNumber = ((int)$row['total']) + 1;
-$userId = 'SM-CUST-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-
 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
 try {
     $insertStmt = $pdo->prepare("
         INSERT INTO users (
-            user_id, username, full_name, email, password_hash, role, status, account_status, failed_attempts, login_attempts, created_at
+            username, full_name, email, password_hash, role, status, account_status, failed_attempts, login_attempts, created_at
         ) VALUES (
-            ?, ?, ?, ?, ?, 'Customer', 'Pending', 'Inactive', 0, 0, NOW()
+            ?, ?, ?, ?, 'Customer', 'Pending', 'Inactive', 0, 0, NOW()
         )
     ");
-    $insertStmt->execute([$userId, $username, $fullname, $email, $passwordHash]);
+    $insertStmt->execute([$username, $fullname, $email, $passwordHash]);
+    $newUserId = (int) $pdo->lastInsertId();
+    logAudit($pdo, $newUserId, 'Customer registered a new account (' . $username . ')');
 
     $token = createActivationToken($pdo, $email);
     [$sent, $link] = sendActivationEmail($email, $fullname, $token);
