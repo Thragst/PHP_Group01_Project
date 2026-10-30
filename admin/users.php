@@ -126,16 +126,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'unlock_staff') {
         $userId = (int)($_POST['user_id'] ?? 0);
         if ($userId > 0) {
-            $stmt = $pdo->prepare("UPDATE users SET status = 'Active', failed_attempts = 0 WHERE user_id = ? AND role IN ('Admin', 'Staff', 'Driver')");
+            $stmt = $pdo->prepare("UPDATE users SET status = 'Active', account_status = 'Active', failed_attempts = 0, login_attempts = 0 WHERE user_id = ? AND role IN ('Admin', 'Staff', 'Driver')");
             $stmt->execute([$userId]);
+            try {
+                $pdo->prepare("UPDATE account_locks SET status = 'Unlocked', unlocked_at = NOW() WHERE status = 'Locked' AND username = (SELECT username FROM users WHERE user_id = ?)")->execute([$userId]);
+            } catch (PDOException $ex) {}
             logAudit($pdo, $_SESSION['user_id'], "Admin unlocked staff/admin account for User ID #" . $userId);
             $_SESSION['flash_success'] = "Account unlocked successfully.";
         }
     } elseif ($action === 'unlock_customer') {
         $userId = (int)($_POST['user_id'] ?? 0);
         if ($userId > 0) {
-            $stmt = $pdo->prepare("UPDATE users SET status = 'Active', failed_attempts = 0 WHERE user_id = ? AND role = 'Customer'");
+            $stmt = $pdo->prepare("UPDATE users SET status = 'Active', account_status = 'Active', failed_attempts = 0, login_attempts = 0 WHERE user_id = ? AND role = 'Customer'");
             $stmt->execute([$userId]);
+            try {
+                $pdo->prepare("UPDATE account_locks SET status = 'Unlocked', unlocked_at = NOW() WHERE status = 'Locked' AND username = (SELECT username FROM users WHERE user_id = ?)")->execute([$userId]);
+            } catch (PDOException $ex) {}
             logAudit($pdo, $_SESSION['user_id'], "Admin unlocked customer account for User ID #" . $userId);
             $_SESSION['flash_success'] = "Customer account unlocked successfully.";
         }
