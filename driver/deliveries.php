@@ -92,6 +92,7 @@ $deliveries = decryptRows($stmt->fetchAll(), ['shipping_address', 'customer_phon
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Driver Delivery Dashboard - SportMart</title>
     <link rel="stylesheet" href="../assets/css/driver.css">
+    <script src="../assets/js/logout-confirm.js" defer></script>
 </head>
 <body>
 

@@ -70,3 +70,4 @@ $avatarLetter = strtoupper(mb_substr(trim($userName), 0, 1)) ?: 'U';
     </div>
 </nav>
 <script src="<?php echo $basePath; ?>assets/js/search.js" defer></script>
+<script src="<?php echo $basePath; ?>assets/js/logout-confirm.js" defer></script>
