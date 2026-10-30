@@ -103,12 +103,6 @@ $orders = $isLoggedIn ? getMyOrdersDetailed($pdo, $_SESSION['user_id']) : [];
             <option value="Cancelled"> Cancelled </option>
         </select>
     </div>
-    <?php if (isset($_GET['placed']) && $isLoggedIn && !empty($orders)): ?>
-        <div class="order-notice">
-            ✓ Your order <strong><?php echo htmlspecialchars($orders[0]['number']); ?></strong> has been placed!
-            You can track its status below.
-        </div>
-    <?php endif; ?>
     <?php if (!$isLoggedIn): ?>
         <div class="orders-empty">
             <div class="orders-empty-icon"> S </div>

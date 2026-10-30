@@ -169,9 +169,9 @@ $total = $subtotal + $shipping;
                         ?>
                     </strong>
                 </div>
-                <?php if ($subtotal > 0 && $subtotal < 1000): ?>
+                <?php if ($subtotal > 0 && $subtotal < $freeShippingMin): ?>
                     <div class="shipping-note">
-                        Add ₱<?php echo number_format(1000 - $subtotal, 2); ?>
+                        Add ₱<?php echo number_format($freeShippingMin - $subtotal, 2); ?>
                         more to get free shipping.
                     </div>
                 <?php endif; ?>

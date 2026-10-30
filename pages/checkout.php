@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $pdo->commit();
 
-                header('Location: ../index.php?page=orders&placed=1');
+                header('Location: order_placed.php?order_id=' . (int) $orderId);
                 exit;
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) {
@@ -310,6 +310,20 @@ $total = $subtotal + $shipping;
                     <span>Shipping Fee</span>
                     <strong><?php echo $shipping == 0 ? 'FREE' : '₱' . number_format($shipping, 2); ?></strong>
                 </div>
+
+                <?php if ($subtotal > 0): ?>
+                    <?php $freeShippingMin = 3000; $shippingPercent = min(100, ($subtotal / $freeShippingMin) * 100); ?>
+                    <div class="shipping-note">
+                        <div class="shipping-progress">
+                            <span style="display:block;height:100%;width:<?php echo number_format($shippingPercent, 2, '.', ''); ?>%;background:#8b2e2e;"></span>
+                        </div>
+                        <?php if ($subtotal >= $freeShippingMin): ?>
+                            You got free shipping!
+                        <?php else: ?>
+                            Add ₱<?php echo number_format($freeShippingMin - $subtotal, 2); ?> more to get free shipping (₱<?php echo number_format($freeShippingMin, 0); ?> minimum).
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
                 <hr class="summary-divider">
 
