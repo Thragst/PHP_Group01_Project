@@ -1,3 +1,17 @@
+(function () {
+    if (window.__portalLock) { return; }
+    window.__portalLock = true;
+    try {
+        history.pushState({ portalLock: true }, '', location.href);
+        window.addEventListener('popstate', function () {
+            history.pushState({ portalLock: true }, '', location.href);
+        });
+    } catch (e) {}
+    window.addEventListener('pageshow', function (ev) {
+        if (ev.persisted) { location.reload(); }
+    });
+})();
+
 window.openConfirmModal = function(orderId) {
     var input = document.getElementById('confirmModalOrderId');
     var text = document.getElementById('confirmModalText');

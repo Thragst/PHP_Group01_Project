@@ -4,6 +4,13 @@ session_start();
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 require_once 'includes/recaptcha.php';
+require_once __DIR__ . '/includes/auth_guard.php';
+
+noCacheHeaders();
+if (!empty($_SESSION['logged_in']) && in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff', 'Developer', 'Driver'], true)) {
+    header('Location: ' . roleHome($_SESSION['user_role']));
+    exit();
+}
 
 $defaultPolicy = [
     'max_failed_attempts' => '3',
@@ -48,6 +55,7 @@ if (in_array($page, ['profile', 'settings'], true) && !$isLoggedIn) {
         <?php if ($page === 'products'): ?> <link rel="stylesheet" href="assets/css/products.css?v=<?php echo filemtime(__DIR__ . '/assets/css/products.css'); ?>"> <?php endif; ?>
         <?php if ($page === 'productDetails'): ?> <link rel="stylesheet" href="assets/css/productDetails.css?v=<?php echo filemtime(__DIR__ . '/assets/css/productDetails.css'); ?>"> <?php endif; ?>
     <title>SportMart</title>
+    <script>window.addEventListener('pageshow',function(e){if(e.persisted){location.reload();}});</script>
 </head>
 
 <body>

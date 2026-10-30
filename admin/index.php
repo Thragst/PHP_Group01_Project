@@ -2,12 +2,11 @@
 require_once __DIR__ . '/../includes/ssl.php';
 session_start();
 
+require_once __DIR__ . '/../includes/auth_guard.php';
+requireRole(['Admin', 'Staff', 'Developer']);
+
 require_once '../includes/db.php';
 
-if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
-    $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';
-    $_SESSION['user_role'] = $_SESSION['user_role'] ?? 'Developer';
-}
 
 $salesStmt = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) AS total_sales, COUNT(order_id) AS total_orders FROM orders WHERE status != 'Cancelled'");
 $salesData = $salesStmt->fetch();

@@ -2,15 +2,14 @@
 require_once __DIR__ . '/../includes/ssl.php';
 session_start();
 
+require_once __DIR__ . '/../includes/auth_guard.php';
+requireRole(['Admin', 'Staff', 'Developer']);
+
 require_once '../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once '../includes/audit_helper.php';
 require_once __DIR__ . '/../includes/upload_scanner.php';
 
-if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
-    $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';
-    $_SESSION['user_role'] = $_SESSION['user_role'] ?? 'Developer';
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     securityCheck();
