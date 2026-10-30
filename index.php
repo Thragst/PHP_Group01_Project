@@ -181,6 +181,7 @@ window.passwordPolicy = {
 };
 </script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/form-validation.js"></script>
 <?php if (RECAPTCHA_ENABLED): ?>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <?php endif; ?>

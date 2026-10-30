@@ -61,5 +61,6 @@ $qrCodeDataUri = $result->getDataUri();
             <div class="auth-footer"> <a href="../index.php?page=settings">Cancel</a> </div>
         </section>
     </main>
+<script src="../assets/js/form-validation.js"></script>
 </body>
 </html>

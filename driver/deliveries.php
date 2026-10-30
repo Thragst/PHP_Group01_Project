@@ -184,5 +184,6 @@ $deliveries = decryptRows($stmt->fetchAll(), ['shipping_address', 'customer_phon
 </div>
 
 <script src="../assets/js/driver.js"></script>
+<script src="../assets/js/form-validation.js"></script>
 </body>
 </html>

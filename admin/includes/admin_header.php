@@ -48,6 +48,7 @@ $userName = $_SESSION['user_name'] ?? 'Developer';
         const SESSION_TIMEOUT_MINUTES = <?php echo (int)$timeoutMinutes; ?>;
     </script>
     <script src="../assets/js/admin.js" defer></script>
+    <script src="../assets/js/form-validation.js" defer></script>
 </head>
 <body>
 <div class="admin-container">

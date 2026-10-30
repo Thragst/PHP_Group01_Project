@@ -45,5 +45,6 @@ if (!$user || (int) $user['mfa_enabled'] !== 1) { unset($_SESSION['mfa_pending']
                     <a href="../index.php">Cancel</a>
                 </div>
     </main>
+<script src="../assets/js/form-validation.js"></script>
 </body>
 </html>
