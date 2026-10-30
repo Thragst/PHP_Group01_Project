@@ -924,3 +924,13 @@
     content: "✓";
     color: #28a745;
 }
+
+.upload-warning {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px solid #e6b3b3;
+    border-radius: 10px;
+    background: #fdecec;
+    color: #8b2e2e;
+    font-weight: bold;
+}

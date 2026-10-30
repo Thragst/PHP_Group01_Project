@@ -5,6 +5,7 @@ session_start();
 require_once '../includes/db.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once '../includes/audit_helper.php';
+require_once __DIR__ . '/../includes/upload_scanner.php';
 
 if (!isset($_SESSION['logged_in']) || !in_array($_SESSION['user_role'] ?? '', ['Admin', 'Staff'])) {
     $_SESSION['user_name'] = $_SESSION['user_name'] ?? 'Developer';
@@ -34,17 +35,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $allowedMime = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
             $detectedMime = (new finfo(FILEINFO_MIME_TYPE))->file($fileTmpPath);
             if (isset($allowedMime[$fileExtension]) && $detectedMime === $allowedMime[$fileExtension] && $_FILES['product_image']['size'] <= 5 * 1024 * 1024 && @getimagesize($fileTmpPath) !== false) {
-                $newFileName = bin2hex(random_bytes(16)) . '.' . $fileExtension;
-                $uploadFileDir = '../assets/images/';
-                
-                if (!is_dir($uploadFileDir)) {
-                    mkdir($uploadFileDir, 0755, true);
-                }
+                $scan = scanUploadedFile($fileTmpPath, $detectedMime);
+                if ($scan['safe']) {
+                    $newFileName = bin2hex(random_bytes(16)) . '.' . $fileExtension;
+                    $uploadFileDir = '../assets/images/';
 
-                $dest_path = $uploadFileDir . $newFileName;
-                if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                    $imagePath = 'assets/images/' . $newFileName;
+                    if (!is_dir($uploadFileDir)) {
+                        mkdir($uploadFileDir, 0755, true);
+                    }
+
+                    $dest_path = $uploadFileDir . $newFileName;
+                    if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                        $imagePath = 'assets/images/' . $newFileName;
+                    }
+                } else {
+                    $uploadBlocked = true;
+                    if (isset($_SESSION['user_id'])) {
+                        logAudit($pdo, $_SESSION['user_id'], 'Blocked unsafe image upload (' . $scan['engine'] . '): ' . $scan['reason']);
+                    }
                 }
+            } else {
+                $uploadBlocked = true;
             }
         }
 
@@ -63,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
         
-        header('Location: products.php');
+        header('Location: products.php' . (!empty($uploadBlocked) ? '?upload=blocked' : ''));
         exit();
     }
 
@@ -148,6 +159,10 @@ $categories = $pdo->query("SELECT category_id, name, status FROM categories ORDE
 
 include 'includes/admin_header.php';
 ?>
+
+<?php if (($_GET['upload'] ?? '') === 'blocked'): ?>
+    <div class="upload-warning">The image was rejected because it failed the security scan. The product was saved without the new image.</div>
+<?php endif; ?>
 
 <div class="page-header">
     <div>
@@ -327,7 +342,7 @@ include 'includes/admin_header.php';
             </div>
 
             <div class="form-group">
-                <label>Product Display Image <small class="text-subtle-sm">(Max: 10MB)</small></label>
+                <label>Product Display Image <small class="text-subtle-sm">(Max: 5MB)</small></label>
                 <input type="file" id="productImage" name="product_image" accept="image/png, image/jpeg, image/webp" onchange="validateFileSize(this)">
                 <small id="fileError" class="file-error-text"></small>
             </div>
