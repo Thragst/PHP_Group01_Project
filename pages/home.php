@@ -95,7 +95,7 @@ $featuredProducts = $featuredStmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="product-image">
                 <?php $imgSrc = productImageSrc($product['image_path']); ?>
                 <?php if($imgSrc !== ''): ?> 
-                    <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt"<?php echo htmlspecialchars($product['name']); ?>" loading="lazy" onerror="this.style.display='none'">
+                    <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy" onerror="this.style.display='none'">
                 <?php endif; ?>
             </div>
             <div class="product-info">

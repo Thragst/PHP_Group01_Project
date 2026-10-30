@@ -91,9 +91,15 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
 ?>
 
 <style>
+.products-page .products-heading,
+.products-page .products-layout {
+    width: 88% !important;
+    max-width: 1480px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
 .products-layout {
     display: block !important;
-    width: 100% !important;
 }
 .products-content {
     width: 100% !important;
@@ -248,10 +254,9 @@ function productPageUrl(int $page, string $category, string $sort, int $perPage)
                                     src="<?php echo htmlspecialchars($imgSrc); ?>"
                                     alt="<?php echo htmlspecialchars($product['name']); ?>"
                                     loading="lazy"
-                                    style="width:100%;height:100%;object-fit:contain;display:block;"
+                                    style="width:100%;height:100%;object-fit:cover;display:block;"
                                     onerror="this.style.display='none'">
                             <?php endif; ?>
-                            <button class="heart">♡</button>
                         </div>
 
                         <div class="product-info">

@@ -17,7 +17,7 @@
 
     width: 100%;
     min-height: 100vh;
-    padding: 52px 0 88px;
+    padding: 0 0 88px;
     background: var(--page);
     color: var(--ink);
 }
@@ -341,11 +341,10 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     box-shadow: 0 6px 22px rgba(43, 27, 24, .04);
-    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    transition: box-shadow .22s ease, border-color .22s ease;
 }
 
 .products-page .product:hover {
-    transform: translateY(-4px);
     border-color: #d9c5c0;
     box-shadow: 0 16px 34px rgba(43, 27, 24, .09);
 }
@@ -354,9 +353,9 @@
 
 .products-page .product-image {
     position: relative;
-    width: calc(100% - 24px);
+    width: calc(100% - 16px);
     height: 300px;
-    margin: 12px;
+    margin: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -368,38 +367,9 @@
 .products-page .product-image img {
     width: 100%;
     height: 100%;
-    padding: 14px;
+    padding: 0;
     display: block;
-    object-fit: contain;
-    transition: transform .35s cubic-bezier(.2,.7,.2,1);
-}
-
-.products-page .product:hover .product-image img {
-    transform: scale(1.035);
-}
-
-.products-page .heart {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-    width: 36px;
-    height: 36px;
-    border: 1px solid #ddd2ce;
-    border-radius: 50%;
-    background: rgba(255,255,255,.96);
-    color: #5d5552;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    transition: .18s ease;
-}
-
-.products-page .heart:hover,
-.products-page .heart.active {
-    border-color: #d4aaaa;
-    background: #fff7f6;
-    color: var(--red);
+    object-fit: cover;
 }
 
 /* ---------- information ---------- */
@@ -555,8 +525,11 @@
 }
 
 .products-page .product-image {
-    height: 360px;
-    background: #fff;
+    width: calc(100% - 16px);
+    margin: 8px;
+    flex-shrink: 0;
+    height: 320px;
+    background: #f5f1ef;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -566,7 +539,8 @@
 .products-page .product-image img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    padding: 0;
+    object-fit: cover;
     display: block;
 }
 
@@ -612,7 +586,7 @@
 
 @media (max-width: 760px) {
     .products-page {
-        padding: 38px 0 60px;
+        padding: 0 0 60px;
     }
 
     .products-page .products-heading,

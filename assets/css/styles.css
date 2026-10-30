@@ -437,23 +437,6 @@ select {
     position: relative;
 }
 
-.heart {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    border: none;
-    background: white;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 19px;
-}
-
-.heart.active {
-    color: #8b2e2e;
-}
-
 .product-info {
     padding: 18px;
 }
@@ -2482,18 +2465,19 @@ select {
 .home-product .product-image {
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
+    width: calc(100% - 16px);
+    margin: 8px;
+    border-radius: 8px;
 }
 
 .home-product .product-image img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    padding: 0;
+    object-fit: cover;
+    object-position: center top;
     display: block;
-    transition: transform 0.35s ease;
-}
-
-.home-product:hover .product-image img {
-    transform: scale(1.04);
 }
 
 .home-product .stars {
@@ -2506,6 +2490,83 @@ select {
     margin-left: 6px;
     font-size: 12px;
     color: #777;
+}
+
+/* Home "Popular Products" cards - same size/style as Products page cards */
+.section .product-list {
+    gap: 24px;
+}
+
+.home-product {
+    border: 1px solid #e6ddda;
+    border-radius: 14px;
+    box-shadow: 0 6px 22px rgba(43, 27, 24, .04);
+}
+
+.home-product .product-image {
+    height: 320px;
+    background: #f5f1ef;
+}
+
+.home-product .product-info {
+    padding: 4px 18px 18px;
+}
+
+.home-product .product-category {
+    align-self: flex-start;
+    margin: 0 0 9px;
+    padding: 4px 7px;
+    border-radius: 4px;
+    background: #f6e9e7;
+    color: #8b2e2e;
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .8px;
+}
+
+.home-product .product-info h3 {
+    min-height: 43px;
+    margin: 0 0 5px;
+    color: #302625;
+    font-size: 15px;
+    line-height: 1.4;
+    font-weight: 750;
+}
+
+.home-product .brand {
+    margin: 0 0 7px;
+    color: #99908d;
+    font-size: 12px;
+}
+
+.home-product .stars {
+    margin: 0 0 14px;
+    color: #d99d20;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.home-product .product-info > strong {
+    display: block;
+    margin-top: auto;
+    color: #8b2e2e;
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -.3px;
+}
+
+@media (max-width: 1320px) {
+    .home-product .product-image {
+        height: 270px;
+    }
+}
+
+@media (max-width: 760px) {
+    .home-product .product-image {
+        height: 310px;
+    }
 }
 
 .cookie-banner {
@@ -3032,5 +3093,52 @@ select {
         width: 430px;
         flex: 0 0 430px;
         max-width: 50%;
+    }
+}
+
+/* ========================================
+   PAGE HEADINGS - My Orders & Cart use the same
+   heading style/position as the Products page
+======================================== */
+.orders-page {
+    margin-top: 50px;
+}
+
+.cart-page {
+    padding-top: 50px;
+}
+
+.orders-header .small-title,
+.cart-heading .small-title {
+    margin: 0 0 11px;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 2.8px;
+}
+
+.orders-header h1,
+.cart-heading h1 {
+    margin: 0;
+    color: #2d1918;
+    font-size: clamp(42px, 4vw, 60px);
+    line-height: 1.02;
+    letter-spacing: -2.6px;
+    font-weight: 800;
+}
+
+.orders-header p:last-child,
+.cart-heading p:last-child {
+    margin: 13px 0 0;
+    color: #766b68;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+    .orders-header h1,
+    .cart-heading h1 {
+        font-size: 40px;
+        letter-spacing: -1.7px;
     }
 }

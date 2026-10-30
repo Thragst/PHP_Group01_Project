@@ -145,20 +145,6 @@ function showToast(message, showCartLink) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const hearts = document.querySelectorAll(".heart");
-
-    hearts.forEach(function (button) {
-        button.addEventListener("click", function () {
-            button.classList.toggle("active");
-
-            if (button.classList.contains("active")) {
-                button.textContent = "♥";
-            } else {
-                button.textContent = "♡";
-            }
-        });
-    });
-
     const orderFilter = document.getElementById("orderFilter");
 
     if (orderFilter) {
